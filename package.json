@@ -42,7 +42,7 @@
     "pack:backend": "dotnet pack template-pack/ChangeMe.Templates.csproj -c Release"
   },
   "devDependencies": {
-    "concurrently": "^10.0.3",
+    "concurrently": "^10.0.4",
     "lefthook": "^1.13.6"
   }
 }
