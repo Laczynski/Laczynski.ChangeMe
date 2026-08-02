@@ -15,6 +15,15 @@ import {
   Validators
 } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
+import { ToastService } from '@core/toast/services/toast.service';
+import { PermissionChecklistComponent } from '@features/roles/components/permission-checklist/permission-checklist.component';
+import { PermissionCatalogItemDto } from '@features/roles/models/role.model';
+import { RolesService } from '@features/roles/services/roles.service';
+import {
+  RoleConstraints,
+  RoleFieldErrors,
+  RoleMessages
+} from '@features/roles/utils/roles.utils';
 import {
   AccordionComponent,
   ButtonComponent,
@@ -23,11 +32,6 @@ import {
   TextareaComponent,
   TextComponent
 } from '@laczynski/ui';
-import { ToastService } from '@core/toast/services/toast.service';
-import { PermissionChecklistComponent } from '@features/roles/components/permission-checklist/permission-checklist.component';
-import { PermissionCatalogItemDto } from '@features/roles/models/role.model';
-import { RolesService } from '@features/roles/services/roles.service';
-import { RoleConstraints, RoleFieldErrors, RoleMessages } from '@features/roles/utils/roles.utils';
 import { BackButtonComponent } from '@shared/components/back-button/back-button.component';
 import { DefaultExpandedAccordionDirective } from '@shared/directives/default-expanded-accordion.directive';
 import { fieldError } from '@shared/forms/field-error';

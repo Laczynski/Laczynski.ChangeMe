@@ -10,6 +10,7 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
+import { ConfirmService } from '@core/confirm/services/confirm.service';
 import { ToastService } from '@core/toast/services/toast.service';
 import {
   formatUserName,
@@ -27,12 +28,6 @@ import {
   getUserStatusSeverity,
   UserMessages
 } from '@features/users/utils/users.utils';
-import { PermissionCodes } from '@shared/authorization/permission-codes';
-import { BackButtonComponent } from '@shared/components/back-button/back-button.component';
-import {
-  createGridQuery,
-  DEFAULT_GRID_PAGE_SIZE
-} from '@shared/data/utils/grid.utils';
 import {
   ButtonComponent,
   MessageBarComponent,
@@ -41,7 +36,9 @@ import {
   SpinnerComponent,
   TagComponent
 } from '@laczynski/ui';
-import { ConfirmService } from '@core/confirm/services/confirm.service';
+import { PermissionCodes } from '@shared/authorization/permission-codes';
+import { BackButtonComponent } from '@shared/components/back-button/back-button.component';
+import { createGridQuery, DEFAULT_GRID_PAGE_SIZE } from '@shared/data/utils/grid.utils';
 
 @Component({
   selector: 'app-user-details',

@@ -1,12 +1,15 @@
 import { signal } from '@angular/core';
 import type { ConfirmMessagePart } from '@core/confirm/models/confirm-message.model';
-import { confirmMessage, confirmStrong } from '@core/confirm/utils/confirm-message.utils';
-import type { IconName, Variant } from '@laczynski/ui';
+import {
+  confirmMessage,
+  confirmStrong
+} from '@core/confirm/utils/confirm-message.utils';
 import {
   IssueHistoryEventType,
   IssuePriority,
   IssueStatus
 } from '@features/issues/models/issue.model';
+import type { IconName, Variant } from '@laczynski/ui';
 
 export const IssueConstraints = {
   TITLE_MIN_LENGTH: 3,
@@ -115,11 +118,15 @@ export function getIssuePrioritySeverity(priority: IssuePriority): IssueBadgeSev
   return issuePriorityMetaByValue.get(priority)?.severity ?? 'secondary';
 }
 
+export const outline = 'outline' as const;
+
 export function getDeleteIssueConfirmMessage(title: string): ConfirmMessagePart[] {
   return confirmMessage('Delete ', confirmStrong(title), '? This cannot be undone.');
 }
 
-export function getDeleteAttachmentConfirmMessage(fileName: string): ConfirmMessagePart[] {
+export function getDeleteAttachmentConfirmMessage(
+  fileName: string
+): ConfirmMessagePart[] {
   return confirmMessage(
     'Delete ',
     confirmStrong(fileName),

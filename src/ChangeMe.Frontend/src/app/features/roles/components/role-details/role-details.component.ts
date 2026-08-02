@@ -10,16 +10,14 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ConfirmService } from '@core/confirm/services/confirm.service';
 import { ToastService } from '@core/toast/services/toast.service';
 import {
   formatUserName,
   formatUserReference
 } from '@core/user/utils/user-display.utils';
 import { AuthService } from '@features/auth/services/auth.service';
-import {
-  RoleAssignedUserDto,
-  RoleDetailsDto
-} from '@features/roles/models/role.model';
+import { RoleAssignedUserDto, RoleDetailsDto } from '@features/roles/models/role.model';
 import { RolesService } from '@features/roles/services/roles.service';
 import {
   formatDescription,
@@ -33,12 +31,6 @@ import {
   getUserStatusSeverity,
   toUserMembershipStatus
 } from '@features/users/utils/users.utils';
-import { PermissionCodes } from '@shared/authorization/permission-codes';
-import { BackButtonComponent } from '@shared/components/back-button/back-button.component';
-import {
-  createGridQuery,
-  DEFAULT_GRID_PAGE_SIZE
-} from '@shared/data/utils/grid.utils';
 import {
   ButtonComponent,
   MessageBarComponent,
@@ -48,7 +40,9 @@ import {
   TagComponent,
   TextComponent
 } from '@laczynski/ui';
-import { ConfirmService } from '@core/confirm/services/confirm.service';
+import { PermissionCodes } from '@shared/authorization/permission-codes';
+import { BackButtonComponent } from '@shared/components/back-button/back-button.component';
+import { createGridQuery, DEFAULT_GRID_PAGE_SIZE } from '@shared/data/utils/grid.utils';
 import { debounceTime, distinctUntilChanged } from 'rxjs';
 
 @Component({

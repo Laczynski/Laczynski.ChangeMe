@@ -30,7 +30,7 @@
 
       <div class="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
         <header class="app-shell-toolbar">
-          <div class="flex min-w-0 items-center gap-2">
+          <div class="flex min-w-0 flex-1 items-center gap-2">
             <ui-button
               variant="primary"
               appearance="filled"
@@ -39,11 +39,22 @@
               [ariaLabel]="sidebarOpen() ? 'Hide navigation' : 'Show navigation'"
               (click)="onMenuToggle()"
             />
-            <h1
-              class="m-0 inline-flex items-center gap-2 text-lg font-semibold whitespace-nowrap text-foreground md:hidden"
+            <div class="app-shell-breadcrumb hidden min-w-0 flex-1 md:block">
+              <ui-breadcrumb
+                class="block w-full min-w-0"
+                [items]="breadcrumbItems()"
+                [showIcons]="false"
+                appearance="subtle"
+                variant="primary"
+                [responsiveOverflow]="true"
+                (itemClick)="onBreadcrumbItemClick($event)"
+              />
+            </div>
+            <p
+              class="m-0 min-w-0 truncate text-sm font-semibold text-foreground md:hidden"
             >
-              ChangeMe
-            </h1>
+              {{ currentPageTitle() }}
+            </p>
           </div>
 
           <div class="flex flex-wrap items-center justify-end gap-2 sm:gap-2.5">

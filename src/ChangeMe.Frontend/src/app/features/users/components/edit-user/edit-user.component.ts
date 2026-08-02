@@ -15,15 +15,6 @@ import {
   Validators
 } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import {
-  AccordionComponent,
-  ButtonComponent,
-  CheckboxComponent,
-  SelectComponent,
-  MessageBarComponent,
-  SpinnerComponent,
-  TextComponent
-} from '@laczynski/ui';
 import { ToastService } from '@core/toast/services/toast.service';
 import { AuthService } from '@features/auth/services/auth.service';
 import { EffectivePermissionsComponent } from '@features/users/components/effective-permissions/effective-permissions.component';
@@ -34,6 +25,15 @@ import {
   UserFieldErrors,
   UserMessages
 } from '@features/users/utils/users.utils';
+import {
+  AccordionComponent,
+  ButtonComponent,
+  CheckboxComponent,
+  MessageBarComponent,
+  SelectComponent,
+  SpinnerComponent,
+  TextComponent
+} from '@laczynski/ui';
 import { PermissionCodes } from '@shared/authorization/permission-codes';
 import { BackButtonComponent } from '@shared/components/back-button/back-button.component';
 import { DefaultExpandedAccordionDirective } from '@shared/directives/default-expanded-accordion.directive';

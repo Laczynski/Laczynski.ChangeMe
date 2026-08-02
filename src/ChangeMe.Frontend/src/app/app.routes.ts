@@ -1,4 +1,20 @@
 import { Routes } from '@angular/router';
+import {
+  editMyAccountBreadcrumb,
+  issueDetailsBreadcrumb,
+  issueEditBreadcrumb,
+  issuesCreateBreadcrumb,
+  issuesListBreadcrumb,
+  myAccountBreadcrumb,
+  roleDetailsBreadcrumb,
+  roleEditBreadcrumb,
+  rolesCreateBreadcrumb,
+  rolesListBreadcrumb,
+  userDetailsBreadcrumb,
+  userEditBreadcrumb,
+  usersCreateBreadcrumb,
+  usersListBreadcrumb
+} from '@core/layout/data/route-breadcrumbs';
 import { EditMyAccountComponent } from '@features/auth/components/edit-my-account/edit-my-account.component';
 import { LoginComponent } from '@features/auth/components/login/login.component';
 import { MyAccountComponent } from '@features/auth/components/my-account/my-account.component';
@@ -36,37 +52,47 @@ export const routes: Routes = [
   {
     path: 'issues',
     component: IssuesComponent,
-    canActivate: [authGuard]
+    canActivate: [authGuard],
+    data: { breadcrumb: issuesListBreadcrumb }
   },
   {
     path: 'issues/create',
     component: CreateIssueComponent,
-    canActivate: [authGuard]
+    canActivate: [authGuard],
+    data: { breadcrumb: issuesCreateBreadcrumb }
   },
   {
     path: 'issues/:id',
     component: IssueDetailsComponent,
-    canActivate: [authGuard]
+    canActivate: [authGuard],
+    data: {
+      breadcrumb: issueDetailsBreadcrumb,
+      breadcrumbDynamicCrumbIndex: 1
+    }
   },
   {
     path: 'issues/:id/edit',
     component: EditIssueComponent,
-    canActivate: [authGuard]
+    canActivate: [authGuard],
+    data: { breadcrumb: issueEditBreadcrumb }
   },
   {
     path: 'account',
     component: MyAccountComponent,
-    canActivate: [authGuard]
+    canActivate: [authGuard],
+    data: { breadcrumb: myAccountBreadcrumb }
   },
   {
     path: 'account/edit',
     component: EditMyAccountComponent,
-    canActivate: [authGuard]
+    canActivate: [authGuard],
+    data: { breadcrumb: editMyAccountBreadcrumb }
   },
   {
     path: 'users',
     component: UsersListComponent,
-    canActivate: [authGuard, permissionGuard(PermissionCodes.usersView)]
+    canActivate: [authGuard, permissionGuard(PermissionCodes.usersView)],
+    data: { breadcrumb: usersListBreadcrumb }
   },
   {
     path: 'users/create',
@@ -77,36 +103,49 @@ export const routes: Routes = [
         [PermissionCodes.usersManage, PermissionCodes.rolesManage],
         '/users'
       )
-    ]
+    ],
+    data: { breadcrumb: usersCreateBreadcrumb }
   },
   {
     path: 'users/:id',
     component: UserDetailsComponent,
-    canActivate: [authGuard, permissionGuard(PermissionCodes.usersView)]
+    canActivate: [authGuard, permissionGuard(PermissionCodes.usersView)],
+    data: {
+      breadcrumb: userDetailsBreadcrumb,
+      breadcrumbDynamicCrumbIndex: 1
+    }
   },
   {
     path: 'users/:id/edit',
     component: EditUserComponent,
-    canActivate: [authGuard, permissionGuard(PermissionCodes.usersManage)]
+    canActivate: [authGuard, permissionGuard(PermissionCodes.usersManage)],
+    data: { breadcrumb: userEditBreadcrumb }
   },
   {
     path: 'roles',
     component: RolesListComponent,
-    canActivate: [authGuard, permissionGuard(PermissionCodes.rolesView)]
+    canActivate: [authGuard, permissionGuard(PermissionCodes.rolesView)],
+    data: { breadcrumb: rolesListBreadcrumb }
   },
   {
     path: 'roles/create',
     component: CreateRoleComponent,
-    canActivate: [authGuard, permissionGuard(PermissionCodes.rolesManage)]
+    canActivate: [authGuard, permissionGuard(PermissionCodes.rolesManage)],
+    data: { breadcrumb: rolesCreateBreadcrumb }
   },
   {
     path: 'roles/:id',
     component: RoleDetailsComponent,
-    canActivate: [authGuard, permissionGuard(PermissionCodes.rolesView)]
+    canActivate: [authGuard, permissionGuard(PermissionCodes.rolesView)],
+    data: {
+      breadcrumb: roleDetailsBreadcrumb,
+      breadcrumbDynamicCrumbIndex: 1
+    }
   },
   {
     path: 'roles/:id/edit',
     component: EditRoleComponent,
-    canActivate: [authGuard, permissionGuard(PermissionCodes.rolesManage)]
+    canActivate: [authGuard, permissionGuard(PermissionCodes.rolesManage)],
+    data: { breadcrumb: roleEditBreadcrumb }
   }
 ];

@@ -79,7 +79,7 @@
               <ui-tag
                 [text]="getIssueStatusLabel(currentIssue.status)"
                 [variant]="getIssueStatusSeverity(currentIssue.status)"
-                appearance="tint"
+                appearance="outline"
               />
             </dd>
           </div>
@@ -89,7 +89,7 @@
               <ui-tag
                 [text]="getIssuePriorityLabel(currentIssue.priority)"
                 [variant]="getIssuePrioritySeverity(currentIssue.priority)"
-                appearance="tint"
+                appearance="outline"
               />
             </dd>
           </div>
@@ -141,7 +141,7 @@
 
           <section class="flex flex-col gap-4 pt-1">
             <ui-tabs
-              class="block w-full border-b border-stroke"
+              [fullWidth]="true"
               [tabs]="detailTabs"
               [selectedTabId]="selectedTabId()"
               (selectedTabIdChange)="onTabChange($event)"

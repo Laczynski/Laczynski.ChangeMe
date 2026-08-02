@@ -5,11 +5,17 @@ import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { SidebarNavComponent } from '@core/layout/components/sidebar-nav/sidebar-nav.component';
 import { LayoutNavItem } from '@core/layout/models/layout-nav-item.model';
 import { LayoutService } from '@core/layout/services/layout.service';
+import { PageChromeService } from '@core/layout/services/page-chrome.service';
 import { formatUserReference } from '@core/user/utils/user-display.utils';
 import { AuthService } from '@features/auth/services/auth.service';
 import { NotificationsBellComponent } from '@features/notifications/components/notifications-bell/notifications-bell.component';
+import {
+  BreadcrumbComponent,
+  ButtonComponent,
+  DrawerComponent,
+  IconComponent
+} from '@laczynski/ui';
 import { PermissionCodes } from '@shared/authorization/permission-codes';
-import { ButtonComponent, DrawerComponent, IconComponent } from '@laczynski/ui';
 import { filter, map } from 'rxjs/operators';
 
 const MOBILE_BREAKPOINT = '(max-width: 767.98px)';
@@ -19,6 +25,7 @@ const MOBILE_BREAKPOINT = '(max-width: 767.98px)';
   imports: [
     RouterOutlet,
     SidebarNavComponent,
+    BreadcrumbComponent,
     NotificationsBellComponent,
     ButtonComponent,
     DrawerComponent,
@@ -33,16 +40,32 @@ export class AppShellComponent {
   private readonly destroyRef = inject(DestroyRef);
 
   readonly layoutService = inject(LayoutService);
+  readonly pageChrome = inject(PageChromeService);
+
+  readonly pageBreadcrumbs = this.pageChrome.breadcrumbs;
+  readonly currentPageTitle = this.pageChrome.currentTitle;
+
+  readonly breadcrumbItems = computed(() =>
+    this.pageBreadcrumbs().map((crumb, index, crumbs) => ({
+      id: String(index),
+      label: crumb.label,
+      selected: index === crumbs.length - 1
+    }))
+  );
 
   readonly currentUser = this.authService.currentUser;
   readonly formatUserReference = formatUserReference;
   readonly showAuthenticatedChrome = computed(() => this.authService.isAuthenticated());
 
   readonly isMobile = toSignal(
-    this.breakpointObserver.observe(MOBILE_BREAKPOINT).pipe(map((state) => state.matches)),
+    this.breakpointObserver
+      .observe(MOBILE_BREAKPOINT)
+      .pipe(map((state) => state.matches)),
     {
       initialValue:
-        typeof window !== 'undefined' ? window.matchMedia(MOBILE_BREAKPOINT).matches : false
+        typeof window !== 'undefined'
+          ? window.matchMedia(MOBILE_BREAKPOINT).matches
+          : false
     }
   );
 
@@ -66,8 +89,7 @@ export class AppShellComponent {
         label: 'Issues list',
         icon: 'clipboard_task_list',
         routerLink: '/issues',
-        section: 'Issues',
-        exact: true
+        section: 'Issues'
       },
       {
         label: 'Create issue',
@@ -82,8 +104,7 @@ export class AppShellComponent {
         label: 'Users list',
         icon: 'people',
         routerLink: '/users',
-        section: 'Administration',
-        exact: true
+        section: 'Administration'
       });
     }
 
@@ -92,8 +113,7 @@ export class AppShellComponent {
         label: 'Roles list',
         icon: 'shield',
         routerLink: '/roles',
-        section: 'Administration',
-        exact: true
+        section: 'Administration'
       });
     }
 
@@ -117,6 +137,14 @@ export class AppShellComponent {
           this.layoutService.closeMobileNav();
         }
       });
+  }
+
+  onBreadcrumbItemClick(item: { id: string | number }): void {
+    const index = Number(item.id);
+    const routerLink = this.pageBreadcrumbs()[index]?.routerLink;
+    if (routerLink) {
+      void this.router.navigateByUrl(routerLink);
+    }
   }
 
   onMenuToggle(): void {

@@ -17,16 +17,6 @@ import {
   Validators
 } from '@angular/forms';
 import { Router } from '@angular/router';
-import {
-  AccordionComponent,
-  ButtonComponent,
-  CardComponent,
-  SelectComponent,
-  MessageBarComponent,
-  SpinnerComponent,
-  TextareaComponent,
-  TextComponent
-} from '@laczynski/ui';
 import { ToastService } from '@core/toast/services/toast.service';
 import {
   IssueAssignableUserDto,
@@ -43,6 +33,16 @@ import {
   issuePriorities,
   issueStatuses
 } from '@features/issues/utils/issue.utils';
+import {
+  AccordionComponent,
+  ButtonComponent,
+  CardComponent,
+  MessageBarComponent,
+  SelectComponent,
+  SpinnerComponent,
+  TextareaComponent,
+  TextComponent
+} from '@laczynski/ui';
 import { BackButtonComponent } from '@shared/components/back-button/back-button.component';
 import { DefaultExpandedAccordionDirective } from '@shared/directives/default-expanded-accordion.directive';
 import { fieldError } from '@shared/forms/field-error';

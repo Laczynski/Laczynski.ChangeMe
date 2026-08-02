@@ -87,7 +87,33 @@ export class SidebarNavComponent {
   }
 
   private isSelected(item: LayoutNavItem, url = this.router.url): boolean {
+    return this.getSelectedRouterLink(url) === item.routerLink;
+  }
+
+  private getSelectedRouterLink(url: string): string | null {
     const path = url.split(/[?#]/)[0];
-    return item.exact ? path === item.routerLink : path.startsWith(item.routerLink);
+    let bestMatch: string | null = null;
+
+    for (const item of this.items()) {
+      if (!this.matchesPath(path, item)) {
+        continue;
+      }
+
+      if (!bestMatch || item.routerLink.length > bestMatch.length) {
+        bestMatch = item.routerLink;
+      }
+    }
+
+    return bestMatch;
+  }
+
+  private matchesPath(path: string, item: LayoutNavItem): boolean {
+    const link = item.routerLink;
+
+    if (item.exact) {
+      return path === link;
+    }
+
+    return path === link || path.startsWith(`${link}/`);
   }
 }
