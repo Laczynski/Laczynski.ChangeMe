@@ -17,7 +17,7 @@ test.describe('roles smoke', () => {
     });
 
     await test.step('create role', async () => {
-      await page.getByRole('button', { name: 'Add role' }).click();
+      await page.getByRole('link', { name: 'Add role' }).click();
       await expect(page).toHaveURL(/\/roles\/create/);
 
       await fillRoleName(page, roleName);
@@ -29,7 +29,7 @@ test.describe('roles smoke', () => {
     });
 
     await test.step('edit role', async () => {
-      await page.getByRole('button', { name: 'Edit' }).click();
+      await page.getByRole('link', { name: 'Edit' }).click();
       await expect(page).toHaveURL(/\/roles\/[0-9a-f-]+\/edit/);
       await fillRoleName(page, updatedRoleName);
       await page.getByRole('button', { name: 'Save changes' }).click();

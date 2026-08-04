@@ -38,7 +38,7 @@ export default defineConfig(
     }
   },
   {
-    files: ['**/*.spec.ts'],
+    files: ['src/**/*.spec.ts'],
     languageOptions: {
       parserOptions: {
         project: ['./tsconfig.spec.json'],
