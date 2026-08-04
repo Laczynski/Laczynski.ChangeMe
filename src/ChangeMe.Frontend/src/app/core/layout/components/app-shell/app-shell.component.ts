@@ -9,7 +9,7 @@ import { formatUserReference } from '@core/user/utils/user-display.utils';
 import { AuthService } from '@features/auth/services/auth.service';
 import { NotificationsBellComponent } from '@features/notifications/components/notifications-bell/notifications-bell.component';
 import { PermissionCodes } from '@shared/authorization/permission-codes';
-import { Button } from 'primeng/button';
+import { ButtonDirective } from 'primeng/button';
 import { Drawer } from 'primeng/drawer';
 import { filter, map } from 'rxjs/operators';
 
@@ -20,7 +20,7 @@ import { filter, map } from 'rxjs/operators';
     RouterLink,
     SidebarNavComponent,
     NotificationsBellComponent,
-    Button,
+    ButtonDirective,
     Drawer
   ],
   templateUrl: './app-shell.component.html'

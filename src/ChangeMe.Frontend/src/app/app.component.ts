@@ -10,13 +10,13 @@ import { Toast } from 'primeng/toast';
   template: `
     <app-shell />
     <p-toast [key]="toastKey" position="top-right" />
-    <p-confirmDialog>
+    <p-confirmdialog>
       <ng-template #message let-message>
         @if (message?.message) {
           <span [innerHTML]="message.message"></span>
         }
       </ng-template>
-    </p-confirmDialog>
+    </p-confirmdialog>
   `
 })
 export class AppComponent {

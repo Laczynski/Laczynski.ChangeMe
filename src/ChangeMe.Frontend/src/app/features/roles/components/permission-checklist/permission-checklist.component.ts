@@ -26,7 +26,7 @@ import { Message } from 'primeng/message';
           </h4>
           <div class="flex flex-col gap-3">
             @for (permission of group.items; track permission.code) {
-              <label
+              <div
                 class="border-surface-200 flex cursor-pointer gap-3 rounded-lg border p-3 dark:border-surface-700"
               >
                 <p-checkbox
@@ -34,13 +34,16 @@ import { Message } from 'primeng/message';
                   [formControl]="control()"
                   [value]="permission.code"
                 />
-                <span class="flex flex-col gap-1">
+                <label
+                  [attr.for]="permission.code"
+                  class="flex flex-1 cursor-pointer flex-col gap-1"
+                >
                   <span class="text-color font-medium">{{ permission.label }}</span>
                   <span class="text-muted-color text-sm">
                     {{ permission.description }}
                   </span>
-                </span>
-              </label>
+                </label>
+              </div>
             }
           </div>
         </div>

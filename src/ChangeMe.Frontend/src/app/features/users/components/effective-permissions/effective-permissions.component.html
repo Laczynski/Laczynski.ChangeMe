@@ -29,7 +29,7 @@
                   </span>
                   @if (showFromRoles() && permission.fromRoleNames?.length) {
                     <span class="text-muted-color text-sm">
-                      {{ formatFromRoles(permission.fromRoleNames ?? []) }}
+                      {{ formatFromRoles(permission.fromRoleNames) }}
                     </span>
                   }
                 </span>

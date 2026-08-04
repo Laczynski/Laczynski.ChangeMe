@@ -3,7 +3,7 @@ import { Component, inject, output, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { NotificationDto } from '@features/notifications/models/notification.model';
 import { NotificationsService } from '@features/notifications/services/notifications.service';
-import { Button } from 'primeng/button';
+import { ButtonDirective } from 'primeng/button';
 import { Message } from 'primeng/message';
 import { ProgressSpinner } from 'primeng/progressspinner';
 import { Tab, TabList, TabPanel, TabPanels, Tabs } from 'primeng/tabs';
@@ -12,7 +12,7 @@ import { Tab, TabList, TabPanel, TabPanels, Tabs } from 'primeng/tabs';
   selector: 'app-notifications-panel',
   imports: [
     CommonModule,
-    Button,
+    ButtonDirective,
     Message,
     ProgressSpinner,
     Tabs,

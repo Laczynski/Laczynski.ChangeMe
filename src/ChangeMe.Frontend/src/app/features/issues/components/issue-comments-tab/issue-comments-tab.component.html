@@ -36,19 +36,21 @@
     }
 
     <div class="mt-3 flex justify-end">
-      <p-button
-        type="submit"
-        [label]="isSubmittingComment() ? 'Adding comment...' : 'Add comment'"
-        icon="pi pi-send"
-        [loading]="isSubmittingComment()"
-      />
+      <button type="submit" pButton [disabled]="isSubmittingComment()">
+        @if (isSubmittingComment()) {
+          <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
+        } @else {
+          <i class="pi pi-send" aria-hidden="true"></i>
+        }
+        {{ isSubmittingComment() ? 'Adding comment...' : 'Add comment' }}
+      </button>
     </div>
   </form>
 
   @if (loadError()) {
     <p-message severity="error">{{ loadError() }}</p-message>
   } @else if (isLoadingComments()) {
-    <p-progressSpinner ariaLabel="Loading comments" styleClass="h-8 w-8" />
+    <p-progress-spinner ariaLabel="Loading comments" class="!size-8" />
   } @else if (comments().length > 0) {
     <div class="flex flex-col gap-3">
       @for (comment of comments(); track comment.id) {
@@ -71,12 +73,18 @@
 
   @if (canShowMoreComments()) {
     <div class="flex justify-center">
-      <p-button
-        label="Show more"
+      <button
+        type="button"
+        pButton
         [text]="true"
-        [loading]="isLoadingMoreComments()"
-        (onClick)="showMoreComments()"
-      />
+        [disabled]="isLoadingMoreComments()"
+        (click)="showMoreComments()"
+      >
+        @if (isLoadingMoreComments()) {
+          <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
+        }
+        Show more
+      </button>
     </div>
   }
 </div>

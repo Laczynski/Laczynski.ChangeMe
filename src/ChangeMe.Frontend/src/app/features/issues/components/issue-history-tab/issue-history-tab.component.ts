@@ -16,8 +16,7 @@ import {
   createIssueTabGridQuery,
   hasMoreGridItems
 } from '@shared/data/utils/grid.utils';
-import { PrimeTemplate } from 'primeng/api';
-import { Button } from 'primeng/button';
+import { ButtonDirective } from 'primeng/button';
 import { Message } from 'primeng/message';
 import { ProgressSpinner } from 'primeng/progressspinner';
 import { Tag } from 'primeng/tag';
@@ -28,12 +27,11 @@ import { Timeline } from 'primeng/timeline';
   imports: [
     CommonModule,
     DatePipe,
-    Button,
+    ButtonDirective,
     Message,
     ProgressSpinner,
     Tag,
-    Timeline,
-    PrimeTemplate
+    Timeline
   ],
   templateUrl: './issue-history-tab.component.html',
   host: { class: 'block' }

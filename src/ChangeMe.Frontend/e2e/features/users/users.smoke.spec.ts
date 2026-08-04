@@ -18,7 +18,7 @@ test.describe('users smoke', () => {
     });
 
     await test.step('create user', async () => {
-      await page.getByRole('button', { name: 'Create user' }).click();
+      await page.getByRole('link', { name: 'Create user' }).click();
       await expect(page).toHaveURL(/\/users\/create/);
 
       await page.getByLabel('First name').fill(firstName);
@@ -39,7 +39,7 @@ test.describe('users smoke', () => {
     });
 
     await test.step('edit profile', async () => {
-      await page.getByRole('button', { name: 'Edit' }).click();
+      await page.getByRole('link', { name: 'Edit' }).click();
       await expect(page).toHaveURL(/\/users\/[0-9a-f-]+\/edit/);
       await page.getByLabel('First name').fill(updatedFirstName);
       await page.getByRole('button', { name: 'Save changes' }).click();

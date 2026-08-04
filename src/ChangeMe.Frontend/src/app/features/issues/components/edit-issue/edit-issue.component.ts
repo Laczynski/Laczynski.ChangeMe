@@ -25,7 +25,7 @@ import {
   issueStatuses
 } from '@features/issues/utils/issue.utils';
 import { BackButtonComponent } from '@shared/components/back-button/back-button.component';
-import { Button } from 'primeng/button';
+import { ButtonDirective } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { InputText } from 'primeng/inputtext';
 import { Message } from 'primeng/message';
@@ -55,7 +55,7 @@ type EditAcceptanceCriterionForm = {
     ReactiveFormsModule,
     Card,
     BackButtonComponent,
-    Button,
+    ButtonDirective,
     InputText,
     Textarea,
     Select,

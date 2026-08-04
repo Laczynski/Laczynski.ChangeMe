@@ -7,22 +7,27 @@
     <app-back-button label="Back to roles list" [route]="['/roles']" />
     @if (role(); as current) {
       @if (canManageRoles() && !current.isSystem) {
-        <p-button
-          label="Edit"
-          icon="pi pi-pencil"
+        <a
+          pButton
           severity="secondary"
           [outlined]="true"
           size="small"
           [routerLink]="['/roles', current.id, 'edit']"
-        />
-        <p-button
-          label="Delete"
-          icon="pi pi-trash"
+        >
+          <i class="pi pi-pencil" aria-hidden="true"></i>
+          Edit
+        </a>
+        <button
+          type="button"
+          pButton
           severity="danger"
           [outlined]="true"
           size="small"
-          (onClick)="confirmDeleteRole()"
-        />
+          (click)="confirmDeleteRole()"
+        >
+          <i class="pi pi-trash" aria-hidden="true"></i>
+          Delete
+        </button>
       }
     }
   </div>
@@ -35,21 +40,28 @@
 
   @if (isLoading()) {
     <div class="flex flex-col items-center gap-2 py-8">
-      <p-progressSpinner ariaLabel="Loading role details" />
+      <p-progress-spinner ariaLabel="Loading role details" />
       <p class="text-muted-color m-0 text-sm">Loading role details...</p>
     </div>
   } @else if (errorMessage()) {
     <div class="flex flex-col items-center gap-2">
       <p-message severity="error">{{ errorMessage() }}</p-message>
-      <p-button
+      <button
+        type="button"
+        pButton
         size="small"
-        label="Try again"
-        icon="pi pi-refresh"
         severity="secondary"
         [outlined]="true"
-        [loading]="isLoading()"
-        (onClick)="refresh()"
-      />
+        [disabled]="isLoading()"
+        (click)="refresh()"
+      >
+        @if (isLoading()) {
+          <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
+        } @else {
+          <i class="pi pi-refresh" aria-hidden="true"></i>
+        }
+        Try again
+      </button>
     </div>
   } @else if (role(); as current) {
     <dl
@@ -136,14 +148,17 @@
             </td>
             @if (canManageRoles()) {
               <td>
-                <p-button
-                  label="Remove from role"
-                  icon="pi pi-user-minus"
+                <button
+                  type="button"
+                  pButton
                   severity="danger"
                   [text]="true"
                   size="small"
-                  (onClick)="confirmRemoveUser(user)"
-                />
+                  (click)="confirmRemoveUser(user)"
+                >
+                  <i class="pi pi-user-minus" aria-hidden="true"></i>
+                  Remove from role
+                </button>
               </td>
             }
           </tr>

@@ -20,7 +20,7 @@ export async function selectMultiselectOption(
   const panel = page
     .getByRole('main')
     .getByRole('region', { name: label, exact: true });
-  await panel.locator('.p-multiselect').click();
+  await panel.locator('.p-select').click();
   await page.getByRole('option', { name: optionLabel, exact: true }).click();
   await page.keyboard.press('Escape');
 }

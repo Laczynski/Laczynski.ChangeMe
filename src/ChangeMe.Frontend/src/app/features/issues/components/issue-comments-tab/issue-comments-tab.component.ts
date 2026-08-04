@@ -23,7 +23,7 @@ import {
   createIssueTabGridQuery,
   hasMoreGridItems
 } from '@shared/data/utils/grid.utils';
-import { Button } from 'primeng/button';
+import { ButtonDirective } from 'primeng/button';
 import { Message } from 'primeng/message';
 import { ProgressSpinner } from 'primeng/progressspinner';
 import { Textarea } from 'primeng/textarea';
@@ -34,7 +34,14 @@ type CommentForm = {
 
 @Component({
   selector: 'app-issue-comments-tab',
-  imports: [DatePipe, ReactiveFormsModule, Button, Textarea, Message, ProgressSpinner],
+  imports: [
+    DatePipe,
+    ReactiveFormsModule,
+    ButtonDirective,
+    Textarea,
+    Message,
+    ProgressSpinner
+  ],
   templateUrl: './issue-comments-tab.component.html',
   host: { class: 'block' }
 })

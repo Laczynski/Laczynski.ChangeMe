@@ -31,6 +31,7 @@ export const appConfig: ApplicationConfig = {
       return inject(AuthService).initializeSession();
     }),
     providePrimeNG({
+      // PrimeNG v22+ (PrimeUI) requires a license key for production — see docs/guides/frontend-guidelines.md
       csp: {
         nonce: readCspNonce()
       },

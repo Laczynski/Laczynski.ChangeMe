@@ -5,7 +5,10 @@
 >
   <div class="mb-4 flex justify-end">
     @if (canManageRoles()) {
-      <p-button label="Add role" icon="pi pi-plus" [routerLink]="['/roles/create']" />
+      <a pButton [routerLink]="['/roles/create']">
+        <i class="pi pi-plus" aria-hidden="true"></i>
+        Add role
+      </a>
     }
   </div>
 
@@ -64,17 +67,20 @@
     </ng-template>
 
     <ng-template qgColumn="actions" header="" [sortable]="false" let-role>
-      <p-button
+      <button
         type="button"
-        icon="pi pi-ellipsis-v"
+        pButton
         severity="secondary"
         [text]="true"
         size="small"
+        [iconOnly]="true"
         pTooltip="Role actions"
         tooltipPosition="top"
         [attr.aria-label]="'Actions for ' + role.name"
-        (onClick)="openRoleActionsMenu($event, role)"
-      />
+        (click)="openRoleActionsMenu($event, role)"
+      >
+        <i class="pi pi-ellipsis-v" aria-hidden="true"></i>
+      </button>
     </ng-template>
 
     <ng-template qgEmpty>
@@ -82,21 +88,22 @@
         <p class="text-muted-color m-0 text-center">{{ emptyMessage() }}</p>
         <div class="flex flex-wrap items-center justify-center gap-2">
           @if (canManageRoles()) {
-            <p-button
-              size="small"
-              label="Add role"
-              icon="pi pi-plus"
-              [routerLink]="['/roles/create']"
-            />
+            <a pButton size="small" [routerLink]="['/roles/create']">
+              <i class="pi pi-plus" aria-hidden="true"></i>
+              Add role
+            </a>
           }
-          <p-button
+          <button
+            type="button"
+            pButton
             size="small"
-            label="Refresh"
-            icon="pi pi-refresh"
             severity="secondary"
             [outlined]="true"
-            (onClick)="refresh()"
-          />
+            (click)="refresh()"
+          >
+            <i class="pi pi-refresh" aria-hidden="true"></i>
+            Refresh
+          </button>
         </div>
       </div>
     </ng-template>

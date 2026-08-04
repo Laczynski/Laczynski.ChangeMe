@@ -32,7 +32,7 @@ import {
 } from '@query-grid/primeng';
 import { getGridListEmptyMessage } from '@shared/data/utils/grid.utils';
 import { ConfirmationService, MenuItem } from 'primeng/api';
-import { Button } from 'primeng/button';
+import { ButtonDirective } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { Menu } from 'primeng/menu';
 import { Message } from 'primeng/message';
@@ -45,7 +45,7 @@ import { Tooltip } from 'primeng/tooltip';
     CommonModule,
     RouterLink,
     Card,
-    Button,
+    ButtonDirective,
     Message,
     Tag,
     Tooltip,

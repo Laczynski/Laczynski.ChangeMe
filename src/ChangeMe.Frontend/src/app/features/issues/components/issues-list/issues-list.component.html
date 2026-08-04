@@ -1,10 +1,9 @@
 <p-card header="Issues list" subheader="Browse, filter and monitor issues.">
   <div class="mb-4 flex justify-end">
-    <p-button
-      label="Add issue"
-      icon="pi pi-plus"
-      [routerLink]="['/issues', 'create']"
-    />
+    <a pButton [routerLink]="['/issues', 'create']">
+      <i class="pi pi-plus" aria-hidden="true"></i>
+      Add issue
+    </a>
   </div>
 
   @if (errorMessage()) {
@@ -82,29 +81,42 @@
 
     <ng-template qgColumn="actions" header="" [sortable]="false" let-issue>
       <div class="flex flex-wrap items-center gap-2">
-        <p-button
-          [label]="issue.watchersCount.toString()"
-          [icon]="issue.isWatchedByCurrentUser ? 'pi pi-bell-slash' : 'pi pi-bell'"
+        <button
+          type="button"
+          pButton
           [severity]="issue.isWatchedByCurrentUser ? 'success' : 'secondary'"
           [outlined]="!issue.isWatchedByCurrentUser"
           size="small"
-          [loading]="isWatchPending(issue.id)"
+          [disabled]="isWatchPending(issue.id)"
           [pTooltip]="getWatchTooltip(issue)"
           tooltipPosition="top"
           [attr.aria-label]="getWatchTooltip(issue)"
-          (onClick)="toggleWatch(issue)"
-        />
-        <p-button
+          (click)="toggleWatch(issue)"
+        >
+          @if (isWatchPending(issue.id)) {
+            <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
+          } @else {
+            <i
+              [class]="issue.isWatchedByCurrentUser ? 'pi pi-bell-slash' : 'pi pi-bell'"
+              aria-hidden="true"
+            ></i>
+          }
+          {{ issue.watchersCount }}
+        </button>
+        <button
           type="button"
-          icon="pi pi-ellipsis-v"
+          pButton
           severity="secondary"
           [text]="true"
           size="small"
+          [iconOnly]="true"
           pTooltip="Issue actions"
           tooltipPosition="top"
           [attr.aria-label]="'Actions for ' + issue.title"
-          (onClick)="openIssueActionsMenu($event, issue)"
-        />
+          (click)="openIssueActionsMenu($event, issue)"
+        >
+          <i class="pi pi-ellipsis-v" aria-hidden="true"></i>
+        </button>
       </div>
     </ng-template>
 
@@ -112,20 +124,21 @@
       <div class="flex flex-col items-center gap-2 py-4">
         <p class="text-center text-muted-color">{{ emptyMessage() }}</p>
         <div class="flex flex-wrap items-center gap-2">
-          <p-button
+          <a pButton size="small" [routerLink]="['/issues', 'create']">
+            <i class="pi pi-plus" aria-hidden="true"></i>
+            Add issue
+          </a>
+          <button
+            type="button"
+            pButton
             size="small"
-            label="Add issue"
-            icon="pi pi-plus"
-            [routerLink]="['/issues', 'create']"
-          />
-          <p-button
-            size="small"
-            label="Refresh"
-            icon="pi pi-refresh"
             severity="secondary"
             [outlined]="true"
-            (onClick)="refresh()"
-          />
+            (click)="refresh()"
+          >
+            <i class="pi pi-refresh" aria-hidden="true"></i>
+            Refresh
+          </button>
         </div>
       </div>
     </ng-template>

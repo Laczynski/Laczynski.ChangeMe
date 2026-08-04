@@ -6,55 +6,83 @@
   <div class="mb-4 flex flex-wrap items-center gap-2">
     <app-back-button label="Back to issues list" [route]="['/issues']" />
     @if (issue(); as currentIssue) {
-      <p-button
-        label="Edit"
-        icon="pi pi-pencil"
+      <a
+        pButton
         severity="secondary"
         [outlined]="true"
         size="small"
         [routerLink]="['/issues', currentIssue.id, 'edit']"
-      />
-      <p-button
-        [label]="currentIssue.watchersCount.toString()"
-        [icon]="currentIssue.isWatchedByCurrentUser ? 'pi pi-bell-slash' : 'pi pi-bell'"
+      >
+        <i class="pi pi-pencil" aria-hidden="true"></i>
+        Edit
+      </a>
+      <button
+        type="button"
+        pButton
         [severity]="currentIssue.isWatchedByCurrentUser ? 'success' : 'secondary'"
         [outlined]="!currentIssue.isWatchedByCurrentUser"
         size="small"
-        [loading]="isTogglingWatch()"
+        [disabled]="isTogglingWatch()"
         [pTooltip]="getWatchTooltip(currentIssue)"
         tooltipPosition="top"
         [attr.aria-label]="getWatchTooltip(currentIssue)"
-        (onClick)="toggleWatch()"
-      />
-      <p-button
-        label="Delete"
-        icon="pi pi-trash"
+        (click)="toggleWatch()"
+      >
+        @if (isTogglingWatch()) {
+          <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
+        } @else {
+          <i
+            [class]="
+              currentIssue.isWatchedByCurrentUser ? 'pi pi-bell-slash' : 'pi pi-bell'
+            "
+            aria-hidden="true"
+          ></i>
+        }
+        {{ currentIssue.watchersCount }}
+      </button>
+      <button
+        type="button"
+        pButton
         severity="danger"
         [outlined]="true"
         size="small"
-        [loading]="isDeleting()"
-        (onClick)="confirmDeleteIssue()"
-      />
+        [disabled]="isDeleting()"
+        (click)="confirmDeleteIssue()"
+      >
+        @if (isDeleting()) {
+          <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
+        } @else {
+          <i class="pi pi-trash" aria-hidden="true"></i>
+        }
+        Delete
+      </button>
     }
   </div>
 
   @if (isLoading()) {
     <div class="flex flex-col items-center gap-2 py-8">
-      <p-progressSpinner ariaLabel="Loading issue details" />
+      <p-progress-spinner ariaLabel="Loading issue details" />
       <p class="text-muted-color m-0 text-sm">Loading issue details...</p>
     </div>
   } @else if (loadError()) {
     <div class="flex flex-col items-center gap-2">
       <p-message severity="error">{{ loadError() }}</p-message>
-      <p-button
+      <button
+        type="button"
+        pButton
         size="small"
-        label="Try again"
-        icon="pi pi-refresh"
         severity="secondary"
         [outlined]="true"
-        [loading]="isLoading()"
-        (onClick)="refresh()"
-      />
+        [disabled]="isLoading()"
+        (click)="refresh()"
+      >
+        @if (isLoading()) {
+          <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
+        } @else {
+          <i class="pi pi-refresh" aria-hidden="true"></i>
+        }
+        Try again
+      </button>
     </div>
   } @else if (issue(); as currentIssue) {
     <dl

@@ -50,18 +50,23 @@
     }
 
     <div class="flex flex-wrap items-center justify-end gap-2">
-      <p-button
-        label="Cancel"
+      <button
+        type="button"
+        pButton
         severity="secondary"
         [outlined]="true"
-        (onClick)="cancel()"
-      />
-      <p-button
-        type="submit"
-        [label]="isSubmitting() ? 'Creating role...' : 'Create role'"
-        icon="pi pi-check"
-        [loading]="isSubmitting()"
-      />
+        (click)="cancel()"
+      >
+        Cancel
+      </button>
+      <button type="submit" pButton [disabled]="isSubmitting()">
+        @if (isSubmitting()) {
+          <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
+        } @else {
+          <i class="pi pi-check" aria-hidden="true"></i>
+        }
+        {{ isSubmitting() ? 'Creating role...' : 'Create role' }}
+      </button>
     </div>
   </form>
 </p-card>

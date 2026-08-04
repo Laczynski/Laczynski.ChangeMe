@@ -9,21 +9,28 @@
 
   @if (isLoading()) {
     <div class="flex flex-col items-center gap-2 py-8">
-      <p-progressSpinner ariaLabel="Loading user form" />
+      <p-progress-spinner ariaLabel="Loading user form" />
       <p class="text-muted-color m-0 text-sm">Loading user data...</p>
     </div>
   } @else if (loadError()) {
     <div class="flex flex-col items-center gap-2">
       <p-message severity="error">{{ loadError() }}</p-message>
-      <p-button
+      <button
+        type="button"
+        pButton
         size="small"
-        label="Try again"
-        icon="pi pi-refresh"
         severity="secondary"
         [outlined]="true"
-        [loading]="isLoading()"
-        (onClick)="refresh()"
-      />
+        [disabled]="isLoading()"
+        (click)="refresh()"
+      >
+        @if (isLoading()) {
+          <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
+        } @else {
+          <i class="pi pi-refresh" aria-hidden="true"></i>
+        }
+        Try again
+      </button>
     </div>
   } @else {
     <form
@@ -71,14 +78,14 @@
         <p-panel header="Roles" [toggleable]="true">
           <div class="flex flex-col gap-1.5">
             <label for="roles">Roles</label>
-            <p-multiselect
+            <p-select
               inputId="roles"
+              [multiple]="true"
               [formControl]="form.controls.roleIds"
               [options]="roleOptions()"
               optionLabel="name"
               optionValue="id"
               placeholder="Select roles"
-              display="chip"
               [invalid]="shouldShowError(form.controls.roleIds)"
             />
           </div>
@@ -108,19 +115,22 @@
       }
 
       <div class="flex flex-wrap items-center justify-end gap-2">
-        <p-button
-          type="button"
-          label="Cancel"
+        <a
+          pButton
           severity="secondary"
           [outlined]="true"
           [routerLink]="['/users', id()]"
-        />
-        <p-button
-          type="submit"
-          [label]="isSubmitting() ? 'Saving...' : 'Save changes'"
-          icon="pi pi-save"
-          [loading]="isSubmitting()"
-        />
+        >
+          Cancel
+        </a>
+        <button type="submit" pButton [disabled]="isSubmitting()">
+          @if (isSubmitting()) {
+            <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
+          } @else {
+            <i class="pi pi-save" aria-hidden="true"></i>
+          }
+          {{ isSubmitting() ? 'Saving...' : 'Save changes' }}
+        </button>
       </div>
     </form>
   }

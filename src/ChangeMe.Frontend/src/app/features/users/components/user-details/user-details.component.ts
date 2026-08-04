@@ -31,7 +31,7 @@ import { PermissionCodes } from '@shared/authorization/permission-codes';
 import { BackButtonComponent } from '@shared/components/back-button/back-button.component';
 import { createGridQuery, DEFAULT_GRID_PAGE_SIZE } from '@shared/data/utils/grid.utils';
 import { ConfirmationService } from 'primeng/api';
-import { Button } from 'primeng/button';
+import { ButtonDirective } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { Message } from 'primeng/message';
 import { Paginator, PaginatorState } from 'primeng/paginator';
@@ -47,7 +47,7 @@ import { Tag } from 'primeng/tag';
     RouterLink,
     BackButtonComponent,
     Card,
-    Button,
+    ButtonDirective,
     Message,
     Tag,
     TableModule,

@@ -12,7 +12,7 @@ import { MyAccountDto } from '@features/auth/models/auth.model';
 import { AuthService } from '@features/auth/services/auth.service';
 import { AuthConstraints, AuthMessages } from '@features/auth/utils/auth.utils';
 import { BackButtonComponent } from '@shared/components/back-button/back-button.component';
-import { Button } from 'primeng/button';
+import { ButtonDirective } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { InputText } from 'primeng/inputtext';
 import { Message } from 'primeng/message';
@@ -26,7 +26,7 @@ import { ProgressSpinner } from 'primeng/progressspinner';
     RouterLink,
     BackButtonComponent,
     Card,
-    Button,
+    ButtonDirective,
     InputText,
     Message,
     Panel,

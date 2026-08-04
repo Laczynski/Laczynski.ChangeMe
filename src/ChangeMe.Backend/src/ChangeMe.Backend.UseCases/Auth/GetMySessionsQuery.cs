@@ -27,9 +27,13 @@ public class GetMySessionsHandler(
     var currentSessionId = userAccessor.SessionId;
     var sessionLifetimeDays = sessionLifetime.SessionLifetimeDays;
 
-    var projected = context.UserSessions
+    var sessions = context.UserSessions
       .AsNoTracking()
-      .WhereActiveSessions(userId, utcNow, sessionLifetimeDays)
+      .WhereActiveSessions(userId, utcNow, sessionLifetimeDays);
+
+    var grid = await sessions.ToGridResultAsync(query.Grid, cancellationToken: cancellationToken);
+
+    var items = grid.Items
       .Select(x => new UserSessionDto(
         x.Id,
         x.DeviceBrowserLabel,
@@ -37,9 +41,16 @@ public class GetMySessionsHandler(
         x.IpAddress,
         x.SignedInAt,
         x.LastActivityAt,
-        currentSessionId.HasValue && x.Id == currentSessionId.Value));
+        currentSessionId.HasValue && x.Id == currentSessionId.Value))
+      .ToList();
 
-    var grid = await projected.ToGridResultAsync(query.Grid, cancellationToken: cancellationToken);
-    return Result.Success(grid);
+    return Result.Success(new GridResult<UserSessionDto>
+    {
+      Items = items,
+      TotalCount = grid.TotalCount,
+      Skip = grid.Skip,
+      Take = grid.Take,
+      Sort = grid.Sort
+    });
   }
 }

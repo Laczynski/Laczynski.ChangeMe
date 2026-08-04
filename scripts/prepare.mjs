@@ -9,9 +9,15 @@ if (
   process.exit(0);
 }
 
-const result = spawnSync("lefthook", ["install"], {
-  stdio: "inherit",
-  shell: process.platform === "win32",
-});
+const result =
+  process.platform === "win32"
+    ? spawnSync("cmd.exe", ["/d", "/s", "/c", "lefthook install"], {
+        stdio: "inherit",
+        shell: false,
+      })
+    : spawnSync("lefthook", ["install"], {
+        stdio: "inherit",
+        shell: false,
+      });
 
 process.exit(result.status ?? 0);

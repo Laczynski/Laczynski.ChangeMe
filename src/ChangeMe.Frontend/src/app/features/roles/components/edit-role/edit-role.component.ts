@@ -21,7 +21,7 @@ import { PermissionCatalogItemDto } from '@features/roles/models/role.model';
 import { RolesService } from '@features/roles/services/roles.service';
 import { RoleConstraints, RoleMessages } from '@features/roles/utils/roles.utils';
 import { BackButtonComponent } from '@shared/components/back-button/back-button.component';
-import { Button } from 'primeng/button';
+import { ButtonDirective } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { InputText } from 'primeng/inputtext';
 import { Message } from 'primeng/message';
@@ -36,7 +36,7 @@ import { Textarea } from 'primeng/textarea';
     RouterLink,
     BackButtonComponent,
     Card,
-    Button,
+    ButtonDirective,
     InputText,
     Textarea,
     Message,

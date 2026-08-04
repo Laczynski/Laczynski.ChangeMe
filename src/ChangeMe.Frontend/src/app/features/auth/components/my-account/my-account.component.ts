@@ -7,7 +7,7 @@ import { AuthService } from '@features/auth/services/auth.service';
 import { EffectivePermissionsComponent } from '@features/users/components/effective-permissions/effective-permissions.component';
 import { UserMessages } from '@features/users/utils/users.utils';
 import { PermissionCodes } from '@shared/authorization/permission-codes';
-import { Button } from 'primeng/button';
+import { ButtonDirective } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { Message } from 'primeng/message';
 import { Panel } from 'primeng/panel';
@@ -20,7 +20,7 @@ import { Tag } from 'primeng/tag';
     DatePipe,
     RouterLink,
     Card,
-    Button,
+    ButtonDirective,
     Message,
     Tag,
     Panel,

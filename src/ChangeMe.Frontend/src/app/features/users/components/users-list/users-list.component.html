@@ -5,11 +5,10 @@
 >
   <div class="mb-4 flex justify-end">
     @if (canCreateUsers()) {
-      <p-button
-        label="Create user"
-        icon="pi pi-user-plus"
-        [routerLink]="['/users/create']"
-      />
+      <a pButton [routerLink]="['/users/create']">
+        <i class="pi pi-user-plus" aria-hidden="true"></i>
+        Create user
+      </a>
     }
   </div>
 
@@ -86,17 +85,20 @@
     </ng-template>
 
     <ng-template qgColumn="actions" header="" [sortable]="false" let-user>
-      <p-button
+      <button
         type="button"
-        icon="pi pi-ellipsis-v"
+        pButton
         severity="secondary"
         [text]="true"
         size="small"
+        [iconOnly]="true"
         pTooltip="User actions"
         tooltipPosition="top"
         [attr.aria-label]="'Actions for ' + formatUserReference(user)"
-        (onClick)="openUserActionsMenu($event, user)"
-      />
+        (click)="openUserActionsMenu($event, user)"
+      >
+        <i class="pi pi-ellipsis-v" aria-hidden="true"></i>
+      </button>
     </ng-template>
 
     <ng-template qgEmpty>
@@ -104,21 +106,22 @@
         <p class="text-muted-color m-0 text-center">{{ emptyMessage() }}</p>
         <div class="flex flex-wrap items-center justify-center gap-2">
           @if (canCreateUsers()) {
-            <p-button
-              size="small"
-              label="Create user"
-              icon="pi pi-user-plus"
-              [routerLink]="['/users/create']"
-            />
+            <a pButton size="small" [routerLink]="['/users/create']">
+              <i class="pi pi-user-plus" aria-hidden="true"></i>
+              Create user
+            </a>
           }
-          <p-button
+          <button
+            type="button"
+            pButton
             size="small"
-            label="Refresh"
-            icon="pi pi-refresh"
             severity="secondary"
             [outlined]="true"
-            (onClick)="refresh()"
-          />
+            (click)="refresh()"
+          >
+            <i class="pi pi-refresh" aria-hidden="true"></i>
+            Refresh
+          </button>
         </div>
       </div>
     </ng-template>

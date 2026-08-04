@@ -22,26 +22,38 @@
         }
       </div>
       <div class="flex shrink-0 items-center gap-0.5">
-        <p-button
-          icon="pi pi-refresh"
+        <button
+          type="button"
+          pButton
           severity="secondary"
           [text]="true"
           [rounded]="true"
           size="small"
-          ariaLabel="Refresh notifications"
-          [loading]="isLoading()"
-          (onClick)="notificationsService.loadNotifications()"
-        />
-        <p-button
-          icon="pi pi-check-circle"
+          [iconOnly]="true"
+          aria-label="Refresh notifications"
+          [disabled]="isLoading()"
+          (click)="notificationsService.loadNotifications()"
+        >
+          @if (isLoading()) {
+            <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
+          } @else {
+            <i class="pi pi-refresh" aria-hidden="true"></i>
+          }
+        </button>
+        <button
+          type="button"
+          pButton
           severity="secondary"
           [text]="true"
           [rounded]="true"
           size="small"
-          ariaLabel="Mark all as read"
+          [iconOnly]="true"
+          aria-label="Mark all as read"
           [disabled]="unreadCount() === 0"
-          (onClick)="markAllAsRead()"
-        />
+          (click)="markAllAsRead()"
+        >
+          <i class="pi pi-check-circle" aria-hidden="true"></i>
+        </button>
       </div>
     </div>
   </header>
@@ -56,7 +68,7 @@
     <div
       class="flex min-h-0 flex-1 flex-col items-center justify-center gap-2 overflow-y-auto px-4 py-12"
     >
-      <p-progressSpinner ariaLabel="Loading notifications" styleClass="h-8 w-8" />
+      <p-progress-spinner ariaLabel="Loading notifications" class="!size-8" />
       <p class="text-muted-color m-0 text-sm">Loading notifications...</p>
     </div>
   } @else {
@@ -127,16 +139,20 @@
                     </span>
                   </button>
                   <div class="flex shrink-0 items-center pr-1">
-                    <p-button
-                      icon="pi pi-check"
+                    <button
+                      type="button"
+                      pButton
                       severity="secondary"
                       [text]="true"
                       [rounded]="true"
                       size="small"
+                      [iconOnly]="true"
                       class="opacity-60 transition-opacity group-hover:opacity-100"
-                      ariaLabel="Mark as read"
-                      (onClick)="markAsRead($event, notification)"
-                    />
+                      aria-label="Mark as read"
+                      (click)="markAsRead($event, notification)"
+                    >
+                      <i class="pi pi-check" aria-hidden="true"></i>
+                    </button>
                   </div>
                 </li>
               }
@@ -152,13 +168,18 @@
           </ul>
           @if (canShowMoreUnread()) {
             <div class="flex justify-center px-4 pb-3">
-              <p-button
+              <button
                 type="button"
-                label="Show more"
+                pButton
                 [text]="true"
-                [loading]="isLoadingMoreUnread()"
-                (onClick)="showMoreUnread()"
-              />
+                [disabled]="isLoadingMoreUnread()"
+                (click)="showMoreUnread()"
+              >
+                @if (isLoadingMoreUnread()) {
+                  <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
+                }
+                Show more
+              </button>
             </div>
           }
         </p-tabpanel>
@@ -208,13 +229,18 @@
           </ul>
           @if (canShowMoreRead()) {
             <div class="flex justify-center px-4 pb-3">
-              <p-button
+              <button
                 type="button"
-                label="Show more"
+                pButton
                 [text]="true"
-                [loading]="isLoadingMoreRead()"
-                (onClick)="showMoreRead()"
-              />
+                [disabled]="isLoadingMoreRead()"
+                (click)="showMoreRead()"
+              >
+                @if (isLoadingMoreRead()) {
+                  <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
+                }
+                Show more
+              </button>
             </div>
           }
         </p-tabpanel>

@@ -31,18 +31,29 @@ public class GetUserSessionsHandler(
     var utcNow = DateTime.UtcNow;
     var sessionLifetimeDays = sessionLifetime.SessionLifetimeDays;
 
-    var projected = context.UserSessions
+    var sessions = context.UserSessions
       .AsNoTracking()
-      .WhereActiveSessions(query.Id, utcNow, sessionLifetimeDays)
+      .WhereActiveSessions(query.Id, utcNow, sessionLifetimeDays);
+
+    var grid = await sessions.ToGridResultAsync(query.Grid, cancellationToken: cancellationToken);
+
+    var items = grid.Items
       .Select(x => new AdminUserSessionDto(
         x.Id,
         x.DeviceBrowserLabel,
         x.SignInMethod,
         x.IpAddress,
         x.SignedInAt,
-        x.LastActivityAt));
+        x.LastActivityAt))
+      .ToList();
 
-    var grid = await projected.ToGridResultAsync(query.Grid, cancellationToken: cancellationToken);
-    return Result.Success(grid);
+    return Result.Success(new GridResult<AdminUserSessionDto>
+    {
+      Items = items,
+      TotalCount = grid.TotalCount,
+      Skip = grid.Skip,
+      Take = grid.Take,
+      Sort = grid.Sort
+    });
   }
 }

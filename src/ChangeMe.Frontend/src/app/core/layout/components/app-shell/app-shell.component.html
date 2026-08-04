@@ -32,7 +32,6 @@
       position="left"
       [modal]="true"
       [dismissible]="true"
-      [showCloseIcon]="true"
       header="ChangeMe"
       styleClass="app-shell-drawer !w-[min(100vw,18rem)]"
     >
@@ -49,15 +48,13 @@
       <header
         class="sticky top-0 z-20 flex h-14 shrink-0 items-center gap-2 border-b border-surface-200 bg-surface-0 px-3 dark:border-surface-700 dark:bg-surface-900 md:px-4"
       >
-        <p-button
-          [icon]="
-            isDesktop() && layoutService.$sidebarCollapsed()
-              ? 'pi pi-angle-right'
-              : 'pi pi-bars'
-          "
+        <button
+          type="button"
+          pButton
           [rounded]="true"
           [text]="true"
           severity="secondary"
+          [iconOnly]="true"
           [attr.aria-label]="
             isDesktop()
               ? layoutService.$sidebarCollapsed()
@@ -65,8 +62,17 @@
                 : 'Collapse sidebar'
               : 'Open navigation menu'
           "
-          (onClick)="onMenuToggle()"
-        />
+          (click)="onMenuToggle()"
+        >
+          <i
+            [class]="
+              isDesktop() && layoutService.$sidebarCollapsed()
+                ? 'pi pi-angle-right'
+                : 'pi pi-bars'
+            "
+            aria-hidden="true"
+          ></i>
+        </button>
 
         <span class="text-color truncate text-lg font-semibold md:hidden">
           ChangeMe
@@ -76,41 +82,57 @@
 
         <div class="flex flex-wrap items-center gap-1 sm:gap-2">
           <app-notifications-bell />
-          <p-button
-            [icon]="layoutService.$themeMode() === 'dark' ? 'pi pi-sun' : 'pi pi-moon'"
+          <button
+            type="button"
+            pButton
             [rounded]="true"
             [text]="true"
             severity="secondary"
+            [iconOnly]="true"
             [attr.aria-label]="
               layoutService.$themeMode() === 'dark'
                 ? 'Switch to light mode'
                 : 'Switch to dark mode'
             "
-            (onClick)="layoutService.toggleTheme()"
-          />
+            (click)="layoutService.toggleTheme()"
+          >
+            <i
+              [class]="
+                layoutService.$themeMode() === 'dark' ? 'pi pi-sun' : 'pi pi-moon'
+              "
+              aria-hidden="true"
+            ></i>
+          </button>
           <span
             class="text-muted-color hidden max-w-[12rem] truncate text-sm lg:inline"
           >
             {{ formatUserReference(currentUser()!) }}
           </span>
-          <p-button
-            label="Logout"
-            icon="pi pi-sign-out"
+          <button
+            type="button"
+            pButton
             severity="secondary"
             [outlined]="true"
             size="small"
             class="hidden sm:inline-flex"
-            (onClick)="logout()"
-          />
-          <p-button
-            icon="pi pi-sign-out"
+            (click)="logout()"
+          >
+            <i class="pi pi-sign-out" aria-hidden="true"></i>
+            Logout
+          </button>
+          <button
+            type="button"
+            pButton
             severity="secondary"
             [rounded]="true"
             [text]="true"
+            [iconOnly]="true"
             class="sm:hidden"
-            ariaLabel="Logout"
-            (onClick)="logout()"
-          />
+            aria-label="Logout"
+            (click)="logout()"
+          >
+            <i class="pi pi-sign-out" aria-hidden="true"></i>
+          </button>
         </div>
       </header>
     } @else {
@@ -122,19 +144,28 @@
           ChangeMe
         </span>
         <nav class="flex items-center gap-2" aria-label="Account navigation">
-          <p-button
-            [icon]="layoutService.$themeMode() === 'dark' ? 'pi pi-sun' : 'pi pi-moon'"
+          <button
+            type="button"
+            pButton
             [rounded]="true"
             [text]="true"
             severity="secondary"
+            [iconOnly]="true"
             [attr.aria-label]="
               layoutService.$themeMode() === 'dark'
                 ? 'Switch to light mode'
                 : 'Switch to dark mode'
             "
-            (onClick)="layoutService.toggleTheme()"
-          />
-          <p-button label="Login" [text]="true" [routerLink]="['/login']" />
+            (click)="layoutService.toggleTheme()"
+          >
+            <i
+              [class]="
+                layoutService.$themeMode() === 'dark' ? 'pi pi-sun' : 'pi pi-moon'
+              "
+              aria-hidden="true"
+            ></i>
+          </button>
+          <a pButton [text]="true" [routerLink]="['/login']">Login</a>
         </nav>
       </header>
     }

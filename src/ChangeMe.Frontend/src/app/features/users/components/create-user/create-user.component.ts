@@ -19,13 +19,15 @@ import { EffectivePermissionDto } from '@features/users/models/user.model';
 import { UsersService } from '@features/users/services/users.service';
 import { UserConstraints, UserMessages } from '@features/users/utils/users.utils';
 import { BackButtonComponent } from '@shared/components/back-button/back-button.component';
-import { Button } from 'primeng/button';
+import { ButtonDirective } from 'primeng/button';
 import { Card } from 'primeng/card';
+import { IconField } from 'primeng/iconfield';
+import { InputIcon } from 'primeng/inputicon';
+import { InputPassword } from 'primeng/inputpassword';
 import { InputText } from 'primeng/inputtext';
 import { Message } from 'primeng/message';
-import { MultiSelect } from 'primeng/multiselect';
 import { Panel } from 'primeng/panel';
-import { Password } from 'primeng/password';
+import { Select } from 'primeng/select';
 import { catchError, debounceTime, of, startWith, switchMap } from 'rxjs';
 
 @Component({
@@ -35,10 +37,12 @@ import { catchError, debounceTime, of, startWith, switchMap } from 'rxjs';
     RouterLink,
     BackButtonComponent,
     Card,
-    Button,
+    ButtonDirective,
+    IconField,
+    InputIcon,
+    InputPassword,
     InputText,
-    Password,
-    MultiSelect,
+    Select,
     Message,
     Panel,
     EffectivePermissionsComponent
@@ -57,6 +61,8 @@ export class CreateUserComponent {
   readonly submitError = signal<string | null>(null);
   readonly isSubmitting = signal(false);
   readonly isLoadingRoles = signal(true);
+  passwordMasked = true;
+  confirmPasswordMasked = true;
 
   readonly form = new FormGroup(
     {
@@ -165,10 +171,6 @@ export class CreateUserComponent {
           this.isSubmitting.set(false);
         }
       });
-  }
-
-  roleLabel(role: { name: string; isSystem: boolean }): string {
-    return role.isSystem ? `${role.name} (System)` : role.name;
   }
 
   shouldShowError(control: FormControl<string | string[]>): boolean {

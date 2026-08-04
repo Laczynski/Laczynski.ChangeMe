@@ -1,11 +1,11 @@
 import { booleanAttribute, Component, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { Button } from 'primeng/button';
+import { ButtonDirective } from 'primeng/button';
 
 @Component({
   selector: 'app-auth-page',
   host: { class: 'flex min-h-0 flex-1 flex-col' },
-  imports: [Button, RouterLink],
+  imports: [ButtonDirective, RouterLink],
   template: `
     <div class="flex flex-1 flex-col items-center justify-center px-4 py-8 md:py-12">
       <div
@@ -34,11 +34,9 @@ import { Button } from 'primeng/button';
               class="text-muted-color m-0 flex flex-wrap items-center justify-center gap-x-1 gap-y-2 text-sm leading-normal"
             >
               <span>{{ footerPrompt() }}</span>
-              <p-button
-                [label]="footerLinkLabel()"
-                [link]="true"
-                [routerLink]="footerRoute()"
-              />
+              <a pButton [link]="true" [routerLink]="footerRoute()">
+                {{ footerLinkLabel() }}
+              </a>
             </p>
           </div>
         }

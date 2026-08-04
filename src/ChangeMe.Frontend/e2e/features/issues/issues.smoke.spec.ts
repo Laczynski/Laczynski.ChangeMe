@@ -31,7 +31,7 @@ test.describe('issues smoke', () => {
     const issueTitle = e2eTitle('issues-create');
 
     await gotoIssuesList(page);
-    await page.getByRole('button', { name: 'Add issue' }).click();
+    await page.getByRole('link', { name: 'Add issue' }).click();
     await expect(
       page.getByText('Create a new issue and move to its details page after saving')
     ).toBeVisible();

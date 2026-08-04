@@ -31,15 +31,31 @@
 
     <div class="flex flex-col gap-1.5">
       <label class="text-color text-sm font-medium" for="password">Password</label>
-      <p-password
-        inputId="password"
-        autocomplete="current-password"
-        [formControl]="form.controls.password"
-        [feedback]="false"
-        [toggleMask]="true"
-        fluid
-        [invalid]="form.controls.password.touched && form.controls.password.errors"
-      />
+      <p-iconfield iconPosition="right">
+        <input
+          id="password"
+          pInputText
+          pInputPassword
+          [(mask)]="passwordMasked"
+          autocomplete="current-password"
+          [formControl]="form.controls.password"
+          [fluid]="true"
+          [invalid]="form.controls.password.touched && form.controls.password.errors"
+        />
+        <p-inputicon>
+          <button
+            type="button"
+            class="text-muted-color hover:text-color border-0 bg-transparent p-0"
+            [attr.aria-label]="passwordMasked ? 'Show password' : 'Hide password'"
+            (click)="passwordMasked = !passwordMasked"
+          >
+            <i
+              [class]="passwordMasked ? 'pi pi-eye' : 'pi pi-eye-slash'"
+              aria-hidden="true"
+            ></i>
+          </button>
+        </p-inputicon>
+      </p-iconfield>
       @if (
         form.controls.password.touched && form.controls.password.errors?.['required']
       ) {
@@ -67,12 +83,13 @@
       <p-message severity="error">{{ errorMessage() }}</p-message>
     }
 
-    <p-button
-      type="submit"
-      [label]="isSubmitting() ? 'Signing in...' : 'Sign in'"
-      icon="pi pi-sign-in"
-      [loading]="isSubmitting()"
-      styleClass="w-full"
-    />
+    <button type="submit" pButton [fluid]="true" [disabled]="isSubmitting()">
+      @if (isSubmitting()) {
+        <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
+      } @else {
+        <i class="pi pi-sign-in" aria-hidden="true"></i>
+      }
+      {{ isSubmitting() ? 'Signing in...' : 'Sign in' }}
+    </button>
   </form>
 </app-auth-page>

@@ -56,7 +56,7 @@ This codebase gives you:
 
 ## Tech Stack
 
-- Frontend: Angular 21, TypeScript, RxJS
+- Frontend: Angular 22, TypeScript, RxJS
 - Backend: ASP.NET Core, FastEndpoints, Mediator source generator use case flow
 - Database: PostgreSQL
 - Background jobs: Hangfire

@@ -1,19 +1,22 @@
 import { Component, inject, input } from '@angular/core';
 import { Router } from '@angular/router';
-import { Button } from 'primeng/button';
+import { ButtonDirective } from 'primeng/button';
 
 @Component({
   selector: 'app-back-button',
-  imports: [Button],
+  imports: [ButtonDirective],
   template: `
-    <p-button
-      [label]="label()"
+    <button
+      type="button"
+      pButton
       size="small"
-      icon="pi pi-arrow-left"
       severity="secondary"
       [outlined]="true"
-      (onClick)="onBack()"
-    />
+      (click)="onBack()"
+    >
+      <i class="pi pi-arrow-left" aria-hidden="true"></i>
+      {{ label() }}
+    </button>
   `
 })
 export class BackButtonComponent {

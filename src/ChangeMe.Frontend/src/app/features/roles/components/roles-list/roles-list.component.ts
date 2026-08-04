@@ -27,7 +27,7 @@ import {
 import { PermissionCodes } from '@shared/authorization/permission-codes';
 import { getGridListEmptyMessage } from '@shared/data/utils/grid.utils';
 import { ConfirmationService, MenuItem } from 'primeng/api';
-import { Button } from 'primeng/button';
+import { ButtonDirective } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { Menu } from 'primeng/menu';
 import { Message } from 'primeng/message';
@@ -39,7 +39,7 @@ import { Tooltip } from 'primeng/tooltip';
   imports: [
     RouterLink,
     Card,
-    Button,
+    ButtonDirective,
     Message,
     Tag,
     Menu,

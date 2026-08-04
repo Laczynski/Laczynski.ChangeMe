@@ -2,10 +2,10 @@
   @if (loadError()) {
     <p-message severity="error">{{ loadError() }}</p-message>
   } @else if (isLoadingHistory()) {
-    <p-progressSpinner ariaLabel="Loading history" styleClass="h-8 w-8" />
+    <p-progress-spinner ariaLabel="Loading history" class="!size-8" />
   } @else if (historyEntries().length > 0) {
     <p-timeline [value]="historyEntries()" align="left" class="issue-history-timeline">
-      <ng-template pTemplate="marker" let-event>
+      <ng-template #marker let-event>
         <span
           class="flex h-8 w-8 items-center justify-center rounded-full"
           [ngClass]="getIssueHistoryEventVisual(event.eventType).markerClass"
@@ -17,7 +17,7 @@
           ></i>
         </span>
       </ng-template>
-      <ng-template pTemplate="content" let-event>
+      <ng-template #content let-event>
         <div class="flex flex-col gap-2 pb-4">
           <p-tag
             class="justify-start"
@@ -56,12 +56,18 @@
 
   @if (canShowMoreHistory()) {
     <div class="mt-4 flex justify-center">
-      <p-button
-        label="Show more"
+      <button
+        type="button"
+        pButton
         [text]="true"
-        [loading]="isLoadingMoreHistory()"
-        (onClick)="showMoreHistory()"
-      />
+        [disabled]="isLoadingMoreHistory()"
+        (click)="showMoreHistory()"
+      >
+        @if (isLoadingMoreHistory()) {
+          <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
+        }
+        Show more
+      </button>
     </div>
   }
 </div>

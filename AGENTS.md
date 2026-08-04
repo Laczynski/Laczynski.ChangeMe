@@ -4,7 +4,7 @@
 
 ## Repository shape
 
-- `src/ChangeMe.Frontend` - Angular 21 frontend.
+- `src/ChangeMe.Frontend` - Angular 22 frontend.
 - `src/ChangeMe.Backend` - .NET backend solution.
 - `docker-compose.yml` - local full-stack environment with frontend, backend, PostgreSQL, and MailHog.
 - `docs/` - guides, technical, and requirements (`docs/README.md` for the full index).

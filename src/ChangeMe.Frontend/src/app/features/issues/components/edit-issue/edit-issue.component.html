@@ -11,21 +11,28 @@
 
   @if (isLoadingIssue()) {
     <div class="flex flex-col items-center gap-2 py-8">
-      <p-progressSpinner ariaLabel="Loading issue form" />
+      <p-progress-spinner ariaLabel="Loading issue form" />
       <p class="text-muted-color m-0 text-sm">Loading issue data...</p>
     </div>
   } @else if (loadError()) {
     <div class="flex flex-col items-center gap-2">
       <p-message severity="error">{{ loadError() }}</p-message>
-      <p-button
+      <button
+        type="button"
+        pButton
         size="small"
-        label="Try again"
-        icon="pi pi-refresh"
         severity="secondary"
         [outlined]="true"
-        [loading]="isLoadingIssue()"
-        (onClick)="refresh()"
-      />
+        [disabled]="isLoadingIssue()"
+        (click)="refresh()"
+      >
+        @if (isLoadingIssue()) {
+          <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
+        } @else {
+          <i class="pi pi-refresh" aria-hidden="true"></i>
+        }
+        Try again
+      </button>
     </div>
   } @else if (issue(); as currentIssue) {
     <dl
@@ -161,15 +168,17 @@
             <div class="p-4">
               <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
                 <span class="font-medium">Criterion {{ $index + 1 }}</span>
-                <p-button
+                <button
                   type="button"
-                  label="Remove"
-                  icon="pi pi-trash"
+                  pButton
                   severity="danger"
                   [outlined]="true"
                   size="small"
-                  (onClick)="removeAcceptanceCriterion($index)"
-                />
+                  (click)="removeAcceptanceCriterion($index)"
+                >
+                  <i class="pi pi-trash" aria-hidden="true"></i>
+                  Remove
+                </button>
               </div>
               <div class="flex flex-col gap-1.5">
                 <label class="sr-only" [for]="'acceptance-criterion-' + $index">
@@ -209,14 +218,16 @@
         </div>
 
         <div class="mt-4">
-          <p-button
+          <button
             type="button"
-            label="Add acceptance criterion"
-            icon="pi pi-plus"
+            pButton
             severity="secondary"
             [outlined]="true"
-            (onClick)="addAcceptanceCriterion()"
-          />
+            (click)="addAcceptanceCriterion()"
+          >
+            <i class="pi pi-plus" aria-hidden="true"></i>
+            Add acceptance criterion
+          </button>
         </div>
       </p-panel>
 
@@ -225,18 +236,23 @@
       }
 
       <div class="flex flex-wrap items-center justify-end gap-2">
-        <p-button
-          label="Cancel"
+        <button
+          type="button"
+          pButton
           severity="secondary"
           [outlined]="true"
-          (onClick)="cancel()"
-        />
-        <p-button
-          type="submit"
-          [label]="isSubmitting() ? 'Saving changes...' : 'Save changes'"
-          icon="pi pi-check"
-          [loading]="isSubmitting()"
-        />
+          (click)="cancel()"
+        >
+          Cancel
+        </button>
+        <button type="submit" pButton [disabled]="isSubmitting()">
+          @if (isSubmitting()) {
+            <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
+          } @else {
+            <i class="pi pi-check" aria-hidden="true"></i>
+          }
+          {{ isSubmitting() ? 'Saving changes...' : 'Save changes' }}
+        </button>
       </div>
     </form>
   }

@@ -5,9 +5,4 @@ export const ToastConfig = {
 } as const;
 
 export type ToastSeverity =
-  | 'success'
-  | 'info'
-  | 'warn'
-  | 'error'
-  | 'secondary'
-  | 'contrast';
+  'success' | 'info' | 'warn' | 'error' | 'secondary' | 'contrast';

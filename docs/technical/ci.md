@@ -32,7 +32,7 @@ npm run requirements:validate
 
 ### Frontend
 
-- Node.js **24**
+- Node.js **24.15** (Angular 22 CLI minimum; see `engines` in `src/ChangeMe.Frontend/package.json`)
 - ESLint and Prettier checks, then tests run once (no watch), then production **build**
 - Local equivalents: `npm run lint:frontend`, `npm run format:check:frontend`
 
@@ -44,7 +44,7 @@ npm run requirements:validate
 
 ### E2E
 
-- Node.js **24** and .NET **10** (same as Frontend / Backend jobs).
+- Node.js **24.15** (Angular 22 CLI minimum; see `engines` in `src/ChangeMe.Frontend/package.json`) and .NET **10** (same as Frontend / Backend jobs).
 - **PostgreSQL 18** service container on the runner (`localhost:5432`).
 - Playwright starts the backend and frontend dev servers, then runs the smoke suite in `src/ChangeMe.Frontend/e2e/features/`. The E2E job also starts a **MailHog** service on port `1025` (SMTP) so user-invitation flows can send mail.
 - Reproduce locally: run `npm run install:frontend` once (Chromium), PostgreSQL on `localhost`, Docker available for MailHog, then `npm run test:e2e` from the repository root (see `AGENTS.md`).

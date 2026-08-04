@@ -1,23 +1,31 @@
 import { Component, inject, viewChild } from '@angular/core';
 import { NotificationsPanelComponent } from '@features/notifications/components/notifications-panel/notifications-panel.component';
 import { NotificationsService } from '@features/notifications/services/notifications.service';
-import { Button } from 'primeng/button';
+import { ButtonDirective } from 'primeng/button';
+import { OverlayBadge } from 'primeng/overlaybadge';
 import { Popover } from 'primeng/popover';
 
 @Component({
   selector: 'app-notifications-bell',
-  imports: [Button, Popover, NotificationsPanelComponent],
+  imports: [ButtonDirective, OverlayBadge, Popover, NotificationsPanelComponent],
   template: `
-    <p-button
-      icon="pi pi-bell"
-      [rounded]="true"
-      [text]="true"
-      severity="secondary"
-      ariaLabel="Notifications"
-      [badge]="unreadCount() > 0 ? unreadCount().toString() : undefined"
-      badgeSeverity="danger"
-      (onClick)="togglePanel($event)"
-    />
+    <p-overlay-badge
+      [value]="unreadCount() > 0 ? unreadCount() : null"
+      severity="danger"
+    >
+      <button
+        type="button"
+        pButton
+        [rounded]="true"
+        [text]="true"
+        severity="secondary"
+        [iconOnly]="true"
+        aria-label="Notifications"
+        (click)="togglePanel($event)"
+      >
+        <i class="pi pi-bell" aria-hidden="true"></i>
+      </button>
+    </p-overlay-badge>
     <p-popover #popover [dismissable]="true" contentStyleClass="!p-0 overflow-hidden">
       <ng-template #content>
         <app-notifications-panel (closed)="hidePanel()" />
@@ -35,7 +43,7 @@ export class NotificationsBellComponent {
   togglePanel(event: Event): void {
     const popover = this.popover();
 
-    if (popover.overlayVisible) {
+    if (popover.overlayVisible()) {
       popover.hide();
       return;
     }

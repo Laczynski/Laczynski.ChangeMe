@@ -15,14 +15,20 @@
       @if (selectedFile(); as file) {
         <span class="text-muted-color text-sm">{{ file.name }}</span>
       }
-      <p-button
-        label="Upload"
-        icon="pi pi-cloud-upload"
+      <button
+        type="button"
+        pButton
         size="small"
-        [loading]="isUploading()"
         [disabled]="!selectedFile() || isUploading()"
-        (onClick)="uploadAttachment()"
-      />
+        (click)="uploadAttachment()"
+      >
+        @if (isUploading()) {
+          <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
+        } @else {
+          <i class="pi pi-cloud-upload" aria-hidden="true"></i>
+        }
+        Upload
+      </button>
     </div>
     <p class="text-muted-color m-0 text-sm">
       Max {{ formatFileSize(IssueConstraints.ATTACHMENT_MAX_FILE_SIZE_BYTES) }} per
@@ -37,7 +43,7 @@
   @if (loadError()) {
     <p-message severity="error">{{ loadError() }}</p-message>
   } @else if (isLoadingAttachments()) {
-    <p-progressSpinner ariaLabel="Loading attachments" styleClass="h-8 w-8" />
+    <p-progress-spinner ariaLabel="Loading attachments" class="!size-8" />
   } @else if (attachments().length > 0) {
     <ul class="m-0 flex list-none flex-col gap-3 p-0">
       @for (attachment of attachments(); track attachment.id) {
@@ -55,25 +61,39 @@
             </p>
           </div>
           <div class="flex flex-wrap items-center gap-2">
-            <p-button
-              label="Download"
-              icon="pi pi-download"
+            <button
+              type="button"
+              pButton
               size="small"
               severity="secondary"
               [outlined]="true"
-              [loading]="downloadingAttachmentId() === attachment.id"
-              (onClick)="downloadAttachment(attachment)"
-            />
+              [disabled]="downloadingAttachmentId() === attachment.id"
+              (click)="downloadAttachment(attachment)"
+            >
+              @if (downloadingAttachmentId() === attachment.id) {
+                <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
+              } @else {
+                <i class="pi pi-download" aria-hidden="true"></i>
+              }
+              Download
+            </button>
             @if (attachment.canDelete) {
-              <p-button
-                label="Delete"
-                icon="pi pi-trash"
+              <button
+                type="button"
+                pButton
                 size="small"
                 severity="danger"
                 [outlined]="true"
-                [loading]="deletingAttachmentId() === attachment.id"
-                (onClick)="confirmDeleteAttachment(attachment)"
-              />
+                [disabled]="deletingAttachmentId() === attachment.id"
+                (click)="confirmDeleteAttachment(attachment)"
+              >
+                @if (deletingAttachmentId() === attachment.id) {
+                  <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
+                } @else {
+                  <i class="pi pi-trash" aria-hidden="true"></i>
+                }
+                Delete
+              </button>
             }
           </div>
         </li>
@@ -85,12 +105,18 @@
 
   @if (canShowMoreAttachments()) {
     <div class="flex justify-center">
-      <p-button
-        label="Show more"
+      <button
+        type="button"
+        pButton
         [text]="true"
-        [loading]="isLoadingMoreAttachments()"
-        (onClick)="showMoreAttachments()"
-      />
+        [disabled]="isLoadingMoreAttachments()"
+        (click)="showMoreAttachments()"
+      >
+        @if (isLoadingMoreAttachments()) {
+          <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
+        }
+        Show more
+      </button>
     </div>
   }
 </div>

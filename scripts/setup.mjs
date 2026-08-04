@@ -4,13 +4,32 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
-const shell = process.platform === "win32";
+
+function spawnCommand(command, args, options = {}) {
+  if (
+    process.platform === "win32" &&
+    (command === "npm" || command === "npx")
+  ) {
+    return spawnSync(
+      "cmd.exe",
+      ["/d", "/s", "/c", [command, ...args].join(" ")],
+      {
+        ...options,
+        shell: false,
+      },
+    );
+  }
+
+  return spawnSync(command, args, {
+    ...options,
+    shell: false,
+  });
+}
 
 function run(command, args) {
-  const result = spawnSync(command, args, {
+  const result = spawnCommand(command, args, {
     cwd: root,
     stdio: "inherit",
-    shell,
   });
 
   if (result.status !== 0) {
@@ -19,10 +38,9 @@ function run(command, args) {
 }
 
 function checkPrerequisite(command, args, label) {
-  const result = spawnSync(command, args, {
+  const result = spawnCommand(command, args, {
     cwd: root,
     encoding: "utf8",
-    shell,
   });
 
   if (result.status !== 0) {
@@ -39,13 +57,12 @@ console.log("ChangeMe setup\n");
 checkPrerequisite("node", ["--version"], "Node.js");
 checkPrerequisite("dotnet", ["--version"], ".NET SDK");
 
-const dockerCheck = spawnSync(
+const dockerCheck = spawnCommand(
   "docker",
   ["version", "--format", "{{.Server.Version}}"],
   {
     cwd: root,
     encoding: "utf8",
-    shell,
   },
 );
 
