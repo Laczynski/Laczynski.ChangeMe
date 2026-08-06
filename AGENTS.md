@@ -82,12 +82,12 @@ Configuration in containers: `appsettings.json` + `appsettings.Development.json`
 
 ### Backend
 
-- HTTP endpoints live in `src/ChangeMe.Backend.Web`.
-- Query and command contracts live in `src/ChangeMe.Backend.UseCases/<Feature>/`.
-- Keep only `*Query.cs` and `*Command.cs` files at the top level of each `UseCases` feature folder.
-- Place feature DTOs in `src/ChangeMe.Backend.UseCases/<Feature>/Dtos/`.
-- Place shared handler helpers in `src/ChangeMe.Backend.UseCases/<Feature>/Utils/` (for example `RolesUtils.cs`).
-- Place feature services in `src/ChangeMe.Backend.UseCases/<Feature>/Services/`.
+- HTTP endpoints live in `src/ChangeMe.Backend.Web/Endpoints/<Feature>/` (nested routes in sub-slices, for example `Endpoints/Issues/Attachments/`).
+- Query and command contracts live in `src/ChangeMe.Backend.UseCases/<Feature>/` (nested routes in sub-slices, for example `UseCases/Issues/Attachments/`).
+- Keep only `*Query.cs` and `*Command.cs` files at the top level of each `UseCases` feature folder (root resource operations).
+- Place shared DTOs in `src/ChangeMe.Backend.UseCases/<Feature>/Dtos/`; sub-slice-only DTOs in `UseCases/<Feature>/<ChildResource>/Dtos/`.
+- Place shared handler helpers in `src/ChangeMe.Backend.UseCases/<Feature>/Utils/`; sub-slice-only helpers in `UseCases/<Feature>/<ChildResource>/Utils/`.
+- Place shared feature services in `src/ChangeMe.Backend.UseCases/<Feature>/Services/`; sub-slice-only services in `UseCases/<Feature>/<ChildResource>/Services/`.
 - Handlers still live with their matching command or query file.
 - Domain rules and aggregates live in `src/ChangeMe.Backend.Domain`.
 - EF Core, persistence, auth, and adapters live in `src/ChangeMe.Backend.Infrastructure`.

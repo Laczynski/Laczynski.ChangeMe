@@ -23,7 +23,7 @@ Automated tests do **not** use `ChangeMe.Backend.DataGenerator` — they seed vi
 | Frontend unit / component | Client logic, forms, guards, UI state, service orchestration (mocked `ApiService`)     | Server rules already proven through HTTP             |
 | E2E                       | Multi-screen user journeys, session/cookies, SignalR                                   | Per-field API validation, exhaustive CRUD per screen |
 
-Colocate frontend specs as `*.spec.ts` next to the source. Integration tests: `src/ChangeMe.Backend/tests/ChangeMe.Backend.IntegrationTests/Endpoints/<Feature>/`.
+Colocate frontend specs as `*.spec.ts` next to the source. Integration tests: `src/ChangeMe.Backend/tests/ChangeMe.Backend.IntegrationTests/Endpoints/<Feature>/` (use sub-slices for nested routes, for example `Issues/Attachments/`).
 
 ## Mapping STD-\* to test layers
 

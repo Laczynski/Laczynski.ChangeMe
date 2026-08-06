@@ -53,14 +53,16 @@ Each current feature follows a simple slice structure:
 
 - `src/ChangeMe.Backend.Web`
   - ASP.NET host startup in `Program.cs`
-  - endpoint definitions
+  - REST endpoint definitions under `Endpoints/<Feature>/` (sub-slices for nested routes, for example `Issues/Attachments/`)
+  - SignalR hubs and other non-REST transport outside `Endpoints/`
   - transport-level configuration
   - common endpoint base types and pipeline behavior (`BaseEndpoint`, `BaseEndpointWithoutRequest`, `ResultHttpMapper`, `HttpContextResultExtensions`)
 - `src/ChangeMe.Backend.UseCases`
-  - top level of each feature folder contains only command and query files
+  - top level of each feature folder contains only root-resource command and query files
+  - nested routes use sub-slice folders (for example `Issues/Attachments/`, `Users/Sessions/`)
   - handlers stay in the same files as their commands and queries
-  - `Dtos/` contains API-facing DTOs for the feature
-  - `Services/` contains feature-scoped orchestration services
+  - `Dtos/`, `Utils/`, and `Services/` at the feature root are for types and helpers shared across the root resource and sub-slices
+  - sub-slice-only `Dtos/`, `Utils/`, and `Services/` live under the matching `<ChildResource>/` folder
   - request/response orchestration
 - `src/ChangeMe.Backend.Domain`
   - aggregates and entities
@@ -79,9 +81,9 @@ Each current feature follows a simple slice structure:
 
 Current issue endpoints illustrate the standard flow:
 
-1. HTTP endpoint class in `Web/Issues/*.cs`
+1. HTTP endpoint class in `Web/Endpoints/Issues/*.cs` (nested routes in `Web/Endpoints/Issues/<ChildResource>/`)
 2. validation class near the endpoint
-3. command/query contract in `UseCases/Issues/*.cs`
+3. command/query contract in `UseCases/Issues/*.cs` (or `UseCases/Issues/<ChildResource>/`)
 4. handler in the same command/query file
 5. domain calls in `Domain/Aggregates/*`
 6. persistence through `ApplicationDbContext`
@@ -90,7 +92,7 @@ Current issue endpoints illustrate the standard flow:
 
 - `src/ChangeMe.Backend/tests/ChangeMe.Backend.UnitTests` — domain and infrastructure helper tests
 - `src/ChangeMe.Backend/tests/ChangeMe.Backend.IntegrationTests` — endpoint-level tests through real HTTP
-  - `Endpoints/<Feature>/` — one test class per endpoint area
+  - `Endpoints/<Feature>/` — one test class per endpoint area (use sub-slices for nested routes, for example `Issues/Attachments/`)
   - `Fixtures/` — `BackendWebApplicationFactory` and feature-specific factories
   - `Support/` — `TestAuthHelper` (register + authenticate via real API calls), `IssueTestHelper`, and other feature helpers
 - `src/ChangeMe.Frontend` — Vitest unit/component specs colocated as `*.spec.ts`; E2E suite in `e2e/features/` (see [e2e-guidelines.md](e2e-guidelines.md))

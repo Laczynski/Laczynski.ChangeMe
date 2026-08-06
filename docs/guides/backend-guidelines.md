@@ -16,7 +16,9 @@ For build, run, and test commands from `src/ChangeMe.Backend` or from the reposi
 
 - Owns application startup in `Program.cs`.
 - Startup registrations and middleware for one concern should be grouped in `Web/Configurations/*Config.cs` extension methods rather than added inline in `Program.cs`.
-- Owns HTTP endpoint declarations.
+- Owns HTTP endpoint declarations under `Web/Endpoints/<Feature>/`.
+- For nested routes (child resources under a parent ID), add a sub-slice folder: `Web/Endpoints/<Feature>/<ChildResource>/` — for example `Issues/Attachments/`, `Users/Sessions/`, `Roles/Users/`.
+- SignalR hubs and other non-REST transport stay outside `Endpoints/` (for example `Web/Notifications/NotificationHub.cs`).
 - Owns API-facing validation classes placed next to endpoint definitions.
 - Owns endpoint base behavior: JWT auth defaults, `Result<T>` serialization, and HTTP status mapping through `Web/Common/` (`BaseEndpoint.cs`, `BaseEndpointWithoutRequest.cs`, `ResultHttpMapper.cs`, `HttpContextResultExtensions.cs`).
 
@@ -25,10 +27,13 @@ For build, run, and test commands from `src/ChangeMe.Backend` or from the reposi
 - Owns commands, queries, handlers, API DTOs, and feature-scoped orchestration services.
 - Orchestrates domain operations and infrastructure dependencies.
 - Should not duplicate domain invariants that already belong in aggregates.
-- Keep only `*Command.cs` and `*Query.cs` files at the top level of each feature folder.
-- Place feature DTOs under `UseCases/<Feature>/Dtos/`.
-- Place shared handler helpers (messages, validation, mapping, light EF queries) under `UseCases/<Feature>/Utils/` as `*Utils.cs` static classes — mirror the frontend `utils/<feature>.utils.ts` convention.
-- Place feature services under `UseCases/<Feature>/Services/` for orchestration with side effects (for example notifications).
+- Keep only `*Command.cs` and `*Query.cs` files at the top level of each feature folder (root resource operations).
+- For nested routes, mirror the Web sub-slice under `UseCases/<Feature>/<ChildResource>/` — for example `Issues/Attachments/`, `Users/Sessions/`, `Roles/Users/`.
+- Place DTOs shared by the root resource and multiple sub-slices under `UseCases/<Feature>/Dtos/`.
+- Place DTOs used only by one sub-slice under `UseCases/<Feature>/<ChildResource>/Dtos/`.
+- Place shared handler helpers under `UseCases/<Feature>/Utils/` as `*Utils.cs` static classes — mirror the frontend `utils/<feature>.utils.ts` convention.
+- Place helpers used only by one sub-slice under `UseCases/<Feature>/<ChildResource>/Utils/`.
+- Place feature services under `UseCases/<Feature>/Services/` for orchestration shared across the feature; sub-slice-only services go under `UseCases/<Feature>/<ChildResource>/Services/`.
 
 ### Domain
 
@@ -42,14 +47,35 @@ For build, run, and test commands from `src/ChangeMe.Backend` or from the reposi
 
 ## Standard path for a new endpoint
 
-1. Add or extend the endpoint in `Web/<Feature>/`.
+1. Add or extend the endpoint in `Web/Endpoints/<Feature>/` (or `Web/Endpoints/<Feature>/<ChildResource>/` for nested routes).
 2. Add or update the validator in the same file if the request shape changes.
-3. Add or update the command/query and handler in `UseCases/<Feature>/`.
-4. Add or update feature DTOs in `UseCases/<Feature>/Dtos/` when the API contract changes.
-5. Add or update feature services in `UseCases/<Feature>/Services/` when orchestration is shared.
+3. Add or update the command/query and handler in the matching `UseCases/<Feature>/` folder (use a sub-slice when the route is nested).
+4. Add or update DTOs in `UseCases/<Feature>/Dtos/` when shared, or in `UseCases/<Feature>/<ChildResource>/Dtos/` when sub-slice-specific.
+5. Add or update services in `UseCases/<Feature>/Services/` when shared, or in `UseCases/<Feature>/<ChildResource>/Services/` when sub-slice-specific.
 6. Reuse or extend domain methods in `Domain/`.
 7. Update EF configuration or migrations in `Infrastructure/` if persistence changes.
 8. Add or update integration tests when the endpoint or persistence changes ([testing-guidelines.md](testing-guidelines.md)).
+
+## Feature and sub-slice layout
+
+```
+Web/Endpoints/<Feature>/              UseCases/<Feature>/
+├── CreateX.cs                        ├── CreateXCommand.cs
+├── GetXById.cs                       ├── GetXByIdQuery.cs
+├── Dtos/                             ├── Dtos/              ← shared across feature
+├── Utils/                            ├── Utils/
+└── <ChildResource>/                  └── <ChildResource>/
+    ├── GetXChildItems.cs                 ├── GetXChildItemsQuery.cs
+    ├── DeleteXChildItem.cs               ├── DeleteXChildItemCommand.cs
+    ├── Dtos/                             ├── Dtos/          ← sub-slice only
+    └── Utils/                            └── Utils/
+```
+
+Use a sub-slice when the route nests under a parent resource — for example `/issues/{issueId}/attachments/{attachmentId}` maps to `Issues/Attachments/`. Root CRUD for the aggregate stays at the feature root. Namespace follows the folder path (for example `ChangeMe.Backend.Web.Endpoints.Issues.Attachments`, `ChangeMe.Backend.UseCases.Issues.Attachments.Dtos`).
+
+Keep `Dtos/`, `Utils/`, and `Services/` at the feature root only when they are shared by the root resource and sub-slices. When a type or helper belongs to a single child resource, colocate it under that sub-slice folder.
+
+Reference implementations: `Issues/Attachments/` (list, upload, download, two-ID delete), `Issues/Comments/`, `Users/Sessions/`, `Roles/Users/`, `Auth/Sessions/`.
 
 ## Endpoint conventions
 
@@ -115,7 +141,7 @@ Infrastructure services (e.g. `UserAuthTokenService`) **stage** EF changes only 
 
 ## Tests
 
-Layer ownership, anti-patterns, and when to skip: [testing-guidelines.md](testing-guidelines.md). Integration tests: `src/ChangeMe.Backend/tests/ChangeMe.Backend.IntegrationTests/Endpoints/<Feature>/`.
+Layer ownership, anti-patterns, and when to skip: [testing-guidelines.md](testing-guidelines.md). Integration tests: `src/ChangeMe.Backend/tests/ChangeMe.Backend.IntegrationTests/Endpoints/<Feature>/` (sub-slices for nested routes).
 
 ## Guardrails for AI agents
 

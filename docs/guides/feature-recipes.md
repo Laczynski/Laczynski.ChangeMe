@@ -6,13 +6,13 @@
 
 ## Add a backend endpoint
 
-1. Create or update the endpoint in `src/ChangeMe.Backend.Web/<Feature>/`.
+1. Create or update the endpoint in `src/ChangeMe.Backend.Web/Endpoints/<Feature>/` (use `<Feature>/<ChildResource>/` for nested routes — see **Feature and sub-slice layout** in [backend-guidelines.md](backend-guidelines.md)).
 2. Pick the endpoint base type (see **Endpoint conventions** in [backend-guidelines.md](backend-guidelines.md)):
    - `BaseEndpoint<TRequest, TResponse>` when FastEndpoints should bind body, query, or route into `TRequest`
    - `BaseEndpointWithoutRequest<TRequest, TResponse>` when there is no HTTP payload (use a parameterless `record` for `TRequest`)
    - a custom `Endpoint` / `EndpointWithoutRequest` only for multipart upload, binary download, or other non-standard responses
 3. Add or update the validator in the same file when the request DTO needs validation.
-4. Add the request contract and handler in `src/ChangeMe.Backend.UseCases/<Feature>/`.
+4. Add the request contract and handler in the matching `src/ChangeMe.Backend.UseCases/<Feature>/` folder (sub-slice when nested).
 5. Reuse domain behavior or add it in `Domain` if new invariants are introduced.
 6. Add integration tests under `tests/ChangeMe.Backend.IntegrationTests/Endpoints/<Feature>/`.
 
@@ -75,8 +75,8 @@ Use the **Issues attachments** slice as the template for new file features. Shar
    - `SaveChanges` once (metadata + history/notifications)
    - on failure before `SaveChanges`, delete the stored file only; if `SaveChanges` fails after a successful storage write, EF rolls back metadata and **`AttachmentStorageCleanupJob`** removes the orphaned file on the next run
 5. Reuse `AttachmentStorageCleanupJob` (Hangfire): orphaned stored files with no matching metadata row for all attachment types.
-6. Add list/upload/download/delete use cases in `UseCases/<Feature>/`.
-7. Add endpoints in `Web/<Feature>/`:
+6. Add list/upload/download/delete use cases in `UseCases/<Feature>/<ChildResource>/` (or at the feature root when not nested). Colocate sub-slice DTOs and utils under `<ChildResource>/Dtos/` and `<ChildResource>/Utils/` when they are not shared with the parent feature.
+7. Add endpoints in `Web/Endpoints/<Feature>/<ChildResource>/`:
    - JSON list/delete via `BaseEndpoint` (route/query/body binding as needed)
    - parameterless JSON actions via `BaseEndpointWithoutRequest` (e.g. logout, mark-all-read)
    - multipart upload via `Endpoint` + `AllowFileUploads()`; send the handler `Result<T>` with `HttpContext.SendResultAsync`
