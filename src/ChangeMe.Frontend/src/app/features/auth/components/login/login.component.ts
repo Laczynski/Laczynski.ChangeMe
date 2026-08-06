@@ -8,13 +8,18 @@ import {
 import { ActivatedRoute } from '@angular/router';
 import { AuthPageComponent } from '@features/auth/components/auth-page/auth-page.component';
 import { AuthService } from '@features/auth/services/auth.service';
-import { AuthConstraints, AuthMessages } from '@features/auth/utils/auth.utils';
-import { ButtonDirective } from 'primeng/button';
-import { IconField } from 'primeng/iconfield';
-import { InputIcon } from 'primeng/inputicon';
-import { InputPassword } from 'primeng/inputpassword';
-import { InputText } from 'primeng/inputtext';
-import { Message } from 'primeng/message';
+import {
+  AuthConstraints,
+  AuthFieldErrors,
+  AuthMessages
+} from '@features/auth/utils/auth.utils';
+import {
+  ButtonComponent,
+  EmailComponent,
+  MessageBarComponent,
+  PasswordComponent
+} from '@laczynski/ui';
+import { fieldError } from '@shared/forms/field-error';
 
 @Component({
   selector: 'app-login',
@@ -22,12 +27,10 @@ import { Message } from 'primeng/message';
   imports: [
     ReactiveFormsModule,
     AuthPageComponent,
-    ButtonDirective,
-    IconField,
-    InputIcon,
-    InputPassword,
-    InputText,
-    Message
+    ButtonComponent,
+    EmailComponent,
+    PasswordComponent,
+    MessageBarComponent
   ],
   templateUrl: './login.component.html'
 })
@@ -37,8 +40,9 @@ export class LoginComponent {
 
   readonly errorMessage = signal('');
   readonly isSubmitting = signal(false);
-  readonly authConstraints = AuthConstraints;
-  passwordMasked = true;
+  readonly submitted = signal(false);
+  protected readonly fieldError = fieldError;
+  protected readonly AuthFieldErrors = AuthFieldErrors;
 
   readonly form = new FormGroup({
     email: new FormControl('', {
@@ -60,6 +64,8 @@ export class LoginComponent {
   });
 
   onSubmit(): void {
+    this.submitted.set(true);
+
     if (this.form.invalid || this.isSubmitting()) {
       this.form.markAllAsTouched();
       return;

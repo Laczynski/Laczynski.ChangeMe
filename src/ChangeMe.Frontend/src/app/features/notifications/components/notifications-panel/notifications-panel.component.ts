@@ -1,25 +1,29 @@
-import { CommonModule } from '@angular/common';
-import { Component, inject, output, signal } from '@angular/core';
+import { DatePipe } from '@angular/common';
+import { Component, computed, inject, output, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { NotificationDto } from '@features/notifications/models/notification.model';
 import { NotificationsService } from '@features/notifications/services/notifications.service';
-import { ButtonDirective } from 'primeng/button';
-import { Message } from 'primeng/message';
-import { ProgressSpinner } from 'primeng/progressspinner';
-import { Tab, TabList, TabPanel, TabPanels, Tabs } from 'primeng/tabs';
+import {
+  ButtonComponent,
+  IconComponent,
+  MessageBarComponent,
+  SpinnerComponent,
+  TabsComponent,
+  TagComponent,
+  type Tab
+} from '@laczynski/ui';
 
 @Component({
   selector: 'app-notifications-panel',
+  host: { class: 'block' },
   imports: [
-    CommonModule,
-    ButtonDirective,
-    Message,
-    ProgressSpinner,
-    Tabs,
-    TabList,
-    Tab,
-    TabPanels,
-    TabPanel
+    DatePipe,
+    ButtonComponent,
+    IconComponent,
+    MessageBarComponent,
+    SpinnerComponent,
+    TabsComponent,
+    TagComponent
   ],
   templateUrl: './notifications-panel.component.html'
 })
@@ -43,6 +47,52 @@ export class NotificationsPanelComponent {
   readonly closed = output<void>();
 
   readonly activeTab = signal<'unread' | 'read'>('unread');
+  readonly selectedTabId = signal<string | number>('unread');
+
+  readonly notificationTabs: Tab[] = [
+    { id: 'unread', label: 'Unread' },
+    { id: 'read', label: 'Read' }
+  ];
+
+  readonly displayedNotifications = computed(() =>
+    this.activeTab() === 'unread'
+      ? this.unreadNotifications()
+      : this.readNotifications()
+  );
+
+  readonly isUnreadTab = computed(() => this.activeTab() === 'unread');
+
+  readonly canShowMore = computed(() =>
+    this.isUnreadTab() ? this.canShowMoreUnread() : this.canShowMoreRead()
+  );
+
+  readonly isLoadingMore = computed(() =>
+    this.isUnreadTab() ? this.isLoadingMoreUnread() : this.isLoadingMoreRead()
+  );
+
+  readonly statusMessage = computed(() => {
+    if (this.isLoading() && !this.hasLoaded()) {
+      return 'Loading notifications...';
+    }
+
+    if (this.unreadCount() === 0) {
+      return "You're all caught up.";
+    }
+
+    if (this.isUnreadTab()) {
+      const shown = this.unreadTotalCount();
+      return shown
+        ? `${this.unreadCount()} unread · ${shown} shown`
+        : `${this.unreadCount()} unread`;
+    }
+
+    const shown = this.readTotalCount();
+    return shown ? `${shown} read shown` : 'Read notifications';
+  });
+
+  readonly emptyTabMessage = computed(() =>
+    this.isUnreadTab() ? 'No unread notifications' : 'No read notifications'
+  );
 
   openNotification(notification: NotificationDto): void {
     if (!notification.isRead) {
@@ -66,21 +116,22 @@ export class NotificationsPanelComponent {
     this.notificationsService.markAllAsRead();
   }
 
-  showMoreUnread(): void {
-    this.notificationsService.showMoreUnread();
+  showMore(): void {
+    if (this.isUnreadTab()) {
+      this.notificationsService.showMoreUnread();
+    } else {
+      this.notificationsService.showMoreRead();
+    }
   }
 
-  showMoreRead(): void {
-    this.notificationsService.showMoreRead();
-  }
-
-  onTabChange(tab: string | number | undefined): void {
-    const value: 'unread' | 'read' = tab === 'read' ? 'read' : 'unread';
+  onTabChange(tabId: string | number): void {
+    const value: 'unread' | 'read' = tabId === 'read' ? 'read' : 'unread';
     if (value === this.activeTab()) {
       return;
     }
 
     this.activeTab.set(value);
+    this.selectedTabId.set(value);
 
     if (value === 'read') {
       this.notificationsService.reloadReadFromStart();

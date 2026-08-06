@@ -9,14 +9,12 @@ import {
   provideBrowserGlobalErrorListeners
 } from '@angular/core';
 import { provideRouter, withComponentInputBinding } from '@angular/router';
-import { ConfirmationService, MessageService } from 'primeng/api';
-import { providePrimeNG } from 'primeng/config';
+import { ToastService as UiToastService } from '@laczynski/ui';
 
 import { LayoutService } from '@core/layout/services/layout.service';
-import { readCspNonce } from '@core/security/csp-nonce';
+import { UI_TOAST_API } from '@core/toast/services/toast.service';
 import { authTokenInterceptor } from '@features/auth/interceptors/auth-token.interceptor';
 import { AuthService } from '@features/auth/services/auth.service';
-import Aura from '@primeuix/themes/aura';
 import { routes } from './app.routes';
 
 registerLocaleData(localePl);
@@ -30,25 +28,7 @@ export const appConfig: ApplicationConfig = {
       inject(LayoutService);
       return inject(AuthService).initializeSession();
     }),
-    providePrimeNG({
-      // PrimeNG v22+ (PrimeUI) requires a license key for production — see docs/guides/frontend-guidelines.md
-      csp: {
-        nonce: readCspNonce()
-      },
-      ripple: true,
-      theme: {
-        preset: Aura,
-        options: {
-          darkModeSelector: '.app-dark',
-          cssLayer: {
-            name: 'primeng',
-            order: 'theme, base, primeng'
-          }
-        }
-      }
-    }),
-    ConfirmationService,
-    MessageService,
+    { provide: UI_TOAST_API, useExisting: UiToastService },
     { provide: LOCALE_ID, useValue: 'pl' }
   ]
 };

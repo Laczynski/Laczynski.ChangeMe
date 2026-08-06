@@ -1,183 +1,142 @@
-<p-card
-  class="mb-4"
-  header="Create user"
-  subheader="Create a user account with email, password, and roles."
+<section
+  class="app-page-fill mx-auto flex min-h-0 w-full max-w-none flex-1 flex-col gap-3 overflow-hidden"
+  aria-label="Create user"
 >
-  <div class="mb-4 flex flex-wrap items-center gap-2">
+  <header class="grid shrink-0 gap-1.5 pb-2">
+    <h1 class="m-0 text-xl font-semibold tracking-tight text-foreground md:text-2xl">
+      Create user
+    </h1>
+    <p class="m-0 max-w-3xl text-sm leading-normal text-foreground-2">
+      Create a user account with email, password, and roles.
+    </p>
+  </header>
+
+  <div class="flex shrink-0 flex-wrap items-center gap-2">
     <app-back-button label="Back to users list" [route]="['/users']" />
   </div>
 
-  <form class="p-fluid flex flex-col gap-4" [formGroup]="form" (ngSubmit)="onSubmit()">
-    <p-panel header="Profile" [toggleable]="true">
-      <div class="grid gap-4 sm:grid-cols-2">
-        <div class="flex flex-col gap-1.5">
-          <label for="firstName">First name</label>
-          <input
-            id="firstName"
-            type="text"
-            pInputText
-            [formControl]="form.controls.firstName"
-            [invalid]="shouldShowError(form.controls.firstName)"
-          />
-          @if (
-            shouldShowError(form.controls.firstName) &&
-            form.controls.firstName.errors?.['required']
-          ) {
-            <p-message severity="error" variant="simple">
-              First name is required.
-            </p-message>
-          }
-        </div>
-        <div class="flex flex-col gap-1.5">
-          <label for="lastName">Last name</label>
-          <input
-            id="lastName"
-            type="text"
-            pInputText
-            [formControl]="form.controls.lastName"
-            [invalid]="shouldShowError(form.controls.lastName)"
-          />
-          @if (
-            shouldShowError(form.controls.lastName) &&
-            form.controls.lastName.errors?.['required']
-          ) {
-            <p-message severity="error" variant="simple">
-              Last name is required.
-            </p-message>
-          }
-        </div>
-      </div>
+  <div class="flex min-h-0 flex-1 flex-col">
+    <form
+      class="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl bg-surface-2"
+      [formGroup]="form"
+      (ngSubmit)="onSubmit()"
+    >
+      <div class="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-4 md:p-6">
+        <ui-accordion appDefaultExpanded label="Profile" icon="person">
+          <div class="flex flex-col gap-4">
+            <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-2">
+              <ui-text
+                label="First name"
+                [formControl]="form.controls.firstName"
+                [required]="true"
+                [errorText]="
+                  fieldError(
+                    form.controls.firstName,
+                    UserFieldErrors.firstName,
+                    submitted()
+                  )
+                "
+              />
+              <ui-text
+                label="Last name"
+                [formControl]="form.controls.lastName"
+                [required]="true"
+                [errorText]="
+                  fieldError(
+                    form.controls.lastName,
+                    UserFieldErrors.lastName,
+                    submitted()
+                  )
+                "
+              />
+            </div>
+            <ui-text
+              label="Email"
+              type="email"
+              [formControl]="form.controls.email"
+              [required]="true"
+              [errorText]="
+                fieldError(form.controls.email, UserFieldErrors.email, submitted())
+              "
+            />
+          </div>
+        </ui-accordion>
 
-      <div class="mt-4 flex flex-col gap-1.5">
-        <label for="email">Email</label>
-        <input
-          id="email"
-          type="email"
-          pInputText
-          [formControl]="form.controls.email"
-          [invalid]="shouldShowError(form.controls.email)"
-        />
-        @if (
-          shouldShowError(form.controls.email) &&
-          form.controls.email.errors?.['required']
-        ) {
-          <p-message severity="error" variant="simple">Email is required.</p-message>
-        }
-      </div>
-    </p-panel>
-
-    <p-panel header="Password" [toggleable]="true">
-      <div class="grid gap-4 sm:grid-cols-2">
-        <div class="flex flex-col gap-1.5">
-          <label for="password">Password</label>
-          <p-iconfield iconPosition="right">
-            <input
-              id="password"
-              pInputText
-              pInputPassword
-              [(mask)]="passwordMasked"
+        <ui-accordion appDefaultExpanded label="Password" icon="lock_closed">
+          <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-2">
+            <ui-password
+              label="Password"
               autocomplete="new-password"
               [formControl]="form.controls.password"
-              [fluid]="true"
-              [invalid]="shouldShowError(form.controls.password)"
+              [required]="true"
+              [errorText]="
+                fieldError(
+                  form.controls.password,
+                  UserFieldErrors.password,
+                  submitted()
+                )
+              "
             />
-            <p-inputicon>
-              <button
-                type="button"
-                class="text-muted-color hover:text-color border-0 bg-transparent p-0"
-                [attr.aria-label]="passwordMasked ? 'Show password' : 'Hide password'"
-                (click)="passwordMasked = !passwordMasked"
-              >
-                <i
-                  [class]="passwordMasked ? 'pi pi-eye' : 'pi pi-eye-slash'"
-                  aria-hidden="true"
-                ></i>
-              </button>
-            </p-inputicon>
-          </p-iconfield>
-          @if (
-            shouldShowError(form.controls.password) &&
-            form.controls.password.errors?.['passwordPolicy']
-          ) {
-            <p-message severity="error" variant="simple">
-              {{ form.controls.password.errors['passwordPolicy'] }}
-            </p-message>
-          }
-        </div>
-        <div class="flex flex-col gap-1.5">
-          <label for="confirmPassword">Confirm password</label>
-          <p-iconfield iconPosition="right">
-            <input
-              id="confirmPassword"
-              pInputText
-              pInputPassword
-              [(mask)]="confirmPasswordMasked"
+            <ui-password
+              label="Confirm password"
               autocomplete="new-password"
               [formControl]="form.controls.confirmPassword"
-              [fluid]="true"
-              [invalid]="shouldShowError(form.controls.confirmPassword)"
+              [required]="true"
+              [errorText]="
+                fieldError(
+                  form.controls.confirmPassword,
+                  UserFieldErrors.confirmPassword,
+                  submitted()
+                )
+              "
             />
-            <p-inputicon>
-              <button
-                type="button"
-                class="text-muted-color hover:text-color border-0 bg-transparent p-0"
-                [attr.aria-label]="
-                  confirmPasswordMasked ? 'Show password' : 'Hide password'
-                "
-                (click)="confirmPasswordMasked = !confirmPasswordMasked"
-              >
-                <i
-                  [class]="confirmPasswordMasked ? 'pi pi-eye' : 'pi pi-eye-slash'"
-                  aria-hidden="true"
-                ></i>
-              </button>
-            </p-inputicon>
-          </p-iconfield>
-        </div>
-      </div>
-      @if (form.touched && form.errors?.['passwordMismatch']) {
-        <p-message severity="error" variant="simple">Passwords do not match.</p-message>
-      }
-    </p-panel>
+          </div>
+        </ui-accordion>
 
-    <p-panel header="Roles" [toggleable]="true">
-      <div class="flex flex-col gap-1.5">
-        <label for="roles">Roles</label>
-        <p-select
-          inputId="roles"
-          [multiple]="true"
-          [formControl]="form.controls.roleIds"
-          [options]="roleOptions()"
-          optionLabel="name"
-          optionValue="id"
-          placeholder="Select roles"
-          [loading]="isLoadingRoles()"
-          [invalid]="shouldShowError(form.controls.roleIds)"
+        <ui-accordion appDefaultExpanded label="Roles" icon="people">
+          <ui-select
+            label="Roles"
+            placeholder="Select roles"
+            mode="multi"
+            [items]="roleItems()"
+            [formControl]="form.controls.roleIds"
+            [required]="true"
+            [errorText]="
+              fieldError(form.controls.roleIds, UserFieldErrors.roleIds, submitted())
+            "
+          />
+        </ui-accordion>
+
+        <app-effective-permissions
+          [permissions]="effectivePermissions()"
+          [roleIdsSelected]="form.controls.roleIds.value.length > 0"
         />
-      </div>
-    </p-panel>
 
-    <app-effective-permissions
-      [permissions]="effectivePermissions()"
-      [roleIdsSelected]="form.controls.roleIds.value.length > 0"
-    />
-
-    @if (submitError()) {
-      <p-message severity="error">{{ submitError() }}</p-message>
-    }
-
-    <div class="flex flex-wrap items-center justify-end gap-2">
-      <a pButton severity="secondary" [outlined]="true" [routerLink]="['/users']">
-        Cancel
-      </a>
-      <button type="submit" pButton [disabled]="isSubmitting()">
-        @if (isSubmitting()) {
-          <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
-        } @else {
-          <i class="pi pi-user-plus" aria-hidden="true"></i>
+        @if (submitError()) {
+          <ui-message-bar [title]="submitError()!" variant="danger" />
         }
-        {{ isSubmitting() ? 'Creating user...' : 'Create user' }}
-      </button>
-    </div>
-  </form>
-</p-card>
+      </div>
+
+      <footer
+        class="flex shrink-0 items-center justify-end gap-2 border-t border-stroke bg-surface-2 px-4 py-3.5 md:px-6"
+      >
+        <div class="flex w-full flex-wrap items-center justify-end gap-2">
+          <ui-button
+            type="button"
+            text="Cancel"
+            variant="secondary"
+            appearance="outline"
+            [routerLink]="['/users']"
+          />
+          <ui-button
+            type="submit"
+            [text]="isSubmitting() ? 'Creating user...' : 'Create user'"
+            icon="person_add"
+            variant="primary"
+            [loading]="isSubmitting()"
+          />
+        </div>
+      </footer>
+    </form>
+  </div>
+</section>

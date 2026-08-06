@@ -59,7 +59,14 @@ export class LayoutService {
   }
 
   private applyTheme(mode: ThemeMode): void {
-    document.documentElement.classList.toggle('app-dark', mode === 'dark');
+    document.documentElement.setAttribute('data-theme', mode);
+
+    if (mode === 'dark') {
+      document.documentElement.classList.add('dark');
+      return;
+    }
+
+    document.documentElement.classList.remove('dark');
   }
 
   private getInitialReducedMotion(): boolean {

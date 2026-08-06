@@ -2,29 +2,27 @@ import { DatePipe } from '@angular/common';
 import { Component, computed, DestroyRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
+import {
+  ButtonComponent,
+  MessageBarComponent,
+  SpinnerComponent,
+  TagComponent
+} from '@laczynski/ui';
 import { MyAccountDto } from '@features/auth/models/auth.model';
 import { AuthService } from '@features/auth/services/auth.service';
 import { EffectivePermissionsComponent } from '@features/users/components/effective-permissions/effective-permissions.component';
 import { UserMessages } from '@features/users/utils/users.utils';
 import { PermissionCodes } from '@shared/authorization/permission-codes';
-import { ButtonDirective } from 'primeng/button';
-import { Card } from 'primeng/card';
-import { Message } from 'primeng/message';
-import { Panel } from 'primeng/panel';
-import { ProgressSpinner } from 'primeng/progressspinner';
-import { Tag } from 'primeng/tag';
 
 @Component({
   selector: 'app-my-account',
   imports: [
     DatePipe,
     RouterLink,
-    Card,
-    ButtonDirective,
-    Message,
-    Tag,
-    Panel,
-    ProgressSpinner,
+    ButtonComponent,
+    MessageBarComponent,
+    TagComponent,
+    SpinnerComponent,
     EffectivePermissionsComponent
   ],
   templateUrl: './my-account.component.html'

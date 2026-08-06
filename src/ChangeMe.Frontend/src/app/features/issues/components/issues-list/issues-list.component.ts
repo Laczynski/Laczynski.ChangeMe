@@ -1,14 +1,15 @@
-import { CommonModule } from '@angular/common';
+import { DatePipe } from '@angular/common';
 import {
   Component,
   computed,
   DestroyRef,
   inject,
-  signal,
-  viewChild
+  Injector,
+  signal
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
+import { ConfirmService } from '@core/confirm/services/confirm.service';
 import { ToastService } from '@core/toast/services/toast.service';
 import { IssueAssignableUserDto, IssueDto } from '@features/issues/models/issue.model';
 import { IssuesService } from '@features/issues/services/issues.service';
@@ -18,39 +19,39 @@ import {
   getIssuePrioritySeverity,
   getIssueStatusLabel,
   getIssueStatusSeverity,
-  issueDeleteMenuItemDangerClasses,
   issuePriorities,
   issueStatuses
 } from '@features/issues/utils/issue.utils';
 import {
-  GridResourceFactory,
-  PrimeDataGridComponent,
+  ButtonComponent,
+  MenuComponent,
+  MessageBarComponent,
+  TagComponent,
+  TooltipDirective,
+  type MenuItem
+} from '@laczynski/ui';
+import { formatGridError } from '@query-grid/core';
+import {
   QgColumnDirective,
   QgEmptyDirective,
-  type GridColumnFilter,
-  type GridResource
-} from '@query-grid/primeng';
-import { getGridListEmptyMessage } from '@shared/data/utils/grid.utils';
-import { ConfirmationService, MenuItem } from 'primeng/api';
-import { ButtonDirective } from 'primeng/button';
-import { Card } from 'primeng/card';
-import { Menu } from 'primeng/menu';
-import { Message } from 'primeng/message';
-import { Tag } from 'primeng/tag';
-import { Tooltip } from 'primeng/tooltip';
+  UiDataGridComponent
+} from '@query-grid/ui';
+import {
+  createAppGridResource,
+  getGridListEmptyMessage
+} from '@shared/data/utils/grid.utils';
 
 @Component({
   selector: 'app-issues',
   imports: [
-    CommonModule,
+    DatePipe,
     RouterLink,
-    Card,
-    ButtonDirective,
-    Message,
-    Tag,
-    Tooltip,
-    Menu,
-    PrimeDataGridComponent,
+    ButtonComponent,
+    MessageBarComponent,
+    TagComponent,
+    TooltipDirective,
+    MenuComponent,
+    UiDataGridComponent,
     QgColumnDirective,
     QgEmptyDirective
   ],
@@ -58,10 +59,11 @@ import { Tooltip } from 'primeng/tooltip';
 })
 export class IssuesComponent {
   private readonly issuesService = inject(IssuesService);
-  private readonly confirmationService = inject(ConfirmationService);
+  private readonly confirmService = inject(ConfirmService);
   private readonly toastService = inject(ToastService);
-  private readonly gridFactory = inject(GridResourceFactory);
+  private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly injector = inject(Injector);
 
   readonly getIssueStatusLabel = getIssueStatusLabel;
   readonly getIssueStatusSeverity = getIssueStatusSeverity;
@@ -69,39 +71,31 @@ export class IssuesComponent {
   readonly getIssuePrioritySeverity = getIssuePrioritySeverity;
   readonly issueStatuses = issueStatuses;
   readonly issuePriorities = issuePriorities;
+  readonly getGridListEmptyMessage = getGridListEmptyMessage;
 
   readonly assignableUsers = signal<IssueAssignableUserDto[]>([]);
   readonly pendingWatchIssueIds = signal<string[]>([]);
   readonly pendingDeleteIssueIds = signal<string[]>([]);
-  readonly issueActionItems = signal<MenuItem[]>([]);
-  private readonly issueActionsMenu = viewChild.required<Menu>('issueActionsMenu');
 
-  readonly grid: GridResource<IssueDto>;
+  protected readonly rowType!: IssueDto;
 
-  readonly assignedToFilter = computed<GridColumnFilter>(() => ({
-    type: 'enum',
-    options: this.assignableUsers().map((user) => ({
+  readonly grid = createAppGridResource(this.injector, {
+    load: (query) => this.issuesService.getAllIssues(query),
+    defaultSort: [{ field: 'lastActivityAt', desc: true }],
+    defaultTake: 10,
+    persistKey: 'changeme.issues-list'
+  });
+
+  readonly assignableUserFilterOptions = computed(() =>
+    this.assignableUsers().map((user) => ({
       label: user.displayLabel,
       value: user.id
     }))
-  }));
+  );
 
-  readonly errorMessage = computed(() => {
-    const error = this.grid.error();
-    return error instanceof Error ? error.message : error ? String(error) : null;
-  });
-
-  readonly emptyMessage = computed(() => getGridListEmptyMessage(this.grid.query()));
+  readonly errorMessage = computed(() => formatGridError(this.grid.error()));
 
   constructor() {
-    this.grid = this.gridFactory.create<IssueDto>({
-      destroyRef: this.destroyRef,
-      load: (query) => this.issuesService.getAllIssues(query),
-      defaultSort: [{ field: 'LastActivityAt', desc: true }],
-      defaultTake: 10,
-      persistState: { key: 'changeme.issues-list', storage: 'session' }
-    });
-
     this.loadAssignableUsers();
   }
 
@@ -109,37 +103,41 @@ export class IssuesComponent {
     this.grid.reload();
   }
 
-  openIssueActionsMenu(event: Event, issue: IssueDto): void {
-    this.issueActionItems.set([
+  getIssueMenuItems(issue: IssueDto): MenuItem[] {
+    return [
+      { id: 'open', label: 'Open details', icon: 'eye' },
+      { id: 'edit', label: 'Edit issue', icon: 'edit' },
       {
-        label: 'Open details',
-        icon: 'pi pi-eye',
-        routerLink: ['/issues', issue.id]
-      },
-      { separator: true },
-      {
-        label: 'Edit issue',
-        icon: 'pi pi-pencil',
-        routerLink: ['/issues', issue.id, 'edit']
-      },
-      {
+        id: 'delete',
         label: 'Delete issue',
-        icon: 'pi pi-trash',
-        ...issueDeleteMenuItemDangerClasses,
-        disabled: this.isDeletePending(issue.id),
-        command: () => this.confirmDeleteIssue(issue)
+        icon: 'delete',
+        variant: 'danger',
+        disabled: this.isDeletePending(issue.id)
       }
-    ]);
-    this.issueActionsMenu().toggle(event);
+    ];
+  }
+
+  onIssueMenuAction(item: MenuItem, issue: IssueDto): void {
+    switch (item.id) {
+      case 'open':
+        void this.router.navigate(['/issues', issue.id]);
+        break;
+      case 'edit':
+        void this.router.navigate(['/issues', issue.id, 'edit']);
+        break;
+      case 'delete':
+        this.confirmDeleteIssue(issue);
+        break;
+    }
   }
 
   confirmDeleteIssue(issue: IssueDto): void {
-    this.confirmationService.confirm({
+    this.confirmService.confirm({
       header: 'Delete issue',
       message: getDeleteIssueConfirmMessage(issue.title),
-      icon: 'pi pi-exclamation-triangle',
-      acceptButtonProps: { label: 'Delete', severity: 'danger' },
-      rejectButtonProps: { label: 'Cancel', severity: 'secondary', outlined: true },
+      acceptLabel: 'Delete',
+      rejectLabel: 'Cancel',
+      acceptVariant: 'danger',
       accept: () => this.deleteIssue(issue)
     });
   }
@@ -167,19 +165,9 @@ export class IssuesComponent {
       : this.issuesService.watchIssue(issue.id);
 
     request.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: (watchState) => {
-        this.grid.items.update((items) =>
-          items.map((item) =>
-            item.id === watchState.issueId
-              ? {
-                  ...item,
-                  isWatchedByCurrentUser: watchState.isWatchedByCurrentUser,
-                  watchersCount: watchState.watchersCount
-                }
-              : item
-          )
-        );
+      next: () => {
         this.setWatchPending(issue.id, false);
+        this.refresh();
       },
       error: () => {
         this.setWatchPending(issue.id, false);
@@ -203,7 +191,7 @@ export class IssuesComponent {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: () => {
-          this.grid.reload();
+          this.refresh();
           this.setDeletePending(issue.id, false);
           this.toastService.success('Issue deleted', issue.title);
         },

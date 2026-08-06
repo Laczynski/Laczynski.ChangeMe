@@ -1,129 +1,142 @@
-<p-card
-  class="mb-4"
-  header="Users list"
-  subheader="Browse, search and manage user accounts."
+<section
+  class="app-page-fill app-page-grid mx-auto flex min-h-0 w-full max-w-none flex-1 flex-col gap-3 overflow-hidden"
+  aria-label="Users list"
 >
-  <div class="mb-4 flex justify-end">
-    @if (canCreateUsers()) {
-      <a pButton [routerLink]="['/users/create']">
-        <i class="pi pi-user-plus" aria-hidden="true"></i>
-        Create user
-      </a>
-    }
-  </div>
+  <header class="grid shrink-0 gap-1.5 pb-2">
+    <h1 class="m-0 text-xl font-semibold tracking-tight text-foreground md:text-2xl">
+      Users list
+    </h1>
+    <p class="m-0 max-w-3xl text-sm leading-normal text-foreground-2">
+      Browse, search and manage user accounts.
+    </p>
+  </header>
 
-  @if (errorMessage()) {
-    <p-message severity="error" class="mb-4">{{ errorMessage() }}</p-message>
+  @if (canCreateUsers()) {
+    <div class="flex shrink-0 flex-wrap items-center gap-2">
+      <ui-button
+        text="Create user"
+        icon="person_add"
+        variant="primary"
+        [routerLink]="['/users/create']"
+      />
+    </div>
   }
 
-  <p-menu #userActionsMenu [model]="userActionItems()" [popup]="true" />
+  <div class="flex min-h-0 flex-1 flex-col gap-3 overflow-hidden">
+    @if (errorMessage(); as message) {
+      <ui-message-bar class="shrink-0" [title]="message" variant="danger" />
+    }
 
-  <qg-prime-data-grid [grid]="grid" dataKey="id" searchPlaceholder="Search users…">
-    <ng-template
-      qgColumn="LastName"
-      header="Name"
-      [filter]="{ type: 'text', placeholder: 'Name contains…' }"
-      let-user
+    <qg-ui-data-grid
+      class="flex min-h-0 flex-1 flex-col overflow-hidden"
+      [grid]="grid"
+      [pageSizeOptions]="[10, 25, 50]"
+      [hoverable]="true"
     >
-      <a
-        class="text-primary font-medium hover:underline"
-        [routerLink]="['/users', user.id]"
+      <ng-template
+        qgColumn="lastName"
+        header="Name"
+        [filter]="{ type: 'text', placeholder: 'Name…' }"
+        [qgColumnOf]="rowType"
+        width="200px"
+        let-user
       >
-        {{ formatUserName(user) || '—' }}
-      </a>
-    </ng-template>
+        <a class="detail-table__link" [routerLink]="['/users', user.id]">
+          {{ formatUserName(user) || '—' }}
+        </a>
+      </ng-template>
 
-    <ng-template
-      qgColumn="Email"
-      header="Email"
-      [filter]="{ type: 'text', placeholder: 'Email contains…' }"
-      let-user
-    >
-      {{ user.email }}
-    </ng-template>
-
-    <ng-template
-      qgColumn="Status"
-      header="Status"
-      [filter]="{ type: 'enum', options: statusFilters }"
-      let-user
-    >
-      <p-tag
-        [value]="getUserStatusLabel(user.status)"
-        [severity]="getUserStatusSeverity(user.status)"
-      />
-    </ng-template>
-
-    <ng-template qgColumn="RoleNames" header="Roles" [sortable]="false" let-user>
-      <div class="flex flex-wrap gap-1">
-        @for (roleName of user.roleNames; track roleName) {
-          <p-tag [value]="roleName" severity="secondary" />
-        }
-      </div>
-    </ng-template>
-
-    <ng-template
-      qgColumn="LastSignInAt"
-      header="Last sign-in"
-      [filter]="{ type: 'date' }"
-      let-user
-    >
-      @if (user.lastSignInAt) {
-        {{ user.lastSignInAt | date: 'dd.MM.yyyy HH:mm' }}
-      } @else {
-        {{ UserMessages.neverSignedIn }}
-      }
-    </ng-template>
-
-    <ng-template
-      qgColumn="CreatedAt"
-      header="Created at"
-      [filter]="{ type: 'date' }"
-      let-user
-    >
-      {{ user.createdAt | date: 'dd.MM.yyyy HH:mm' }}
-    </ng-template>
-
-    <ng-template qgColumn="actions" header="" [sortable]="false" let-user>
-      <button
-        type="button"
-        pButton
-        severity="secondary"
-        [text]="true"
-        size="small"
-        [iconOnly]="true"
-        pTooltip="User actions"
-        tooltipPosition="top"
-        [attr.aria-label]="'Actions for ' + formatUserReference(user)"
-        (click)="openUserActionsMenu($event, user)"
+      <ng-template
+        qgColumn="email"
+        header="Email"
+        [filter]="{ type: 'text', placeholder: 'Email…' }"
+        [qgColumnOf]="rowType"
+        width="220px"
+        let-user
       >
-        <i class="pi pi-ellipsis-v" aria-hidden="true"></i>
-      </button>
-    </ng-template>
+        <span class="detail-table__text">{{ user.email }}</span>
+      </ng-template>
 
-    <ng-template qgEmpty>
-      <div class="flex flex-col items-center gap-2 py-4">
-        <p class="text-muted-color m-0 text-center">{{ emptyMessage() }}</p>
-        <div class="flex flex-wrap items-center justify-center gap-2">
-          @if (canCreateUsers()) {
-            <a pButton size="small" [routerLink]="['/users/create']">
-              <i class="pi pi-user-plus" aria-hidden="true"></i>
-              Create user
-            </a>
+      <ng-template
+        qgColumn="status"
+        header="Status"
+        [filter]="{ type: 'enum', options: statusFilters }"
+        [qgColumnOf]="rowType"
+        width="140px"
+        let-user
+      >
+        <ui-tag
+          [text]="getUserStatusLabel(user.status)"
+          [variant]="getUserStatusSeverity(user.status)"
+          appearance="tint"
+        />
+      </ng-template>
+
+      <ng-template
+        qgColumn="roleNames"
+        header="Roles"
+        [sortable]="false"
+        [qgColumnOf]="rowType"
+        width="220px"
+        let-user
+      >
+        <div class="flex flex-wrap items-center gap-2">
+          @for (roleName of user.roleNames; track roleName) {
+            <ui-tag [text]="roleName" variant="secondary" appearance="tint" />
           }
-          <button
-            type="button"
-            pButton
-            size="small"
-            severity="secondary"
-            [outlined]="true"
-            (click)="refresh()"
-          >
-            <i class="pi pi-refresh" aria-hidden="true"></i>
-            Refresh
-          </button>
         </div>
-      </div>
-    </ng-template>
-  </qg-prime-data-grid>
-</p-card>
+      </ng-template>
+
+      <ng-template
+        qgColumn="lastSignInAt"
+        header="Last sign-in"
+        [filter]="{ type: 'date', nullable: true }"
+        [qgColumnOf]="rowType"
+        width="160px"
+        let-user
+      >
+        @if (user.lastSignInAt) {
+          <time class="detail-table__date">
+            {{ user.lastSignInAt | date: 'dd.MM.yyyy HH:mm' }}
+          </time>
+        } @else {
+          <span class="detail-table__muted">{{ UserMessages.neverSignedIn }}</span>
+        }
+      </ng-template>
+
+      <ng-template
+        qgColumn="createdAt"
+        header="Created at"
+        [filter]="{ type: 'date' }"
+        [qgColumnOf]="rowType"
+        width="160px"
+        let-user
+      >
+        <time class="detail-table__date">
+          {{ user.createdAt | date: 'dd.MM.yyyy HH:mm' }}
+        </time>
+      </ng-template>
+
+      <ng-template
+        qgColumn="actions"
+        header=""
+        [sortable]="false"
+        [qgColumnOf]="rowType"
+        width="80px"
+        let-user
+      >
+        <ui-menu
+          triggerVariant="button"
+          [menuItems]="getUserMenuItems(user)"
+          icon="more_horizontal"
+          [ariaLabel]="'Actions for ' + formatUserReference(user)"
+          (menuItemClick)="onUserMenuAction($event, user)"
+        />
+      </ng-template>
+
+      <ng-template qgEmpty>
+        <p class="detail-tab-empty">{{ getGridListEmptyMessage(grid.query()) }}</p>
+      </ng-template>
+    </qg-ui-data-grid>
+  </div>
+</section>

@@ -1,65 +1,45 @@
-import { Component, inject, viewChild } from '@angular/core';
+import { Component, effect, inject, signal } from '@angular/core';
+import { ButtonComponent, PopoverDirective } from '@laczynski/ui';
 import { NotificationsPanelComponent } from '@features/notifications/components/notifications-panel/notifications-panel.component';
 import { NotificationsService } from '@features/notifications/services/notifications.service';
-import { ButtonDirective } from 'primeng/button';
-import { OverlayBadge } from 'primeng/overlaybadge';
-import { Popover } from 'primeng/popover';
 
 @Component({
   selector: 'app-notifications-bell',
-  imports: [ButtonDirective, OverlayBadge, Popover, NotificationsPanelComponent],
+  imports: [ButtonComponent, PopoverDirective, NotificationsPanelComponent],
   template: `
-    <p-overlay-badge
-      [value]="unreadCount() > 0 ? unreadCount() : null"
-      severity="danger"
-    >
-      <button
-        type="button"
-        pButton
-        [rounded]="true"
-        [text]="true"
-        severity="secondary"
-        [iconOnly]="true"
-        aria-label="Notifications"
-        (click)="togglePanel($event)"
-      >
-        <i class="pi pi-bell" aria-hidden="true"></i>
-      </button>
-    </p-overlay-badge>
-    <p-popover #popover [dismissable]="true" contentStyleClass="!p-0 overflow-hidden">
-      <ng-template #content>
-        <app-notifications-panel (closed)="hidePanel()" />
-      </ng-template>
-    </p-popover>
+    <ui-button
+      icon="alert"
+      variant="secondary"
+      appearance="subtle"
+      shape="circular"
+      ariaLabel="Notifications"
+      [badge]="unreadCount() > 0 ? unreadCount().toString() : undefined"
+      [uiPopover]="notificationsPanel"
+      [(uiPopoverOpen)]="panelOpen"
+      uiPopoverPosition="bottom"
+      uiPopoverSize="large"
+      uiPopoverAriaLabel="Notifications"
+    />
+    <ng-template #notificationsPanel>
+      <app-notifications-panel (closed)="closePanel()" />
+    </ng-template>
   `
 })
 export class NotificationsBellComponent {
   private readonly notificationsService = inject(NotificationsService);
 
-  private readonly popover = viewChild.required<Popover>('popover');
-
   readonly unreadCount = this.notificationsService.unreadCount;
+  readonly panelOpen = signal(false);
 
-  togglePanel(event: Event): void {
-    const popover = this.popover();
-
-    if (popover.overlayVisible()) {
-      popover.hide();
-      return;
-    }
-
-    popover.show(event);
-
-    if (popover.container) {
-      popover.align();
-    }
-
-    if (!this.notificationsService.hasLoaded()) {
-      this.notificationsService.loadNotifications();
-    }
+  constructor() {
+    effect(() => {
+      if (this.panelOpen() && !this.notificationsService.hasLoaded()) {
+        this.notificationsService.loadNotifications();
+      }
+    });
   }
 
-  hidePanel(): void {
-    this.popover().hide();
+  closePanel(): void {
+    this.panelOpen.set(false);
   }
 }

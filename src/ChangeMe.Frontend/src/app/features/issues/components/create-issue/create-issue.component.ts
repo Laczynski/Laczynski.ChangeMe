@@ -1,4 +1,4 @@
-import { Component, DestroyRef, inject, signal } from '@angular/core';
+import { Component, computed, DestroyRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
   FormArray,
@@ -8,6 +8,15 @@ import {
   Validators
 } from '@angular/forms';
 import { Router } from '@angular/router';
+import {
+  AccordionComponent,
+  ButtonComponent,
+  CheckboxComponent,
+  SelectComponent,
+  MessageBarComponent,
+  TextareaComponent,
+  TextComponent
+} from '@laczynski/ui';
 import { ToastService } from '@core/toast/services/toast.service';
 import {
   CreateIssueRequest,
@@ -19,18 +28,13 @@ import { IssuesService } from '@features/issues/services/issues.service';
 import {
   IssueAcceptanceCriteriaConstraints,
   IssueConstraints,
+  IssueFieldErrors,
   issuePriorities,
   issueStatuses
 } from '@features/issues/utils/issue.utils';
 import { BackButtonComponent } from '@shared/components/back-button/back-button.component';
-import { ButtonDirective } from 'primeng/button';
-import { Card } from 'primeng/card';
-import { Checkbox } from 'primeng/checkbox';
-import { InputText } from 'primeng/inputtext';
-import { Message } from 'primeng/message';
-import { Panel } from 'primeng/panel';
-import { Select } from 'primeng/select';
-import { Textarea } from 'primeng/textarea';
+import { DefaultExpandedAccordionDirective } from '@shared/directives/default-expanded-accordion.directive';
+import { fieldError } from '@shared/forms/field-error';
 
 type CreateIssueForm = {
   title: FormControl<string>;
@@ -50,15 +54,15 @@ type AcceptanceCriterionForm = {
   selector: 'app-create-issue',
   imports: [
     ReactiveFormsModule,
-    Card,
     BackButtonComponent,
-    ButtonDirective,
-    InputText,
-    Textarea,
-    Select,
-    Checkbox,
-    Message,
-    Panel
+    ButtonComponent,
+    TextComponent,
+    TextareaComponent,
+    SelectComponent,
+    CheckboxComponent,
+    MessageBarComponent,
+    AccordionComponent,
+    DefaultExpandedAccordionDirective
   ],
   templateUrl: './create-issue.component.html'
 })
@@ -70,13 +74,26 @@ export class CreateIssueComponent {
 
   readonly issuePriorities = issuePriorities;
   readonly issueStatuses = issueStatuses;
-  readonly issueConstraints = IssueConstraints;
-  readonly issueAcceptanceCriteriaConstraints = IssueAcceptanceCriteriaConstraints;
   readonly assignableUsers = signal<IssueAssignableUserDto[]>([]);
   readonly isLoadingAssignableUsers = signal(true);
   readonly isSubmitting = signal(false);
   readonly submitError = signal<string | null>(null);
-  readonly isSubmitted = signal(false);
+  readonly submitted = signal(false);
+  protected readonly fieldError = fieldError;
+  protected readonly IssueFieldErrors = IssueFieldErrors;
+
+  readonly statusItems = computed(() =>
+    this.issueStatuses().map((item) => ({ value: item.value, label: item.label }))
+  );
+  readonly priorityItems = computed(() =>
+    this.issuePriorities().map((item) => ({ value: item.value, label: item.label }))
+  );
+  readonly assignableUserItems = computed(() =>
+    this.assignableUsers().map((user) => ({
+      value: user.id,
+      label: user.displayLabel
+    }))
+  );
 
   readonly form = new FormGroup<CreateIssueForm>({
     title: new FormControl('', {
@@ -135,8 +152,8 @@ export class CreateIssueComponent {
   }
 
   onSubmit(): void {
-    this.isSubmitted.set(true);
     this.submitError.set(null);
+    this.submitted.set(true);
 
     if (this.form.invalid) {
       this.form.markAllAsTouched();
@@ -173,12 +190,6 @@ export class CreateIssueComponent {
           this.isSubmitting.set(false);
         }
       });
-  }
-
-  shouldShowError(
-    control: FormControl<string> | FormControl<IssueStatus> | FormControl<IssuePriority>
-  ): boolean {
-    return !!control.errors && (control.touched || this.isSubmitted());
   }
 
   private createAcceptanceCriterionGroup(

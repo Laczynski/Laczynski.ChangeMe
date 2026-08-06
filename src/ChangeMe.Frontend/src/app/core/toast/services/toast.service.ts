@@ -1,6 +1,16 @@
-import { inject, Injectable } from '@angular/core';
-import { ToastConfig, ToastSeverity } from '@core/toast/utils/toast.utils';
-import { MessageService, ToastMessageOptions } from 'primeng/api';
+import { InjectionToken, inject, Injectable } from '@angular/core';
+
+import { ToastConfig, type ToastSeverity } from '@core/toast/utils/toast.utils';
+
+export type UiToastApi = {
+  success: (title: string, message?: string, options?: Record<string, unknown>) => string;
+  info: (title: string, message?: string, options?: Record<string, unknown>) => string;
+  warn: (title: string, message?: string, options?: Record<string, unknown>) => string;
+  error: (title: string, message?: string, options?: Record<string, unknown>) => string;
+  clear: () => void;
+};
+
+export const UI_TOAST_API = new InjectionToken<UiToastApi>('UI_TOAST_API');
 
 export type ToastShowOptions = {
   severity?: ToastSeverity;
@@ -14,28 +24,25 @@ export type ToastShowOptions = {
   providedIn: 'root'
 })
 export class ToastService {
-  private readonly messageService = inject(MessageService);
+  private readonly uiToastService = inject(UI_TOAST_API);
 
   readonly toastKey = ToastConfig.KEY;
 
   success(summary: string, detail?: string, life?: number): void {
-    this.add({ severity: 'success', summary, detail, life });
+    this.uiToastService.success(summary, detail, { duration: life ?? ToastConfig.LIFE_MS });
   }
 
   info(summary: string, detail?: string, life?: number): void {
-    this.add({ severity: 'info', summary, detail, life });
+    this.uiToastService.info(summary, detail, { duration: life ?? ToastConfig.LIFE_MS });
   }
 
   warn(summary: string, detail?: string, life?: number): void {
-    this.add({ severity: 'warn', summary, detail, life });
+    this.uiToastService.warn(summary, detail, { duration: life ?? ToastConfig.LIFE_MS });
   }
 
   error(summary: string, detail?: string, life?: number): void {
-    this.add({
-      severity: 'error',
-      summary,
-      detail,
-      life: life ?? ToastConfig.ERROR_LIFE_MS
+    this.uiToastService.error(summary, detail, {
+      duration: life ?? ToastConfig.ERROR_LIFE_MS
     });
   }
 
@@ -53,26 +60,24 @@ export class ToastService {
 
   show(options: ToastShowOptions): void {
     const { severity = 'info', summary, detail, life, sticky } = options;
+    const duration = life ?? (severity === 'error' ? ToastConfig.ERROR_LIFE_MS : ToastConfig.LIFE_MS);
 
-    this.add({
-      severity,
-      summary,
-      detail,
-      life,
-      sticky
-    });
+    switch (severity) {
+      case 'success':
+        this.uiToastService.success(summary, detail, { duration, sticky });
+        break;
+      case 'warn':
+        this.uiToastService.warn(summary, detail, { duration, sticky });
+        break;
+      case 'error':
+        this.uiToastService.error(summary, detail, { duration, sticky });
+        break;
+      default:
+        this.uiToastService.info(summary, detail, { duration, sticky });
+    }
   }
 
   clear(): void {
-    this.messageService.clear(ToastConfig.KEY);
-  }
-
-  private add(message: ToastMessageOptions): void {
-    this.messageService.add({
-      key: ToastConfig.KEY,
-      life: ToastConfig.LIFE_MS,
-      closable: true,
-      ...message
-    });
+    this.uiToastService.clear();
   }
 }

@@ -11,7 +11,7 @@
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
-          "style": "scss"
+          "style": "none"
         }
       },
       "root": "",
@@ -28,9 +28,18 @@
               {
                 "glob": "**/*",
                 "input": "public"
+              },
+              {
+                "glob": "**/*",
+                "input": "node_modules/@laczynski/ui/assets/icons",
+                "output": "/assets/icons"
               }
             ],
-            "styles": ["src/tailwind.css"]
+            "styles": [
+              "src/laczynski-vendor.scss",
+              "src/changeme-theme.css",
+              "src/tailwind.css"
+            ]
           },
           "configurations": {
             "production": {
@@ -77,6 +86,7 @@
         "test": {
           "builder": "@angular/build:unit-test",
           "options": {
+            "tsConfig": "tsconfig.spec.json",
             "coverageReporters": ["text", "json-summary", "json", "html", "lcov"]
           }
         }

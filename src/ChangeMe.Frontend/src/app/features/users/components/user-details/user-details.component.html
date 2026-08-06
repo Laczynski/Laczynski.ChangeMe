@@ -1,223 +1,238 @@
-<p-card
-  class="mb-4"
-  [header]="pageTitle()"
-  subheader="Review account profile, roles, and active sessions."
+<section
+  class="mx-auto flex w-full max-w-none flex-1 flex-col"
+  aria-label="User details"
 >
-  <div class="mb-4 flex flex-wrap items-center gap-2">
-    <app-back-button label="Back to users list" [route]="['/users']" />
-    @if (user(); as profile) {
-      @if (canManageUsers()) {
-        <a
-          pButton
-          severity="secondary"
-          [outlined]="true"
-          size="small"
-          [routerLink]="['/users', profile.id, 'edit']"
-        >
-          <i class="pi pi-pencil" aria-hidden="true"></i>
-          Edit
-        </a>
-      }
-      @if (canDeactivateUsers()) {
-        @if (!profile.deactivated) {
-          <button
-            type="button"
-            pButton
-            severity="danger"
-            [outlined]="true"
-            size="small"
-            (click)="confirmDeactivate()"
+  <div class="flex flex-col gap-0">
+    @if (isLoading()) {
+      <div class="flex flex-col items-center gap-2 py-8">
+        <ui-spinner size="medium" ariaLabel="Loading user details" />
+        <p class="text-foreground-2">Loading user details...</p>
+      </div>
+    } @else if (errorMessage()) {
+      <div class="flex flex-col items-center gap-2 py-8">
+        <ui-message-bar [title]="errorMessage()!" variant="danger" />
+        <ui-button
+          text="Try again"
+          icon="arrow_sync"
+          variant="secondary"
+          appearance="outline"
+          [loading]="isLoading()"
+          (click)="refresh()"
+        />
+      </div>
+    } @else if (user(); as profile) {
+      <article class="flex flex-col gap-5">
+        <header class="flex flex-col gap-1.5 pb-1">
+          <h1
+            class="m-0 break-words text-xl font-semibold tracking-tight text-foreground md:text-2xl"
           >
-            <i class="pi pi-ban" aria-hidden="true"></i>
-            Deactivate
-          </button>
-        } @else {
-          <button
-            type="button"
-            pButton
-            severity="success"
-            [outlined]="true"
-            size="small"
-            (click)="confirmActivate()"
-          >
-            <i class="pi pi-check" aria-hidden="true"></i>
-            Activate
-          </button>
-        }
-      }
-      @if (canManageSessions() && !profile.deactivated) {
-        <button
-          type="button"
-          pButton
-          severity="danger"
-          [outlined]="true"
-          size="small"
-          (click)="confirmRevokeAllSessions()"
-        >
-          <i class="pi pi-times-circle" aria-hidden="true"></i>
-          Revoke all sessions
-        </button>
-      }
-    }
-  </div>
-
-  @if (isLoading()) {
-    <div class="flex flex-col items-center gap-2 py-8">
-      <p-progress-spinner ariaLabel="Loading user details" />
-      <p class="text-muted-color m-0 text-sm">Loading user details...</p>
-    </div>
-  } @else if (errorMessage()) {
-    <div class="flex flex-col items-center gap-2">
-      <p-message severity="error">{{ errorMessage() }}</p-message>
-      <button
-        type="button"
-        pButton
-        size="small"
-        severity="secondary"
-        [outlined]="true"
-        [disabled]="isLoading()"
-        (click)="refresh()"
-      >
-        @if (isLoading()) {
-          <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
-        } @else {
-          <i class="pi pi-refresh" aria-hidden="true"></i>
-        }
-        Try again
-      </button>
-    </div>
-  } @else if (user(); as profile) {
-    <dl
-      class="mb-6 grid gap-4 rounded-lg border border-surface-200 p-4 sm:grid-cols-2 lg:grid-cols-3"
-    >
-      <div class="flex flex-col gap-1">
-        <dt class="text-muted-color text-sm">First name</dt>
-        <dd class="m-0 font-medium">{{ profile.firstName }}</dd>
-      </div>
-      <div class="flex flex-col gap-1">
-        <dt class="text-muted-color text-sm">Last name</dt>
-        <dd class="m-0 font-medium">{{ profile.lastName }}</dd>
-      </div>
-      <div class="flex flex-col gap-1">
-        <dt class="text-muted-color text-sm">Email</dt>
-        <dd class="m-0 font-medium">{{ profile.email }}</dd>
-      </div>
-      <div class="flex flex-col gap-1">
-        <dt class="text-muted-color text-sm">Status</dt>
-        <dd class="m-0">
-          <p-tag
-            [value]="getUserStatusLabel(profile.status)"
-            [severity]="getUserStatusSeverity(profile.status)"
-          />
-        </dd>
-      </div>
-      <div class="flex flex-col gap-1">
-        <dt class="text-muted-color text-sm">Member since</dt>
-        <dd class="m-0">{{ profile.memberSince | date: 'dd.MM.yyyy HH:mm' }}</dd>
-      </div>
-      <div class="flex flex-col gap-1">
-        <dt class="text-muted-color text-sm">Last sign-in</dt>
-        <dd class="m-0">
-          @if (profile.lastSignInAt) {
-            {{ profile.lastSignInAt | date: 'dd.MM.yyyy HH:mm' }}
-          } @else {
-            {{ UserMessages.neverSignedIn }}
-          }
-        </dd>
-      </div>
-      @if (profile.deactivated && profile.deactivatedAt) {
-        <div class="flex flex-col gap-1">
-          <dt class="text-muted-color text-sm">Deactivated at</dt>
-          <dd class="m-0">{{ profile.deactivatedAt | date: 'dd.MM.yyyy HH:mm' }}</dd>
-        </div>
-      }
-    </dl>
-
-    <p-panel header="Roles" [toggleable]="true" class="mb-4">
-      @if (profile.roles.length === 0) {
-        <p class="text-muted-color m-0 text-sm">{{ UserMessages.noRolesAssigned }}</p>
-      } @else {
-        <div class="flex flex-wrap gap-2">
-          @for (role of profile.roles; track role.id) {
-            <a [routerLink]="['/roles', role.id]">
-              <p-tag
-                [value]="role.isSystem ? role.name + ' (System)' : role.name"
-                severity="secondary"
-              />
-            </a>
-          }
-        </div>
-      }
-    </p-panel>
-
-    <app-effective-permissions [permissions]="profile.effectivePermissions" />
-
-    @if (canViewSessions() && !profile.deactivated) {
-      <p-panel header="Active sessions" [toggleable]="true" class="mt-4">
-        @if (isLoadingSessions()) {
-          <div class="flex justify-center py-4">
-            <p-progress-spinner ariaLabel="Loading sessions" />
-          </div>
-        } @else if (sessions().length === 0) {
-          <p class="text-muted-color m-0 text-sm">
-            {{ UserMessages.noActiveSessions }}
+            {{ pageTitle() }}
+          </h1>
+          <p class="m-0 max-w-2xl text-sm leading-normal text-foreground-2">
+            Review account profile, roles, and active sessions.
           </p>
-        } @else {
-          <p-table [value]="sessions()" stripedRows>
-            <ng-template #header>
-              <tr>
-                <th scope="col">Device / browser</th>
-                <th scope="col">Sign-in method</th>
-                <th scope="col">IP address</th>
-                <th scope="col">Signed in</th>
-                <th scope="col">Last activity</th>
-                @if (canManageSessions()) {
-                  <th scope="col">Actions</th>
-                }
-              </tr>
-            </ng-template>
-            <ng-template #body let-session>
-              <tr>
-                <td>{{ session.deviceBrowserLabel }}</td>
-                <td>{{ session.signInMethod }}</td>
-                <td>{{ formatIpAddress(session.ipAddress) }}</td>
-                <td>{{ session.signedInAt | date: 'dd.MM.yyyy HH:mm' }}</td>
-                <td>{{ session.lastActivityAt | date: 'dd.MM.yyyy HH:mm' }}</td>
-                @if (canManageSessions()) {
-                  <td>
-                    <button
-                      type="button"
-                      pButton
-                      severity="danger"
-                      [outlined]="true"
-                      size="small"
-                      [disabled]="isRevokePending(session.id)"
-                      (click)="confirmRevokeSession(session)"
-                    >
-                      @if (isRevokePending(session.id)) {
-                        <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
-                      } @else {
-                        <i class="pi pi-times" aria-hidden="true"></i>
-                      }
-                      Revoke
-                    </button>
-                  </td>
-                }
-              </tr>
-            </ng-template>
-          </p-table>
+        </header>
 
-          @if (hasLoadedSessions()) {
-            <p-paginator
-              class="mt-4"
-              [rows]="sessionsGrid().take ?? DEFAULT_GRID_PAGE_SIZE"
-              [totalRecords]="sessionsTotalCount()"
-              [first]="sessionsGrid().skip ?? 0"
-              (onPageChange)="onSessionsPageChange($event)"
+        <div class="flex flex-wrap items-center gap-2">
+          <app-back-button label="Back to users list" [route]="['/users']" />
+          @if (canManageUsers()) {
+            <ui-button
+              text="Edit"
+              icon="edit"
+              variant="secondary"
+              appearance="outline"
+              [routerLink]="['/users', profile.id, 'edit']"
             />
           }
-        }
-      </p-panel>
+          @if (canDeactivateUsers()) {
+            @if (!profile.deactivated) {
+              <ui-button
+                text="Deactivate"
+                icon="prohibited"
+                variant="danger"
+                appearance="outline"
+                (click)="confirmDeactivate()"
+              />
+            } @else {
+              <ui-button
+                text="Activate"
+                icon="checkmark"
+                variant="success"
+                appearance="outline"
+                (click)="confirmActivate()"
+              />
+            }
+          }
+          @if (canManageSessions() && !profile.deactivated) {
+            <ui-button
+              text="Revoke all sessions"
+              icon="dismiss_circle"
+              variant="danger"
+              appearance="outline"
+              (click)="confirmRevokeAllSessions()"
+            />
+          }
+        </div>
+
+        <dl class="detail-meta">
+          <div>
+            <dt class="detail-meta__term">Status</dt>
+            <dd class="detail-meta__value">
+              <ui-tag
+                [text]="getUserStatusLabel(profile.status)"
+                [variant]="getUserStatusSeverity(profile.status)"
+                appearance="tint"
+              />
+            </dd>
+          </div>
+          <div>
+            <dt class="detail-meta__term">First name</dt>
+            <dd class="detail-meta__value">{{ profile.firstName }}</dd>
+          </div>
+          <div>
+            <dt class="detail-meta__term">Last name</dt>
+            <dd class="detail-meta__value">{{ profile.lastName }}</dd>
+          </div>
+          <div>
+            <dt class="detail-meta__term">Email</dt>
+            <dd class="detail-meta__value detail-meta__value--wrap">
+              {{ profile.email }}
+            </dd>
+          </div>
+          <div>
+            <dt class="detail-meta__term">Member since</dt>
+            <dd class="detail-meta__value detail-meta__value--date">
+              {{ profile.memberSince | date: 'dd.MM.yyyy HH:mm' }}
+            </dd>
+          </div>
+          <div>
+            <dt class="detail-meta__term">Last sign-in</dt>
+            <dd class="detail-meta__value detail-meta__value--date">
+              @if (profile.lastSignInAt) {
+                {{ profile.lastSignInAt | date: 'dd.MM.yyyy HH:mm' }}
+              } @else {
+                {{ UserMessages.neverSignedIn }}
+              }
+            </dd>
+          </div>
+          @if (profile.deactivated && profile.deactivatedAt) {
+            <div>
+              <dt class="detail-meta__term">Deactivated at</dt>
+              <dd class="detail-meta__value detail-meta__value--date">
+                {{ profile.deactivatedAt | date: 'dd.MM.yyyy HH:mm' }}
+              </dd>
+            </div>
+          }
+        </dl>
+
+        <div class="flex flex-col gap-3">
+          <section class="flex flex-col gap-3" aria-labelledby="user-roles-heading">
+            <h2 id="user-roles-heading" class="detail-section-title">Roles</h2>
+            <div class="detail-inset">
+              @if (profile.roles.length === 0) {
+                <p class="detail-tab-empty">{{ UserMessages.noRolesAssigned }}</p>
+              } @else {
+                <div class="flex flex-wrap gap-2">
+                  @for (role of profile.roles; track role.id) {
+                    <a [routerLink]="['/roles', role.id]">
+                      <ui-tag
+                        [text]="role.isSystem ? role.name + ' (System)' : role.name"
+                        variant="secondary"
+                        appearance="outline"
+                      />
+                    </a>
+                  }
+                </div>
+              }
+            </div>
+          </section>
+
+          <app-effective-permissions [permissions]="profile.effectivePermissions" />
+
+          @if (canViewSessions() && !profile.deactivated) {
+            <section
+              class="flex flex-col gap-3"
+              aria-labelledby="user-sessions-heading"
+            >
+              <h2 id="user-sessions-heading" class="detail-section-title">
+                Active sessions
+              </h2>
+              <div class="detail-inset">
+                @if (isLoadingSessions()) {
+                  <div class="flex flex-col items-center gap-2 py-8">
+                    <ui-spinner ariaLabel="Loading sessions" />
+                  </div>
+                } @else if (sessions().length === 0) {
+                  <p class="detail-tab-empty">{{ UserMessages.noActiveSessions }}</p>
+                } @else {
+                  <div class="detail-table-wrap">
+                    <table class="detail-table">
+                      <thead>
+                        <tr>
+                          <th scope="col">Device / browser</th>
+                          <th scope="col">Sign-in method</th>
+                          <th scope="col">IP address</th>
+                          <th scope="col">Signed in</th>
+                          <th scope="col">Last activity</th>
+                          @if (canManageSessions()) {
+                            <th scope="col">Actions</th>
+                          }
+                        </tr>
+                      </thead>
+                      <tbody>
+                        @for (session of sessions(); track session.id) {
+                          <tr>
+                            <td>
+                              <span class="detail-table__text">
+                                {{ session.deviceBrowserLabel }}
+                              </span>
+                            </td>
+                            <td>{{ session.signInMethod }}</td>
+                            <td>
+                              <span class="detail-table__muted">
+                                {{ formatIpAddress(session.ipAddress) }}
+                              </span>
+                            </td>
+                            <td>
+                              <time class="detail-table__date">
+                                {{ session.signedInAt | date: 'dd.MM.yyyy HH:mm' }}
+                              </time>
+                            </td>
+                            <td>
+                              <time class="detail-table__date">
+                                {{ session.lastActivityAt | date: 'dd.MM.yyyy HH:mm' }}
+                              </time>
+                            </td>
+                            @if (canManageSessions()) {
+                              <td>
+                                <ui-button
+                                  text="Revoke"
+                                  icon="dismiss"
+                                  variant="danger"
+                                  appearance="outline"
+                                  [loading]="isRevokePending(session.id)"
+                                  (click)="confirmRevokeSession(session)"
+                                />
+                              </td>
+                            }
+                          </tr>
+                        }
+                      </tbody>
+                    </table>
+                  </div>
+
+                  @if (hasLoadedSessions()) {
+                    <ui-pagination
+                      [config]="sessionsPaginationConfig()"
+                      (pageChange)="onSessionsPageChange($event)"
+                    />
+                  }
+                }
+              </div>
+            </section>
+          }
+        </div>
+      </article>
     }
-  }
-</p-card>
+  </div>
+</section>

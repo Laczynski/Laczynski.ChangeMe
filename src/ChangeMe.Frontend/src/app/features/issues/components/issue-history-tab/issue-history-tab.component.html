@@ -1,73 +1,23 @@
-<div class="pt-2">
+<div class="detail-tab-panel">
   @if (loadError()) {
-    <p-message severity="error">{{ loadError() }}</p-message>
+    <ui-message-bar [title]="loadError()!" variant="danger" />
   } @else if (isLoadingHistory()) {
-    <p-progress-spinner ariaLabel="Loading history" class="!size-8" />
+    <ui-spinner ariaLabel="Loading history" />
   } @else if (historyEntries().length > 0) {
-    <p-timeline [value]="historyEntries()" align="left" class="issue-history-timeline">
-      <ng-template #marker let-event>
-        <span
-          class="flex h-8 w-8 items-center justify-center rounded-full"
-          [ngClass]="getIssueHistoryEventVisual(event.eventType).markerClass"
-        >
-          <i
-            class="text-sm"
-            [ngClass]="getIssueHistoryEventVisual(event.eventType).icon"
-            aria-hidden="true"
-          ></i>
-        </span>
-      </ng-template>
-      <ng-template #content let-event>
-        <div class="flex flex-col gap-2 pb-4">
-          <p-tag
-            class="justify-start"
-            [value]="event.summary"
-            [severity]="getIssueHistoryEventVisual(event.eventType).tagSeverity"
-          />
-          <div class="flex items-center gap-2">
-            <time
-              class="text-muted-color shrink-0 text-right text-sm whitespace-nowrap"
-            >
-              {{ event.createdAt | date: 'dd.MM.yyyy HH:mm' }}
-            </time>
-            <span class="mx-1">·</span>
-            <p class="text-muted-color m-0 min-w-0 text-sm">
-              {{ event.actorName || event.actorUserId }}
-            </p>
-          </div>
-          @if (
-            (event.previousValue || event.currentValue) &&
-            event.eventType !== 'DESCRIPTION_CHANGED'
-          ) {
-            <p class="text-muted-color m-0 text-sm">
-              <span class="font-medium">Before:</span>
-              {{ event.previousValue || '-' }}
-              <span class="mx-1">·</span>
-              <span class="font-medium">After:</span>
-              {{ event.currentValue || '-' }}
-            </p>
-          }
-        </div>
-      </ng-template>
-    </p-timeline>
+    <ui-timeline [items]="timelineItems()" size="large" ariaLabel="Issue history" />
   } @else if (hasLoadedHistory()) {
-    <p class="m-0 text-muted-color">No history entries found</p>
+    <p class="detail-tab-empty">No history entries found</p>
   }
 
   @if (canShowMoreHistory()) {
-    <div class="mt-4 flex justify-center">
-      <button
-        type="button"
-        pButton
-        [text]="true"
-        [disabled]="isLoadingMoreHistory()"
+    <div class="detail-tab-actions">
+      <ui-button
+        text="Show more"
+        appearance="outline"
+        variant="secondary"
+        [loading]="isLoadingMoreHistory()"
         (click)="showMoreHistory()"
-      >
-        @if (isLoadingMoreHistory()) {
-          <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
-        }
-        Show more
-      </button>
+      />
     </div>
   }
 </div>

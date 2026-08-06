@@ -1,111 +1,120 @@
-<p-card
-  class="mb-4"
-  header="Roles list"
-  subheader="Browse, search and manage roles and permissions."
+<section
+  class="app-page-fill app-page-grid mx-auto flex min-h-0 w-full max-w-none flex-1 flex-col gap-3 overflow-hidden"
+  aria-label="Roles list"
 >
-  <div class="mb-4 flex justify-end">
-    @if (canManageRoles()) {
-      <a pButton [routerLink]="['/roles/create']">
-        <i class="pi pi-plus" aria-hidden="true"></i>
-        Add role
-      </a>
-    }
-  </div>
+  <header class="grid shrink-0 gap-1.5 pb-2">
+    <h1 class="m-0 text-xl font-semibold tracking-tight text-foreground md:text-2xl">
+      Roles list
+    </h1>
+    <p class="m-0 max-w-3xl text-sm leading-normal text-foreground-2">
+      Browse, search and manage roles and permissions.
+    </p>
+  </header>
 
-  @if (errorMessage()) {
-    <p-message severity="error" class="mb-4">{{ errorMessage() }}</p-message>
+  @if (canManageRoles()) {
+    <div class="flex shrink-0 flex-wrap items-center gap-2">
+      <ui-button
+        text="Add role"
+        icon="add"
+        variant="primary"
+        [routerLink]="['/roles/create']"
+      />
+    </div>
   }
 
-  <p-menu #roleActionsMenu [model]="roleActionItems()" [popup]="true" />
+  <div class="flex min-h-0 flex-1 flex-col gap-3 overflow-hidden">
+    @if (errorMessage(); as message) {
+      <ui-message-bar class="shrink-0" [title]="message" variant="danger" />
+    }
 
-  <qg-prime-data-grid [grid]="grid" dataKey="id" searchPlaceholder="Search roles…">
-    <ng-template
-      qgColumn="Name"
-      header="Name"
-      [filter]="{ type: 'text', placeholder: 'Name contains…' }"
-      let-role
+    <qg-ui-data-grid
+      class="flex min-h-0 flex-1 flex-col overflow-hidden"
+      [grid]="grid"
+      [pageSizeOptions]="[10, 25, 50]"
+      [hoverable]="true"
     >
-      <a
-        class="text-primary font-medium hover:underline"
-        [routerLink]="['/roles', role.id]"
+      <ng-template
+        qgColumn="name"
+        header="Name"
+        [filter]="{ type: 'text', placeholder: 'Name…' }"
+        [qgColumnOf]="rowType"
+        width="180px"
+        let-role
       >
-        {{ role.name }}
-      </a>
-    </ng-template>
+        <a class="detail-table__link" [routerLink]="['/roles', role.id]">
+          {{ role.name }}
+        </a>
+      </ng-template>
 
-    <ng-template
-      qgColumn="Description"
-      header="Description"
-      [filter]="{ type: 'text', placeholder: 'Description contains…' }"
-      let-role
-    >
-      {{ formatDescription(role.description) }}
-    </ng-template>
-
-    <ng-template
-      qgColumn="PermissionCount"
-      header="Permissions"
-      [filter]="{ type: 'number' }"
-      let-role
-    >
-      {{ RoleMessages.permissionsCount(role.permissionCount) }}
-    </ng-template>
-
-    <ng-template
-      qgColumn="UserCount"
-      header="Users"
-      [filter]="{ type: 'number' }"
-      let-role
-    >
-      {{ RoleMessages.usersCount(role.userCount) }}
-    </ng-template>
-
-    <ng-template qgColumn="IsSystem" header="System" [sortable]="false" let-role>
-      @if (role.isSystem) {
-        <p-tag value="System" severity="info" />
-      }
-    </ng-template>
-
-    <ng-template qgColumn="actions" header="" [sortable]="false" let-role>
-      <button
-        type="button"
-        pButton
-        severity="secondary"
-        [text]="true"
-        size="small"
-        [iconOnly]="true"
-        pTooltip="Role actions"
-        tooltipPosition="top"
-        [attr.aria-label]="'Actions for ' + role.name"
-        (click)="openRoleActionsMenu($event, role)"
+      <ng-template
+        qgColumn="description"
+        header="Description"
+        [filter]="{ type: 'text', placeholder: 'Description…' }"
+        [qgColumnOf]="rowType"
+        width="260px"
+        let-role
       >
-        <i class="pi pi-ellipsis-v" aria-hidden="true"></i>
-      </button>
-    </ng-template>
+        <span class="detail-table__muted">
+          {{ formatDescription(role.description) }}
+        </span>
+      </ng-template>
 
-    <ng-template qgEmpty>
-      <div class="flex flex-col items-center gap-2 py-4">
-        <p class="text-muted-color m-0 text-center">{{ emptyMessage() }}</p>
-        <div class="flex flex-wrap items-center justify-center gap-2">
-          @if (canManageRoles()) {
-            <a pButton size="small" [routerLink]="['/roles/create']">
-              <i class="pi pi-plus" aria-hidden="true"></i>
-              Add role
-            </a>
-          }
-          <button
-            type="button"
-            pButton
-            size="small"
-            severity="secondary"
-            [outlined]="true"
-            (click)="refresh()"
-          >
-            <i class="pi pi-refresh" aria-hidden="true"></i>
-            Refresh
-          </button>
-        </div>
-      </div>
-    </ng-template>
-  </qg-prime-data-grid>
-</p-card>
+      <ng-template
+        qgColumn="permissionCount"
+        header="Permissions"
+        [filter]="{ type: 'number', placeholder: 'Count…' }"
+        [qgColumnOf]="rowType"
+        width="120px"
+        let-role
+      >
+        <span class="detail-table__text">{{ role.permissionCount }}</span>
+      </ng-template>
+
+      <ng-template
+        qgColumn="userCount"
+        header="Users"
+        [filter]="{ type: 'number', placeholder: 'Count…' }"
+        [qgColumnOf]="rowType"
+        width="100px"
+        let-role
+      >
+        <span class="detail-table__text">{{ role.userCount }}</span>
+      </ng-template>
+
+      <ng-template
+        qgColumn="isSystem"
+        header="System"
+        [sortable]="false"
+        [filter]="{ type: 'boolean' }"
+        [qgColumnOf]="rowType"
+        width="100px"
+        let-role
+      >
+        @if (role.isSystem) {
+          <ui-tag text="System" variant="info" appearance="tint" />
+        }
+      </ng-template>
+
+      <ng-template
+        qgColumn="actions"
+        header=""
+        [sortable]="false"
+        [qgColumnOf]="rowType"
+        width="80px"
+        let-role
+      >
+        <ui-menu
+          triggerVariant="button"
+          [menuItems]="getRoleMenuItems(role)"
+          icon="more_horizontal"
+          ariaLabel="Role actions"
+          (menuItemClick)="onRoleMenuAction($event, role)"
+        />
+      </ng-template>
+
+      <ng-template qgEmpty>
+        <p class="detail-tab-empty">{{ getGridListEmptyMessage(grid.query()) }}</p>
+      </ng-template>
+    </qg-ui-data-grid>
+  </div>
+</section>

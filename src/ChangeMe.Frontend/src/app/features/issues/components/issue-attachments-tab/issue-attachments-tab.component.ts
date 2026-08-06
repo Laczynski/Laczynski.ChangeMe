@@ -9,28 +9,30 @@ import {
   signal
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import {
+  ButtonComponent,
+  FileComponent,
+  MessageBarComponent,
+  SpinnerComponent
+} from '@laczynski/ui';
+import { ConfirmService } from '@core/confirm/services/confirm.service';
 import { ToastService } from '@core/toast/services/toast.service';
 import { IssueAttachmentDto } from '@features/issues/models/issue.model';
 import { IssuesService } from '@features/issues/services/issues.service';
 import {
   getDeleteAttachmentConfirmMessage,
-  issueAttachmentAccept
+  issueAttachmentAccept,
+  IssueConstraints
 } from '@features/issues/utils/issue.utils';
-import { formatFileSize } from '@shared/data/utils/file-size.utils';
 import {
   createIssueTabGridQuery,
   hasMoreGridItems
 } from '@shared/data/utils/grid.utils';
-import { ConfirmationService } from 'primeng/api';
-import { ButtonDirective } from 'primeng/button';
-import { FileSelectEvent, FileUpload } from 'primeng/fileupload';
-import { Message } from 'primeng/message';
-import { ProgressSpinner } from 'primeng/progressspinner';
-import { IssueConstraints } from '../../utils/issue.utils';
+import { formatFileSize } from '@shared/data/utils/file-size.utils';
 
 @Component({
   selector: 'app-issue-attachments-tab',
-  imports: [DatePipe, ButtonDirective, FileUpload, Message, ProgressSpinner],
+  imports: [DatePipe, ButtonComponent, FileComponent, MessageBarComponent, SpinnerComponent],
   templateUrl: './issue-attachments-tab.component.html',
   host: { class: 'block' }
 })
@@ -39,7 +41,7 @@ export class IssueAttachmentsTabComponent {
 
   private readonly issuesService = inject(IssuesService);
   private readonly toastService = inject(ToastService);
-  private readonly confirmationService = inject(ConfirmationService);
+  private readonly confirmService = inject(ConfirmService);
   private readonly destroyRef = inject(DestroyRef);
 
   readonly IssueConstraints = IssueConstraints;
@@ -79,9 +81,8 @@ export class IssueAttachmentsTabComponent {
     });
   }
 
-  onFileSelected(event: FileSelectEvent): void {
+  onFileSelected(files: File[]): void {
     this.uploadError.set(null);
-    const files = event.currentFiles ?? Array.from(event.files ?? []);
     this.selectedFile.set(files[0] ?? null);
   }
 
@@ -152,12 +153,12 @@ export class IssueAttachmentsTabComponent {
       return;
     }
 
-    this.confirmationService.confirm({
+    this.confirmService.confirm({
       header: 'Delete attachment',
       message: getDeleteAttachmentConfirmMessage(attachment.originalFileName),
-      icon: 'pi pi-exclamation-triangle',
-      acceptButtonProps: { label: 'Delete', severity: 'danger' },
-      rejectButtonProps: { label: 'Cancel', severity: 'secondary', outlined: true },
+      acceptLabel: 'Delete',
+      rejectLabel: 'Cancel',
+      acceptVariant: 'danger',
       accept: () => this.deleteAttachment(attachment.id)
     });
   }

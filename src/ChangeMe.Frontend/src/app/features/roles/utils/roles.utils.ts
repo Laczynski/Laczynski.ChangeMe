@@ -1,4 +1,5 @@
-import { highlightDialogValue } from '@shared/ui/utils/dialog-message.utils';
+import type { ConfirmMessagePart } from '@core/confirm/models/confirm-message.model';
+import { confirmMessage, confirmStrong } from '@core/confirm/utils/confirm-message.utils';
 
 export { groupEffectivePermissions } from '@features/users/utils/users.utils';
 
@@ -27,17 +28,41 @@ export const RoleMessages = {
   usersCount: (count: number) => `${count} users`
 };
 
+export const RoleFieldErrors = {
+  name: {
+    required: 'Name is required.',
+    minlength: `Name must be at least ${RoleConstraints.NAME_MIN_LENGTH} characters.`,
+    maxlength: `Name must be at most ${RoleConstraints.NAME_MAX_LENGTH} characters.`
+  },
+  description: {
+    maxlength: RoleMessages.descriptionTooLong
+  },
+  permissionCodes: {
+    required: RoleMessages.atLeastOnePermission
+  }
+} as const;
+
 export function formatDescription(description: string | null | undefined): string {
   return description?.trim() ? description : RoleMessages.emptyDescription;
 }
 
-export function getDeleteRoleConfirmMessage(roleName: string): string {
-  return `Delete role ${highlightDialogValue(roleName)}? Users will lose permissions granted only through this role.`;
+export function getDeleteRoleConfirmMessage(roleName: string): ConfirmMessagePart[] {
+  return confirmMessage(
+    'Delete role ',
+    confirmStrong(roleName),
+    '? Users will lose permissions granted only through this role.'
+  );
 }
 
 export function getRemoveUserFromRoleConfirmMessage(
   userReference: string,
   roleName: string
-): string {
-  return `Remove ${highlightDialogValue(userReference)} from role ${highlightDialogValue(roleName)}? The user will lose permissions granted only through this role.`;
+): ConfirmMessagePart[] {
+  return confirmMessage(
+    'Remove ',
+    confirmStrong(userReference),
+    ' from role ',
+    confirmStrong(roleName),
+    '? The user will lose permissions granted only through this role.'
+  );
 }

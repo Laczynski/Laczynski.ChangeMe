@@ -9,12 +9,12 @@ status: active
 
 > **Layer L3 — Quality.** Cross-cutting quality expectations. Functional specifications inherit these documents via `inherits_quality` unless they document an explicit override.
 
-| ID           | Document                                             | Scope                                 |
-| ------------ | ---------------------------------------------------- | ------------------------------------- |
-| NFR-I18N-001 | [internationalization.md](internationalization.md)   | English canonical copy                |
-| NFR-A11Y-001 | [accessibility.md](accessibility.md)                 | Keyboard, focus, labels, themes       |
-| NFR-RSP-001  | [responsiveness.md](responsiveness.md)               | Viewports, mobile out of scope        |
-| NFR-PERF-001 | [performance-and-scale.md](performance-and-scale.md) | Pagination, exports, errors, realtime |
+| ID           | Document                                             | Scope                                                |
+| ------------ | ---------------------------------------------------- | ---------------------------------------------------- |
+| NFR-I18N-001 | [internationalization.md](internationalization.md)   | English canonical copy                               |
+| NFR-A11Y-001 | [accessibility.md](accessibility.md)                 | Keyboard, focus, labels, Fluent 2 themes             |
+| NFR-RSP-001  | [responsiveness.md](responsiveness.md)               | Viewports, Tailwind breakpoints, mobile out of scope |
+| NFR-PERF-001 | [performance-and-scale.md](performance-and-scale.md) | Pagination, exports, errors, realtime                |
 
 ## Security presentation
 

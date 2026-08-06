@@ -1,5 +1,13 @@
-import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, effect, inject, input, signal } from '@angular/core';
+import { DatePipe } from '@angular/common';
+import {
+  Component,
+  computed,
+  DestroyRef,
+  effect,
+  inject,
+  input,
+  signal
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
   FormArray,
@@ -21,18 +29,23 @@ import { IssuesService } from '@features/issues/services/issues.service';
 import {
   IssueAcceptanceCriteriaConstraints,
   IssueConstraints,
+  IssueFieldErrors,
   issuePriorities,
   issueStatuses
 } from '@features/issues/utils/issue.utils';
+import {
+  AccordionComponent,
+  ButtonComponent,
+  CardComponent,
+  MessageBarComponent,
+  SelectComponent,
+  SpinnerComponent,
+  TextareaComponent,
+  TextComponent
+} from '@laczynski/ui';
 import { BackButtonComponent } from '@shared/components/back-button/back-button.component';
-import { ButtonDirective } from 'primeng/button';
-import { Card } from 'primeng/card';
-import { InputText } from 'primeng/inputtext';
-import { Message } from 'primeng/message';
-import { Panel } from 'primeng/panel';
-import { ProgressSpinner } from 'primeng/progressspinner';
-import { Select } from 'primeng/select';
-import { Textarea } from 'primeng/textarea';
+import { DefaultExpandedAccordionDirective } from '@shared/directives/default-expanded-accordion.directive';
+import { fieldError } from '@shared/forms/field-error';
 
 type EditIssueForm = {
   title: FormControl<string>;
@@ -51,17 +64,18 @@ type EditAcceptanceCriterionForm = {
 @Component({
   selector: 'app-edit-issue',
   imports: [
-    CommonModule,
+    DatePipe,
     ReactiveFormsModule,
-    Card,
     BackButtonComponent,
-    ButtonDirective,
-    InputText,
-    Textarea,
-    Select,
-    Message,
-    Panel,
-    ProgressSpinner
+    ButtonComponent,
+    TextComponent,
+    TextareaComponent,
+    SelectComponent,
+    MessageBarComponent,
+    AccordionComponent,
+    CardComponent,
+    DefaultExpandedAccordionDirective,
+    SpinnerComponent
   ],
   templateUrl: './edit-issue.component.html'
 })
@@ -84,7 +98,22 @@ export class EditIssueComponent {
   readonly isSubmitting = signal(false);
   readonly loadError = signal<string | null>(null);
   readonly submitError = signal<string | null>(null);
-  readonly isSubmitted = signal(false);
+  readonly submitted = signal(false);
+  protected readonly fieldError = fieldError;
+  protected readonly IssueFieldErrors = IssueFieldErrors;
+
+  readonly statusItems = computed(() =>
+    this.issueStatuses().map((item) => ({ value: item.value, label: item.label }))
+  );
+  readonly priorityItems = computed(() =>
+    this.issuePriorities().map((item) => ({ value: item.value, label: item.label }))
+  );
+  readonly assignableUserItems = computed(() =>
+    this.assignableUsers().map((user) => ({
+      value: user.id,
+      label: user.displayLabel
+    }))
+  );
 
   readonly form = new FormGroup<EditIssueForm>({
     title: new FormControl('', {
@@ -199,8 +228,8 @@ export class EditIssueComponent {
   }
 
   onSubmit(): void {
-    this.isSubmitted.set(true);
     this.submitError.set(null);
+    this.submitted.set(true);
 
     if (this.form.invalid) {
       this.form.markAllAsTouched();
@@ -245,12 +274,6 @@ export class EditIssueComponent {
           this.isSubmitting.set(false);
         }
       });
-  }
-
-  shouldShowError(
-    control: FormControl<string> | FormControl<IssueStatus> | FormControl<IssuePriority>
-  ): boolean {
-    return !!control.errors && (control.touched || this.isSubmitted());
   }
 
   private setAcceptanceCriteria(issue: IssueDetailsDto): void {

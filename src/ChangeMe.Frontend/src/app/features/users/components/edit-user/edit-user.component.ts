@@ -20,17 +20,24 @@ import { AuthService } from '@features/auth/services/auth.service';
 import { EffectivePermissionsComponent } from '@features/users/components/effective-permissions/effective-permissions.component';
 import { EffectivePermissionDto } from '@features/users/models/user.model';
 import { UsersService } from '@features/users/services/users.service';
-import { UserConstraints, UserMessages } from '@features/users/utils/users.utils';
+import {
+  UserConstraints,
+  UserFieldErrors,
+  UserMessages
+} from '@features/users/utils/users.utils';
+import {
+  AccordionComponent,
+  ButtonComponent,
+  CheckboxComponent,
+  MessageBarComponent,
+  SelectComponent,
+  SpinnerComponent,
+  TextComponent
+} from '@laczynski/ui';
 import { PermissionCodes } from '@shared/authorization/permission-codes';
 import { BackButtonComponent } from '@shared/components/back-button/back-button.component';
-import { ButtonDirective } from 'primeng/button';
-import { Card } from 'primeng/card';
-import { Checkbox } from 'primeng/checkbox';
-import { InputText } from 'primeng/inputtext';
-import { Message } from 'primeng/message';
-import { Panel } from 'primeng/panel';
-import { ProgressSpinner } from 'primeng/progressspinner';
-import { Select } from 'primeng/select';
+import { DefaultExpandedAccordionDirective } from '@shared/directives/default-expanded-accordion.directive';
+import { fieldError } from '@shared/forms/field-error';
 import { catchError, debounceTime, forkJoin, of, startWith, switchMap } from 'rxjs';
 
 @Component({
@@ -39,14 +46,14 @@ import { catchError, debounceTime, forkJoin, of, startWith, switchMap } from 'rx
     ReactiveFormsModule,
     RouterLink,
     BackButtonComponent,
-    Card,
-    ButtonDirective,
-    InputText,
-    Select,
-    Checkbox,
-    Message,
-    Panel,
-    ProgressSpinner,
+    ButtonComponent,
+    TextComponent,
+    SelectComponent,
+    CheckboxComponent,
+    MessageBarComponent,
+    AccordionComponent,
+    DefaultExpandedAccordionDirective,
+    SpinnerComponent,
     EffectivePermissionsComponent
   ],
   templateUrl: './edit-user.component.html'
@@ -69,6 +76,9 @@ export class EditUserComponent {
   readonly loadError = signal<string | null>(null);
   readonly isSubmitting = signal(false);
   readonly isLoading = signal(true);
+  readonly submitted = signal(false);
+  protected readonly fieldError = fieldError;
+  protected readonly UserFieldErrors = UserFieldErrors;
   readonly pageTitle = computed(() => {
     const name =
       `${this.form.controls.firstName.value} ${this.form.controls.lastName.value}`.trim();
@@ -82,6 +92,13 @@ export class EditUserComponent {
   );
   readonly showRolesField = signal(false);
   readonly showStatusField = signal(false);
+
+  readonly roleItems = computed(() =>
+    this.roleOptions().map((role) => ({
+      value: role.id,
+      label: role.isSystem ? `${role.name} (System)` : role.name
+    }))
+  );
 
   readonly form = new FormGroup({
     firstName: new FormControl('', {
@@ -187,6 +204,8 @@ export class EditUserComponent {
   }
 
   onSubmit(): void {
+    this.submitted.set(true);
+
     if (this.form.invalid || this.isSubmitting()) {
       this.form.markAllAsTouched();
       return;
@@ -218,9 +237,5 @@ export class EditUserComponent {
           this.isSubmitting.set(false);
         }
       });
-  }
-
-  shouldShowError(control: FormControl<string | boolean | string[]>): boolean {
-    return control.touched && control.invalid;
   }
 }

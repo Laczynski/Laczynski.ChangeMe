@@ -1,27 +1,35 @@
 import { BreakpointObserver } from '@angular/cdk/layout';
 import { Component, computed, DestroyRef, inject } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
-import { NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router';
+import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { SidebarNavComponent } from '@core/layout/components/sidebar-nav/sidebar-nav.component';
 import { LayoutNavItem } from '@core/layout/models/layout-nav-item.model';
 import { LayoutService } from '@core/layout/services/layout.service';
+import { PageChromeService } from '@core/layout/services/page-chrome.service';
 import { formatUserReference } from '@core/user/utils/user-display.utils';
 import { AuthService } from '@features/auth/services/auth.service';
 import { NotificationsBellComponent } from '@features/notifications/components/notifications-bell/notifications-bell.component';
+import {
+  BreadcrumbComponent,
+  ButtonComponent,
+  DrawerComponent,
+  IconComponent
+} from '@laczynski/ui';
 import { PermissionCodes } from '@shared/authorization/permission-codes';
-import { ButtonDirective } from 'primeng/button';
-import { Drawer } from 'primeng/drawer';
 import { filter, map } from 'rxjs/operators';
+
+const MOBILE_BREAKPOINT = '(max-width: 767.98px)';
 
 @Component({
   selector: 'app-shell',
   imports: [
     RouterOutlet,
-    RouterLink,
     SidebarNavComponent,
+    BreadcrumbComponent,
     NotificationsBellComponent,
-    ButtonDirective,
-    Drawer
+    ButtonComponent,
+    DrawerComponent,
+    IconComponent
   ],
   templateUrl: './app-shell.component.html'
 })
@@ -32,43 +40,89 @@ export class AppShellComponent {
   private readonly destroyRef = inject(DestroyRef);
 
   readonly layoutService = inject(LayoutService);
+  readonly pageChrome = inject(PageChromeService);
+
+  readonly pageBreadcrumbs = this.pageChrome.breadcrumbs;
+  readonly currentPageTitle = this.pageChrome.currentTitle;
+
+  readonly breadcrumbItems = computed(() =>
+    this.pageBreadcrumbs().map((crumb, index, crumbs) => ({
+      id: String(index),
+      label: crumb.label,
+      selected: index === crumbs.length - 1
+    }))
+  );
 
   readonly currentUser = this.authService.currentUser;
   readonly formatUserReference = formatUserReference;
-  readonly isAuthenticated = this.authService.isAuthenticated;
-  readonly showAuthenticatedChrome = computed(() => this.isAuthenticated());
-  readonly isDesktop = toSignal(
+  readonly showAuthenticatedChrome = computed(() => this.authService.isAuthenticated());
+
+  readonly isMobile = toSignal(
     this.breakpointObserver
-      .observe('(min-width: 768px)')
+      .observe(MOBILE_BREAKPOINT)
       .pipe(map((state) => state.matches)),
-    { initialValue: false }
+    {
+      initialValue:
+        typeof window !== 'undefined'
+          ? window.matchMedia(MOBILE_BREAKPOINT).matches
+          : false
+    }
+  );
+
+  readonly sidebarOpen = computed(() =>
+    this.isMobile()
+      ? this.layoutService.$mobileNavOpen()
+      : !this.layoutService.$sidebarCollapsed()
+  );
+
+  readonly themeLabel = computed(() =>
+    this.layoutService.$themeMode() === 'dark' ? 'Light mode' : 'Dark mode'
+  );
+
+  readonly themeIcon = computed(() =>
+    this.layoutService.$themeMode() === 'dark' ? 'weather_sunny' : 'weather_moon'
   );
 
   readonly authenticatedNavItems = computed<LayoutNavItem[]>(() => {
     const items: LayoutNavItem[] = [
-      { label: 'Issues list', icon: 'pi pi-list', routerLink: '/issues', exact: true },
-      { label: 'Create issue', icon: 'pi pi-plus', routerLink: '/issues/create' }
+      {
+        label: 'Issues list',
+        icon: 'clipboard_task_list',
+        routerLink: '/issues',
+        section: 'Issues'
+      },
+      {
+        label: 'Create issue',
+        icon: 'add',
+        routerLink: '/issues/create',
+        section: 'Issues'
+      }
     ];
 
     if (this.authService.hasPermission(PermissionCodes.usersView)) {
       items.push({
         label: 'Users list',
-        icon: 'pi pi-users',
+        icon: 'people',
         routerLink: '/users',
-        exact: true
+        section: 'Administration'
       });
     }
 
     if (this.authService.hasPermission(PermissionCodes.rolesView)) {
       items.push({
         label: 'Roles list',
-        icon: 'pi pi-shield',
+        icon: 'shield',
         routerLink: '/roles',
-        exact: true
+        section: 'Administration'
       });
     }
 
-    items.push({ label: 'My account', icon: 'pi pi-user', routerLink: '/account' });
+    items.push({
+      label: 'My account',
+      icon: 'person',
+      routerLink: '/account',
+      section: 'Account'
+    });
     return items;
   });
 
@@ -78,34 +132,44 @@ export class AppShellComponent {
         filter((event): event is NavigationEnd => event instanceof NavigationEnd),
         takeUntilDestroyed(this.destroyRef)
       )
-      .subscribe(() => this.layoutService.closeMobileNav());
-
-    this.breakpointObserver
-      .observe('(min-width: 768px)')
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((state) => {
-        if (state.matches) {
+      .subscribe(() => {
+        if (this.isMobile()) {
           this.layoutService.closeMobileNav();
         }
       });
   }
 
-  onMenuToggle(): void {
-    if (this.isDesktop()) {
-      this.layoutService.toggleSidebarCollapsed();
-      return;
+  onBreadcrumbItemClick(item: { id: string | number }): void {
+    const index = Number(item.id);
+    const routerLink = this.pageBreadcrumbs()[index]?.routerLink;
+    if (routerLink) {
+      void this.router.navigateByUrl(routerLink);
     }
-
-    this.layoutService.toggleMobileNav();
   }
 
-  onMobileNavVisibleChange(visible: boolean): void {
-    if (visible) {
-      this.layoutService.openMobileNav();
+  onMenuToggle(): void {
+    if (this.isMobile()) {
+      this.layoutService.toggleMobileNav();
       return;
     }
 
-    this.layoutService.closeMobileNav();
+    this.layoutService.toggleSidebarCollapsed();
+  }
+
+  onSidebarNavigate(): void {
+    if (this.isMobile()) {
+      this.layoutService.closeMobileNav();
+    }
+  }
+
+  closeSidebar(): void {
+    if (this.isMobile()) {
+      this.layoutService.closeMobileNav();
+    }
+  }
+
+  navigateToLogin(): void {
+    void this.router.navigateByUrl('/login');
   }
 
   logout(): void {

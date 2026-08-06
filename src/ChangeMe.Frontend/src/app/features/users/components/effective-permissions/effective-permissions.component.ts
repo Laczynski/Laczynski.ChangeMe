@@ -4,7 +4,9 @@ import {
   formatFromRoles,
   groupEffectivePermissions
 } from '@features/users/utils/users.utils';
-import { Panel } from 'primeng/panel';
+import { AccordionComponent } from '@laczynski/ui';
+import { DefaultExpandedAccordionDirective } from '@shared/directives/default-expanded-accordion.directive';
+
 export interface PermissionListItem {
   code: string;
   label: string;
@@ -15,9 +17,9 @@ export interface PermissionListItem {
 
 @Component({
   selector: 'app-effective-permissions',
-  imports: [Panel],
+  imports: [AccordionComponent, DefaultExpandedAccordionDirective],
   templateUrl: './effective-permissions.component.html',
-  host: { class: 'block' }
+  host: { class: 'block app-effective-permissions-host' }
 })
 export class EffectivePermissionsComponent {
   readonly permissions = input<PermissionListItem[]>([]);

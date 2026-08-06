@@ -14,7 +14,7 @@ The included **issue-tracking sample** shows how features are structured — log
 - **JWT sessions** — access + refresh tokens, session list/revoke; **RBAC** with permission catalog, guards, and backend checks (reference implementation)
 - **EF Core** + PostgreSQL — configurations, migrations (`InitialCreate`), `ApplicationDbContext` usage
 - **Cross-cutting infrastructure** — Hangfire jobs, Serilog, email abstraction (MailHog locally), local file storage pattern
-- **Angular feature slices** — `features/<name>/`, shared `ApiService`, interceptors, guards, PrimeNG + Tailwind setup
+- **Angular feature slices** — `features/<name>/`, shared `ApiService`, interceptors, guards, @laczynski/ui setup
 - **Production frontend config** — `runtime-config.js`, nginx same-origin proxy for `/api/` and `/hubs/` in Docker
 - **Sample domain** — issues, users, roles illustrate end-to-end flows; copy the pattern or delete the feature
 
@@ -63,7 +63,7 @@ This codebase gives you:
 - Local email testing: MailHog
 - Testing: Angular test runner, .NET unit tests, .NET integration tests with Testcontainers
 - Local orchestration: Docker Compose
-- UI: PrimeNG + Tailwind CSS
+- UI: [@laczynski/ui](https://ui.laczynski.dev/)
 
 ## Repository Structure
 

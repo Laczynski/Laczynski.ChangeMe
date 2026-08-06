@@ -1,4 +1,3 @@
-import { CommonModule, DatePipe } from '@angular/common';
 import {
   Component,
   computed,
@@ -9,6 +8,13 @@ import {
   signal
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import {
+  ButtonComponent,
+  MessageBarComponent,
+  SpinnerComponent,
+  TimelineComponent,
+  type TimelineItem
+} from '@laczynski/ui';
 import { IssueHistoryEntryDto } from '@features/issues/models/issue.model';
 import { IssuesService } from '@features/issues/services/issues.service';
 import { getIssueHistoryEventVisual } from '@features/issues/utils/issue.utils';
@@ -16,22 +22,14 @@ import {
   createIssueTabGridQuery,
   hasMoreGridItems
 } from '@shared/data/utils/grid.utils';
-import { ButtonDirective } from 'primeng/button';
-import { Message } from 'primeng/message';
-import { ProgressSpinner } from 'primeng/progressspinner';
-import { Tag } from 'primeng/tag';
-import { Timeline } from 'primeng/timeline';
 
 @Component({
   selector: 'app-issue-history-tab',
   imports: [
-    CommonModule,
-    DatePipe,
-    ButtonDirective,
-    Message,
-    ProgressSpinner,
-    Tag,
-    Timeline
+    ButtonComponent,
+    MessageBarComponent,
+    SpinnerComponent,
+    TimelineComponent
   ],
   templateUrl: './issue-history-tab.component.html',
   host: { class: 'block' }
@@ -42,8 +40,6 @@ export class IssueHistoryTabComponent {
   private readonly issuesService = inject(IssuesService);
   private readonly destroyRef = inject(DestroyRef);
 
-  readonly getIssueHistoryEventVisual = getIssueHistoryEventVisual;
-
   readonly historyEntries = signal<IssueHistoryEntryDto[]>([]);
   readonly historyTotalCount = signal(0);
   readonly loadError = signal<string | null>(null);
@@ -53,6 +49,21 @@ export class IssueHistoryTabComponent {
 
   readonly canShowMoreHistory = computed(() =>
     hasMoreGridItems(this.historyEntries().length, this.historyTotalCount())
+  );
+
+  readonly timelineItems = computed<TimelineItem[]>(() =>
+    this.historyEntries().map((event) => {
+      const visual = getIssueHistoryEventVisual(event.eventType);
+      return {
+        id: event.id,
+        title: event.summary,
+        timestamp: event.createdAt,
+        meta: event.actorName || event.actorUserId,
+        description: this.formatHistoryDescription(event),
+        icon: visual.icon,
+        variant: visual.variant
+      };
+    })
   );
 
   private lastLoadedIssueId: string | null = null;
@@ -79,6 +90,16 @@ export class IssueHistoryTabComponent {
       append: true,
       skip: this.historyEntries().length
     });
+  }
+
+  private formatHistoryDescription(event: IssueHistoryEntryDto): string | undefined {
+    if (
+      (event.previousValue || event.currentValue) &&
+      event.eventType !== 'DESCRIPTION_CHANGED'
+    ) {
+      return `Before: ${event.previousValue || '-'} · After: ${event.currentValue || '-'}`;
+    }
+    return undefined;
   }
 
   private reloadHistoryFromStart(issueId: string): void {

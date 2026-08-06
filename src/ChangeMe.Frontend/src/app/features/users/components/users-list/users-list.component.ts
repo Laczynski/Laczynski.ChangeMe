@@ -4,11 +4,24 @@ import {
   computed,
   DestroyRef,
   inject,
-  signal,
-  viewChild
+  Injector
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
+import { formatGridError } from '@query-grid/core';
+import {
+  QgColumnDirective,
+  QgEmptyDirective,
+  UiDataGridComponent
+} from '@query-grid/ui';
+import {
+  ButtonComponent,
+  MenuComponent,
+  MessageBarComponent,
+  TagComponent,
+  type MenuItem
+} from '@laczynski/ui';
+import { ConfirmService } from '@core/confirm/services/confirm.service';
 import { ToastService } from '@core/toast/services/toast.service';
 import {
   formatUserName,
@@ -25,35 +38,22 @@ import {
   statusFilters,
   UserMessages
 } from '@features/users/utils/users.utils';
-import {
-  GridResourceFactory,
-  PrimeDataGridComponent,
-  QgColumnDirective,
-  QgEmptyDirective,
-  type GridResource
-} from '@query-grid/primeng';
 import { PermissionCodes } from '@shared/authorization/permission-codes';
-import { getGridListEmptyMessage } from '@shared/data/utils/grid.utils';
-import { ConfirmationService, MenuItem } from 'primeng/api';
-import { ButtonDirective } from 'primeng/button';
-import { Card } from 'primeng/card';
-import { Menu } from 'primeng/menu';
-import { Message } from 'primeng/message';
-import { Tag } from 'primeng/tag';
-import { Tooltip } from 'primeng/tooltip';
+import {
+  createAppGridResource,
+  getGridListEmptyMessage
+} from '@shared/data/utils/grid.utils';
 
 @Component({
   selector: 'app-users-list',
   imports: [
     DatePipe,
     RouterLink,
-    Card,
-    ButtonDirective,
-    Message,
-    Tag,
-    Menu,
-    Tooltip,
-    PrimeDataGridComponent,
+    ButtonComponent,
+    MessageBarComponent,
+    TagComponent,
+    MenuComponent,
+    UiDataGridComponent,
     QgColumnDirective,
     QgEmptyDirective
   ],
@@ -65,21 +65,29 @@ export class UsersListComponent {
 
   private readonly usersService = inject(UsersService);
   private readonly authService = inject(AuthService);
-  private readonly confirmationService = inject(ConfirmationService);
+  private readonly confirmService = inject(ConfirmService);
   private readonly toastService = inject(ToastService);
-  private readonly gridFactory = inject(GridResourceFactory);
+  private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly injector = inject(Injector);
 
   readonly statusFilters = statusFilters;
   readonly getUserStatusLabel = getUserStatusLabel;
   readonly getUserStatusSeverity = getUserStatusSeverity;
   readonly UserMessages = UserMessages;
   readonly permissionCodes = PermissionCodes;
+  readonly getGridListEmptyMessage = getGridListEmptyMessage;
 
-  readonly userActionItems = signal<MenuItem[]>([]);
-  private readonly userActionsMenu = viewChild.required<Menu>('userActionsMenu');
+  protected readonly rowType!: UserListItemDto;
 
-  readonly grid: GridResource<UserListItemDto>;
+  readonly grid = createAppGridResource(this.injector, {
+    load: (query) => this.usersService.getUsers(query),
+    defaultSort: [{ field: 'lastName', desc: false }],
+    defaultTake: 10,
+    persistKey: 'changeme.users-list'
+  });
+
+  readonly errorMessage = computed(() => formatGridError(this.grid.error()));
 
   readonly canManageUsers = computed(() =>
     this.authService.hasPermission(PermissionCodes.usersManage)
@@ -93,82 +101,65 @@ export class UsersListComponent {
     this.authService.hasPermission(PermissionCodes.usersDeactivate)
   );
 
-  readonly errorMessage = computed(() => {
-    const error = this.grid.error();
-    return error instanceof Error ? error.message : error ? String(error) : null;
-  });
-
-  readonly emptyMessage = computed(() => getGridListEmptyMessage(this.grid.query()));
-
-  constructor() {
-    this.grid = this.gridFactory.create<UserListItemDto>({
-      destroyRef: this.destroyRef,
-      load: (query) => this.usersService.getUsers(query),
-      defaultSort: [{ field: 'LastName', desc: false }],
-      defaultTake: 10,
-      persistState: { key: 'changeme.users-list', storage: 'session' }
-    });
-  }
-
   refresh(): void {
     this.grid.reload();
   }
 
-  openUserActionsMenu(event: Event, user: UserListItemDto): void {
+  getUserMenuItems(user: UserListItemDto): MenuItem[] {
     const items: MenuItem[] = [
-      {
-        label: 'Open details',
-        icon: 'pi pi-eye',
-        routerLink: ['/users', user.id]
-      }
+      { id: 'open', label: 'Open details', icon: 'eye' }
     ];
 
     if (this.canManageUsers()) {
-      items.push({
-        label: 'Edit',
-        icon: 'pi pi-pencil',
-        routerLink: ['/users', user.id, 'edit']
-      });
+      items.push({ id: 'edit', label: 'Edit', icon: 'edit' });
     }
 
     if (this.canDeactivateUsers()) {
-      if (user.deactivated) {
-        items.push({
-          label: 'Activate',
-          icon: 'pi pi-check',
-          command: () => this.confirmActivate(user)
-        });
-      } else {
-        items.push({
-          label: 'Deactivate',
-          icon: 'pi pi-ban',
-          command: () => this.confirmDeactivate(user)
-        });
-      }
+      items.push({
+        id: user.deactivated ? 'activate' : 'deactivate',
+        label: user.deactivated ? 'Activate' : 'Deactivate',
+        icon: user.deactivated ? 'checkmark' : 'prohibited'
+      });
     }
 
-    this.userActionItems.set(items);
-    this.userActionsMenu().toggle(event);
+    return items;
+  }
+
+  onUserMenuAction(item: MenuItem, user: UserListItemDto): void {
+    switch (item.id) {
+      case 'open':
+        void this.router.navigate(['/users', user.id]);
+        break;
+      case 'edit':
+        void this.router.navigate(['/users', user.id, 'edit']);
+        break;
+      case 'deactivate':
+        this.confirmDeactivate(user);
+        break;
+      case 'activate':
+        this.confirmActivate(user);
+        break;
+    }
   }
 
   confirmDeactivate(user: UserListItemDto): void {
-    this.confirmationService.confirm({
+    this.confirmService.confirm({
       header: 'Deactivate user',
       message: getDeactivateConfirmMessage(formatUserReference(user)),
-      icon: 'pi pi-exclamation-triangle',
-      acceptButtonProps: { label: 'Deactivate', severity: 'danger' },
-      rejectButtonProps: { label: 'Cancel', severity: 'secondary', outlined: true },
+      acceptLabel: 'Deactivate',
+      rejectLabel: 'Cancel',
+      acceptVariant: 'danger',
       accept: () => this.deactivateUser(user)
     });
   }
 
   confirmActivate(user: UserListItemDto): void {
-    this.confirmationService.confirm({
+    this.confirmService.confirm({
       header: 'Activate user',
       message: getActivateConfirmMessage(formatUserReference(user)),
-      icon: 'pi pi-exclamation-triangle',
-      acceptButtonProps: { label: 'Activate', severity: 'success' },
-      rejectButtonProps: { label: 'Cancel', severity: 'secondary', outlined: true },
+      acceptLabel: 'Activate',
+      rejectLabel: 'Cancel',
+      acceptVariant: 'success',
       accept: () => this.activateUser(user)
     });
   }
@@ -180,7 +171,7 @@ export class UsersListComponent {
       .subscribe({
         next: () => {
           this.toastService.success(UserMessages.userDeactivated);
-          this.grid.reload();
+          this.refresh();
         },
         error: (error: Error) =>
           this.toastService.showApiError(error, 'Could not deactivate user')
@@ -194,7 +185,7 @@ export class UsersListComponent {
       .subscribe({
         next: () => {
           this.toastService.success(UserMessages.userActivated);
-          this.grid.reload();
+          this.refresh();
         },
         error: (error: Error) =>
           this.toastService.showApiError(error, 'Could not activate user')

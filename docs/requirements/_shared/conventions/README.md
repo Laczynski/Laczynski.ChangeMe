@@ -6,6 +6,8 @@
 | -------------------------------------------- | --------------------------------------------------------------- |
 | [product-standards.md](product-standards.md) | Canonical `STD-*` rules and **implementation review checklist** |
 
+Visual implementation (Fluent 2 tokens, Laczynski components, Tailwind layout) is defined in L5 — [`frontend-guidelines.md`](../../../guides/frontend-guidelines.md). L2 states _what_ the UI must do; L5 states _how_ to build it in this repository.
+
 ## STD index
 
 | ID                                                                                  | Topic                                           |

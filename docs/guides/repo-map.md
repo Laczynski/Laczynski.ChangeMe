@@ -18,11 +18,13 @@
 - `src/main.ts` bootstraps the Angular app.
 - `src/app/app.config.ts` configures providers.
 - `src/app/app.routes.ts` defines route-to-component mapping.
+- `src/laczynski-vendor.scss` — Laczynski UI component styles (`@use` from the package).
+- `src/changeme-theme.css` — brand token overrides (ChangeMe red palette; light primary `#d81e04`).
+- `src/tailwind.css` — Tailwind v4, Fluent token bridge (`@theme`), base typography, **shared layout CSS classes** (`detail-*`, `app-shell-*`, `app-page-grid` grid overrides), notifications panel.
 - `tsconfig.json` defines strict TypeScript settings and path aliases:
   - `@core/*`
   - `@features/*`
   - `@shared/*`
-  - `@styles/*`
   - `@environments/*`
 
 ### Runtime structure

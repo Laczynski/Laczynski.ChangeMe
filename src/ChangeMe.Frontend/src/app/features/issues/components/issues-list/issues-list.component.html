@@ -1,146 +1,152 @@
-<p-card header="Issues list" subheader="Browse, filter and monitor issues.">
-  <div class="mb-4 flex justify-end">
-    <a pButton [routerLink]="['/issues', 'create']">
-      <i class="pi pi-plus" aria-hidden="true"></i>
-      Add issue
-    </a>
+<section
+  class="app-page-fill app-page-grid mx-auto flex min-h-0 w-full max-w-none flex-1 flex-col gap-3 overflow-hidden"
+  aria-label="Issues list"
+>
+  <header class="grid shrink-0 gap-1.5 pb-2">
+    <h1 class="m-0 text-xl font-semibold tracking-tight text-foreground md:text-2xl">
+      Issues list
+    </h1>
+    <p class="m-0 max-w-3xl text-sm leading-normal text-foreground-2">
+      Browse, filter and monitor issues.
+    </p>
+  </header>
+
+  <div class="flex shrink-0 flex-wrap items-center gap-2">
+    <ui-button
+      text="Add issue"
+      icon="add"
+      variant="primary"
+      [routerLink]="['/issues', 'create']"
+    />
   </div>
 
-  @if (errorMessage()) {
-    <p-message severity="error" class="mb-4">{{ errorMessage() }}</p-message>
-  }
+  <div class="flex min-h-0 flex-1 flex-col gap-3 overflow-hidden">
+    @if (errorMessage(); as message) {
+      <ui-message-bar class="shrink-0" [title]="message" variant="danger" />
+    }
 
-  <p-menu #issueActionsMenu [model]="issueActionItems()" [popup]="true" />
-
-  <qg-prime-data-grid [grid]="grid" dataKey="id" searchPlaceholder="Search issues…">
-    <ng-template
-      qgColumn="Title"
-      header="Title"
-      [filter]="{ type: 'text', placeholder: 'Title contains…' }"
-      let-issue
+    <qg-ui-data-grid
+      class="flex min-h-0 flex-1 flex-col overflow-hidden"
+      [grid]="grid"
+      [pageSizeOptions]="[10, 25, 50]"
+      [hoverable]="true"
     >
-      <a
-        class="text-primary font-medium hover:underline"
-        [routerLink]="['/issues', issue.id]"
+      <ng-template
+        qgColumn="title"
+        header="Title"
+        [filter]="{ type: 'text', placeholder: 'Title…' }"
+        [qgColumnOf]="rowType"
+        width="220px"
+        let-issue
       >
-        {{ issue.title }}
-      </a>
-    </ng-template>
+        <a class="detail-table__link" [routerLink]="['/issues', issue.id]">
+          {{ issue.title }}
+        </a>
+      </ng-template>
 
-    <ng-template
-      qgColumn="Status"
-      header="Status"
-      [filter]="{ type: 'enum', options: issueStatuses() }"
-      let-issue
-    >
-      <p-tag
-        [value]="getIssueStatusLabel(issue.status)"
-        [severity]="getIssueStatusSeverity(issue.status)"
-      />
-    </ng-template>
+      <ng-template
+        qgColumn="status"
+        header="Status"
+        [filter]="{ type: 'enum', options: issueStatuses() }"
+        [qgColumnOf]="rowType"
+        width="140px"
+        let-issue
+      >
+        <ui-tag
+          [text]="getIssueStatusLabel(issue.status)"
+          [variant]="getIssueStatusSeverity(issue.status)"
+          appearance="outline"
+        />
+      </ng-template>
 
-    <ng-template
-      qgColumn="Priority"
-      header="Priority"
-      [filter]="{ type: 'enum', options: issuePriorities() }"
-      let-issue
-    >
-      <p-tag
-        [value]="getIssuePriorityLabel(issue.priority)"
-        [severity]="getIssuePrioritySeverity(issue.priority)"
-      />
-    </ng-template>
+      <ng-template
+        qgColumn="priority"
+        header="Priority"
+        [filter]="{ type: 'enum', options: issuePriorities() }"
+        [qgColumnOf]="rowType"
+        width="140px"
+        let-issue
+      >
+        <ui-tag
+          [text]="getIssuePriorityLabel(issue.priority)"
+          [variant]="getIssuePrioritySeverity(issue.priority)"
+          appearance="outline"
+        />
+      </ng-template>
 
-    <ng-template
-      qgColumn="AssignedToUserId"
-      header="Assigned to"
-      [sortable]="false"
-      [filter]="assignedToFilter()"
-      let-issue
-    >
-      {{ issue.assignedToUserName || 'Unassigned' }}
-    </ng-template>
+      <ng-template
+        qgColumn="assignedToUserId"
+        header="Assigned to"
+        [sortable]="false"
+        [filter]="{ type: 'enum', options: assignableUserFilterOptions() }"
+        [qgColumnOf]="rowType"
+        width="180px"
+        let-issue
+      >
+        <span class="detail-table__text">
+          {{ issue.assignedToUserName || 'Unassigned' }}
+        </span>
+      </ng-template>
 
-    <ng-template
-      qgColumn="CreatedAt"
-      header="Created at"
-      [filter]="{ type: 'date' }"
-      let-issue
-    >
-      {{ issue.createdAt | date: 'dd.MM.yyyy HH:mm' }}
-    </ng-template>
+      <ng-template
+        qgColumn="createdAt"
+        header="Created at"
+        [filter]="{ type: 'date' }"
+        [qgColumnOf]="rowType"
+        width="160px"
+        let-issue
+      >
+        <time class="detail-table__date">
+          {{ issue.createdAt | date: 'dd.MM.yyyy HH:mm' }}
+        </time>
+      </ng-template>
 
-    <ng-template
-      qgColumn="LastActivityAt"
-      header="Last activity"
-      [filter]="{ type: 'date' }"
-      let-issue
-    >
-      {{ issue.lastActivityAt | date: 'dd.MM.yyyy HH:mm' }}
-    </ng-template>
+      <ng-template
+        qgColumn="lastActivityAt"
+        header="Last activity"
+        [filter]="{ type: 'date' }"
+        [qgColumnOf]="rowType"
+        width="160px"
+        let-issue
+      >
+        <time class="detail-table__date">
+          {{ issue.lastActivityAt | date: 'dd.MM.yyyy HH:mm' }}
+        </time>
+      </ng-template>
 
-    <ng-template qgColumn="actions" header="" [sortable]="false" let-issue>
-      <div class="flex flex-wrap items-center gap-2">
-        <button
-          type="button"
-          pButton
-          [severity]="issue.isWatchedByCurrentUser ? 'success' : 'secondary'"
-          [outlined]="!issue.isWatchedByCurrentUser"
-          size="small"
-          [disabled]="isWatchPending(issue.id)"
-          [pTooltip]="getWatchTooltip(issue)"
-          tooltipPosition="top"
-          [attr.aria-label]="getWatchTooltip(issue)"
-          (click)="toggleWatch(issue)"
-        >
-          @if (isWatchPending(issue.id)) {
-            <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
-          } @else {
-            <i
-              [class]="issue.isWatchedByCurrentUser ? 'pi pi-bell-slash' : 'pi pi-bell'"
-              aria-hidden="true"
-            ></i>
-          }
-          {{ issue.watchersCount }}
-        </button>
-        <button
-          type="button"
-          pButton
-          severity="secondary"
-          [text]="true"
-          size="small"
-          [iconOnly]="true"
-          pTooltip="Issue actions"
-          tooltipPosition="top"
-          [attr.aria-label]="'Actions for ' + issue.title"
-          (click)="openIssueActionsMenu($event, issue)"
-        >
-          <i class="pi pi-ellipsis-v" aria-hidden="true"></i>
-        </button>
-      </div>
-    </ng-template>
-
-    <ng-template qgEmpty>
-      <div class="flex flex-col items-center gap-2 py-4">
-        <p class="text-center text-muted-color">{{ emptyMessage() }}</p>
+      <ng-template
+        qgColumn="actions"
+        header=""
+        [sortable]="false"
+        [qgColumnOf]="rowType"
+        width="140px"
+        let-issue
+      >
         <div class="flex flex-wrap items-center gap-2">
-          <a pButton size="small" [routerLink]="['/issues', 'create']">
-            <i class="pi pi-plus" aria-hidden="true"></i>
-            Add issue
-          </a>
-          <button
-            type="button"
-            pButton
-            size="small"
-            severity="secondary"
-            [outlined]="true"
-            (click)="refresh()"
-          >
-            <i class="pi pi-refresh" aria-hidden="true"></i>
-            Refresh
-          </button>
+          <ui-button
+            [text]="issue.watchersCount.toString()"
+            [icon]="issue.isWatchedByCurrentUser ? 'alert_off' : 'alert'"
+            [variant]="issue.isWatchedByCurrentUser ? 'success' : 'secondary'"
+            [appearance]="issue.isWatchedByCurrentUser ? 'filled' : 'outline'"
+            [loading]="isWatchPending(issue.id)"
+            [uiTooltip]="getWatchTooltip(issue)"
+            uiTooltipPosition="top"
+            [attr.aria-label]="getWatchTooltip(issue)"
+            (click)="toggleWatch(issue)"
+          />
+          <ui-menu
+            triggerVariant="button"
+            [menuItems]="getIssueMenuItems(issue)"
+            icon="more_horizontal"
+            ariaLabel="Issue actions"
+            (menuItemClick)="onIssueMenuAction($event, issue)"
+          />
         </div>
-      </div>
-    </ng-template>
-  </qg-prime-data-grid>
-</p-card>
+      </ng-template>
+
+      <ng-template qgEmpty>
+        <p class="detail-tab-empty">{{ getGridListEmptyMessage(grid.query()) }}</p>
+      </ng-template>
+    </qg-ui-data-grid>
+  </div>
+</section>

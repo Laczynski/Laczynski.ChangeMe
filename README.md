@@ -14,7 +14,7 @@ Use it to bootstrap Angular + ASP.NET projects with layered backend, JWT session
 - **JWT sessions** — access + refresh tokens, session list/revoke; **RBAC** with permission catalog, guards, and backend checks (reference implementation)
 - **EF Core** + PostgreSQL — configurations, migrations (`InitialCreate`), repository-style `ApplicationDbContext` usage
 - **Cross-cutting infrastructure** — Hangfire jobs, Serilog, email abstraction (MailHog locally), local file storage pattern
-- **Angular feature slices** — `features/<name>/`, shared `ApiService`, interceptors, guards, PrimeNG + Tailwind setup
+- **Angular feature slices** — `features/<name>/`, shared `ApiService`, interceptors, guards, @laczynski/ui setup
 - **Production frontend config** — `runtime-config.js`, nginx same-origin proxy for `/api/` and `/hubs/` in Docker
 - **Sample domain** — issues CRUD, comments, attachments, notifications illustrate end-to-end flows; treat as examples to copy or remove
 
@@ -61,14 +61,14 @@ This repository is meant to provide:
 
 ## Tech Stack
 
-- Frontend: Angular 22, TypeScript, RxJS
+- Frontend: Angular 21, TypeScript, RxJS
 - Backend: ASP.NET Core, FastEndpoints, Mediator source generator use case flow
 - Database: PostgreSQL
 - Background jobs: Hangfire
 - Local email testing: MailHog
 - Testing: Angular test runner, .NET unit tests, .NET integration tests with Testcontainers
 - Local orchestration: Docker Compose
-- UI: PrimeNG + Tailwind CSS
+- UI: [@laczynski/ui](https://ui.laczynski.dev/) (Fluent-inspired Angular components) + Tailwind CSS v4
 
 ## Repository Structure
 

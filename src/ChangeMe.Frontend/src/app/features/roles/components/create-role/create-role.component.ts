@@ -7,30 +7,33 @@ import {
   Validators
 } from '@angular/forms';
 import { Router } from '@angular/router';
+import {
+  AccordionComponent,
+  ButtonComponent,
+  MessageBarComponent,
+  TextareaComponent,
+  TextComponent
+} from '@laczynski/ui';
 import { ToastService } from '@core/toast/services/toast.service';
 import { PermissionChecklistComponent } from '@features/roles/components/permission-checklist/permission-checklist.component';
 import { PermissionCatalogItemDto } from '@features/roles/models/role.model';
 import { RolesService } from '@features/roles/services/roles.service';
-import { RoleConstraints, RoleMessages } from '@features/roles/utils/roles.utils';
+import { RoleConstraints, RoleFieldErrors, RoleMessages } from '@features/roles/utils/roles.utils';
 import { BackButtonComponent } from '@shared/components/back-button/back-button.component';
-import { ButtonDirective } from 'primeng/button';
-import { Card } from 'primeng/card';
-import { InputText } from 'primeng/inputtext';
-import { Message } from 'primeng/message';
-import { Panel } from 'primeng/panel';
-import { Textarea } from 'primeng/textarea';
+import { DefaultExpandedAccordionDirective } from '@shared/directives/default-expanded-accordion.directive';
+import { fieldError } from '@shared/forms/field-error';
 
 @Component({
   selector: 'app-create-role',
   imports: [
     ReactiveFormsModule,
     BackButtonComponent,
-    Card,
-    ButtonDirective,
-    InputText,
-    Textarea,
-    Message,
-    Panel,
+    ButtonComponent,
+    TextComponent,
+    TextareaComponent,
+    MessageBarComponent,
+    AccordionComponent,
+    DefaultExpandedAccordionDirective,
     PermissionChecklistComponent
   ],
   templateUrl: './create-role.component.html'
@@ -41,12 +44,14 @@ export class CreateRoleComponent {
   private readonly toastService = inject(ToastService);
   private readonly destroyRef = inject(DestroyRef);
 
-  readonly roleConstraints = RoleConstraints;
   readonly RoleMessages = RoleMessages;
   readonly catalog = signal<PermissionCatalogItemDto[]>([]);
   readonly submitError = signal<string | null>(null);
   readonly permissionsError = signal(false);
   readonly isSubmitting = signal(false);
+  readonly submitted = signal(false);
+  protected readonly fieldError = fieldError;
+  protected readonly RoleFieldErrors = RoleFieldErrors;
 
   readonly form = new FormGroup({
     name: new FormControl('', {
@@ -77,14 +82,6 @@ export class CreateRoleComponent {
       });
   }
 
-  shouldShowError(control: {
-    invalid: boolean;
-    dirty: boolean;
-    touched: boolean;
-  }): boolean {
-    return control.invalid && (control.dirty || control.touched);
-  }
-
   cancel(): void {
     void this.router.navigate(['/roles']);
   }
@@ -92,6 +89,7 @@ export class CreateRoleComponent {
   onSubmit(): void {
     this.submitError.set(null);
     this.permissionsError.set(false);
+    this.submitted.set(true);
 
     if (this.form.invalid) {
       this.form.markAllAsTouched();

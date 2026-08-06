@@ -1,72 +1,84 @@
-<p-card
-  class="mb-4"
-  header="Create Role"
-  subheader="Define a custom role and its permissions"
+<section
+  class="app-page-fill mx-auto flex min-h-0 w-full max-w-none flex-1 flex-col gap-3 overflow-hidden"
+  aria-label="Create role"
 >
-  <div class="mb-4 flex flex-wrap items-center gap-2">
+  <header class="grid shrink-0 gap-1.5 pb-2">
+    <h1 class="m-0 text-xl font-semibold tracking-tight text-foreground md:text-2xl">
+      Create Role
+    </h1>
+    <p class="m-0 max-w-3xl text-sm leading-normal text-foreground-2">
+      Define a custom role and its permissions
+    </p>
+  </header>
+
+  <div class="flex shrink-0 flex-wrap items-center gap-2">
     <app-back-button label="Back to roles list" [route]="['/roles']" />
   </div>
 
-  <form class="p-fluid flex flex-col gap-4" [formGroup]="form" (ngSubmit)="onSubmit()">
-    <p-panel header="Role details" [toggleable]="true">
-      <div class="flex flex-col gap-1.5">
-        <label for="name">Name</label>
-        <input
-          id="name"
-          type="text"
-          pInputText
-          [formControl]="form.controls.name"
-          [invalid]="shouldShowError(form.controls.name)"
-        />
-      </div>
+  <div class="flex min-h-0 flex-1 flex-col">
+    <form
+      class="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl bg-surface-2"
+      [formGroup]="form"
+      (ngSubmit)="onSubmit()"
+    >
+      <div class="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-4 md:p-6">
+        <ui-accordion appDefaultExpanded label="Role details" icon="shield">
+          <div class="flex flex-col gap-4">
+            <ui-text
+              label="Name"
+              [formControl]="form.controls.name"
+              [required]="true"
+              [errorText]="
+                fieldError(form.controls.name, RoleFieldErrors.name, submitted())
+              "
+            />
+            <ui-textarea
+              label="Description"
+              [rows]="3"
+              [formControl]="form.controls.description"
+              [errorText]="
+                fieldError(
+                  form.controls.description,
+                  RoleFieldErrors.description,
+                  submitted()
+                )
+              "
+            />
+          </div>
+        </ui-accordion>
 
-      <div class="mt-4 flex flex-col gap-1.5">
-        <label for="description">Description</label>
-        <textarea
-          id="description"
-          pTextarea
-          rows="3"
-          [formControl]="form.controls.description"
-          [invalid]="shouldShowError(form.controls.description)"
-        ></textarea>
-        @if (shouldShowError(form.controls.description)) {
-          <p-message severity="error" variant="simple">
-            {{ RoleMessages.descriptionTooLong }}
-          </p-message>
+        <ui-accordion appDefaultExpanded label="Permissions" icon="key">
+          <app-permission-checklist
+            [catalog]="catalog()"
+            [control]="form.controls.permissionCodes"
+            [showFormError]="permissionsError()"
+          />
+        </ui-accordion>
+
+        @if (submitError()) {
+          <ui-message-bar [title]="submitError()!" variant="danger" />
         }
       </div>
-    </p-panel>
 
-    <p-panel header="Permissions" [toggleable]="true">
-      <app-permission-checklist
-        [catalog]="catalog()"
-        [control]="form.controls.permissionCodes"
-        [showFormError]="permissionsError()"
-      />
-    </p-panel>
-
-    @if (submitError()) {
-      <p-message severity="error">{{ submitError() }}</p-message>
-    }
-
-    <div class="flex flex-wrap items-center justify-end gap-2">
-      <button
-        type="button"
-        pButton
-        severity="secondary"
-        [outlined]="true"
-        (click)="cancel()"
+      <footer
+        class="flex shrink-0 items-center justify-end gap-2 border-t border-stroke bg-surface-2 px-4 py-3.5 md:px-6"
       >
-        Cancel
-      </button>
-      <button type="submit" pButton [disabled]="isSubmitting()">
-        @if (isSubmitting()) {
-          <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
-        } @else {
-          <i class="pi pi-check" aria-hidden="true"></i>
-        }
-        {{ isSubmitting() ? 'Creating role...' : 'Create role' }}
-      </button>
-    </div>
-  </form>
-</p-card>
+        <div class="flex w-full flex-wrap items-center justify-end gap-2">
+          <ui-button
+            text="Cancel"
+            variant="secondary"
+            appearance="outline"
+            (click)="cancel()"
+          />
+          <ui-button
+            type="submit"
+            [text]="isSubmitting() ? 'Creating role...' : 'Create role'"
+            icon="checkmark"
+            variant="primary"
+            [loading]="isSubmitting()"
+          />
+        </div>
+      </footer>
+    </form>
+  </div>
+</section>

@@ -7,17 +7,20 @@ import {
   Validators
 } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
+import {
+  AccordionComponent,
+  ButtonComponent,
+  MessageBarComponent,
+  SpinnerComponent,
+  TextComponent
+} from '@laczynski/ui';
 import { ToastService } from '@core/toast/services/toast.service';
 import { MyAccountDto } from '@features/auth/models/auth.model';
 import { AuthService } from '@features/auth/services/auth.service';
-import { AuthConstraints, AuthMessages } from '@features/auth/utils/auth.utils';
+import { AuthConstraints, AuthFieldErrors, AuthMessages } from '@features/auth/utils/auth.utils';
 import { BackButtonComponent } from '@shared/components/back-button/back-button.component';
-import { ButtonDirective } from 'primeng/button';
-import { Card } from 'primeng/card';
-import { InputText } from 'primeng/inputtext';
-import { Message } from 'primeng/message';
-import { Panel } from 'primeng/panel';
-import { ProgressSpinner } from 'primeng/progressspinner';
+import { DefaultExpandedAccordionDirective } from '@shared/directives/default-expanded-accordion.directive';
+import { fieldError } from '@shared/forms/field-error';
 
 @Component({
   selector: 'app-edit-my-account',
@@ -25,12 +28,12 @@ import { ProgressSpinner } from 'primeng/progressspinner';
     ReactiveFormsModule,
     RouterLink,
     BackButtonComponent,
-    Card,
-    ButtonDirective,
-    InputText,
-    Message,
-    Panel,
-    ProgressSpinner
+    ButtonComponent,
+    TextComponent,
+    MessageBarComponent,
+    AccordionComponent,
+    DefaultExpandedAccordionDirective,
+    SpinnerComponent
   ],
   templateUrl: './edit-my-account.component.html'
 })
@@ -45,6 +48,9 @@ export class EditMyAccountComponent {
   readonly submitError = signal<string | null>(null);
   readonly isLoading = signal(true);
   readonly isSubmitting = signal(false);
+  readonly submitted = signal(false);
+  protected readonly fieldError = fieldError;
+  protected readonly AuthFieldErrors = AuthFieldErrors;
 
   readonly form = new FormGroup({
     firstName: new FormControl('', {
@@ -92,6 +98,8 @@ export class EditMyAccountComponent {
   }
 
   onSubmit(): void {
+    this.submitted.set(true);
+
     if (this.form.invalid || this.isSubmitting()) {
       this.form.markAllAsTouched();
       return;
@@ -122,9 +130,5 @@ export class EditMyAccountComponent {
           this.isSubmitting.set(false);
         }
       });
-  }
-
-  shouldShowError(control: FormControl<string>): boolean {
-    return control.touched && control.invalid;
   }
 }

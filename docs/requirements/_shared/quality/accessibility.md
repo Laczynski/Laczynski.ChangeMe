@@ -25,8 +25,9 @@ Unless a REQ states otherwise, all screens must meet these minimum expectations:
 
 ### Visual and motion
 
-- The application supports **light** and **dark** themes; contrast follows the PrimeNG **Aura** preset — specification authors do not specify hex colors.
-- Respect **prefers-reduced-motion** for non-essential animations when the UI kit provides a hook; compliance-gate sticky toasts and required policy dialogs are never suppressed.
+- The application supports **light** and **dark** themes. Contrast follows **Fluent 2** semantic tokens exposed by **@laczynski/ui** (`--color-neutral-foreground-*`, `--color-neutral-background-*`, `--color-brand-*`) — specification authors do not specify hex colors.
+- Interactive states (hover, pressed, selected, disabled) use Laczynski component defaults so focus rings and disabled styling stay consistent across the product.
+- Respect **prefers-reduced-motion** for non-essential animations when the UI kit provides a hook (`app-reduced-motion` on `<html>`); compliance-gate sticky toasts and required policy dialogs are never suppressed.
 
 ### specification author checklist
 

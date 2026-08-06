@@ -50,7 +50,7 @@ Prefer, in order:
 2. `getByLabel` (inputs, multiselects linked with `for` / `inputId`)
 3. `getByPlaceholder` (search fields)
 
-Avoid PrimeNG class selectors and Tailwind layout classes except where noted below.
+Avoid Laczynski internal class selectors and Tailwind layout classes except where noted below.
 
 ```typescript
 await page.getByRole("button", { name: "Create user" }).click();
@@ -58,13 +58,14 @@ await page.getByRole("textbox", { name: "Name" }).fill(title);
 await page
   .getByRole("main")
   .getByRole("region", { name: "Roles" })
-  .locator(".p-multiselect")
+  .getByRole("combobox")
   .click();
+await page.getByRole("option", { name: "Administrator" }).click();
 await page.getByRole("checkbox", { name: "View users" }).click();
 await expect(page.getByRole("main")).toContainText(title);
 ```
 
-**PrimeNG:** collapsible panel headers and permission checkboxes can make `getByLabel` ambiguous — prefer `getByRole("textbox", …)` for inputs. Multiselect: scope to `getByRole("main").getByRole("region", { name: "…" })`, click `.p-multiselect`, pick `getByRole("option")`, press `Escape`. Use `expectDetailsTitle` in `*.fixture.ts` when the page title includes extra context (e.g. user name + email).
+**@laczynski/ui:** prefer `getByRole` for fields and buttons. For `ui-select` / multiselect panels, scope to `getByRole("main").getByRole("region", { name: "…" })`, open the combobox, pick `getByRole("option")`, press `Escape`. Collapsible `ui-accordion` sections and permission checkboxes can make `getByLabel` ambiguous — prefer `getByRole("textbox", …)` for inputs. Use `expectDetailsTitle` in `*.fixture.ts` when the page title includes extra context (e.g. user name + email).
 
 ## Test data
 

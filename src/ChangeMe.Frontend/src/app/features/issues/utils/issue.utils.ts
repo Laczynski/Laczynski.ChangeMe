@@ -1,10 +1,15 @@
 import { signal } from '@angular/core';
+import type { ConfirmMessagePart } from '@core/confirm/models/confirm-message.model';
+import {
+  confirmMessage,
+  confirmStrong
+} from '@core/confirm/utils/confirm-message.utils';
 import {
   IssueHistoryEventType,
   IssuePriority,
   IssueStatus
 } from '@features/issues/models/issue.model';
-import { highlightDialogValue } from '@shared/ui/utils/dialog-message.utils';
+import type { IconName, Variant } from '@laczynski/ui';
 
 export const IssueConstraints = {
   TITLE_MIN_LENGTH: 3,
@@ -33,10 +38,35 @@ export const IssueCommentConstraints = {
   CONTENT_MAX_LENGTH: 4000
 };
 
+export const IssueFieldErrors = {
+  title: {
+    required: 'Title is required',
+    minlength: `Title must be at least ${IssueConstraints.TITLE_MIN_LENGTH} characters`,
+    maxlength: `Title must be at most ${IssueConstraints.TITLE_MAX_LENGTH} characters`
+  },
+  description: {
+    required: 'Description is required',
+    maxlength: `Description must be at most ${IssueConstraints.DESCRIPTION_MAX_LENGTH} characters`
+  },
+  acceptanceCriterion: {
+    required: 'Acceptance criterion is required',
+    maxlength: `Acceptance criterion must be at most ${IssueAcceptanceCriteriaConstraints.CONTENT_MAX_LENGTH} characters`
+  },
+  comment: {
+    required: 'Comment content is required',
+    maxlength: `Comment must be at most ${IssueCommentConstraints.CONTENT_MAX_LENGTH} characters`
+  }
+} as const;
+
 export const issueAttachmentAccept =
   IssueConstraints.ATTACHMENT_ALLOWED_EXTENSIONS.join(',');
 
-export type IssueBadgeSeverity = 'secondary' | 'success' | 'info' | 'warn' | 'danger';
+export type IssueBadgeSeverity =
+  | 'secondary'
+  | 'success'
+  | 'info'
+  | 'warning'
+  | 'danger';
 
 export type IssueLabeledOption<T> = { value: T; label: string };
 
@@ -44,7 +74,7 @@ type IssueBadgeMeta<T> = IssueLabeledOption<T> & { severity: IssueBadgeSeverity 
 
 const ISSUE_STATUS_META: IssueBadgeMeta<IssueStatus>[] = [
   { value: IssueStatus.NEW, label: 'New', severity: 'info' },
-  { value: IssueStatus.IN_PROGRESS, label: 'In Progress', severity: 'warn' },
+  { value: IssueStatus.IN_PROGRESS, label: 'In Progress', severity: 'warning' },
   { value: IssueStatus.RESOLVED, label: 'Resolved', severity: 'success' },
   { value: IssueStatus.CLOSED, label: 'Closed', severity: 'secondary' }
 ];
@@ -52,7 +82,7 @@ const ISSUE_STATUS_META: IssueBadgeMeta<IssueStatus>[] = [
 const ISSUE_PRIORITY_META: IssueBadgeMeta<IssuePriority>[] = [
   { value: IssuePriority.LOW, label: 'Low', severity: 'secondary' },
   { value: IssuePriority.MEDIUM, label: 'Medium', severity: 'info' },
-  { value: IssuePriority.HIGH, label: 'High', severity: 'warn' },
+  { value: IssuePriority.HIGH, label: 'High', severity: 'warning' },
   { value: IssuePriority.CRITICAL, label: 'Critical', severity: 'danger' }
 ];
 
@@ -88,23 +118,26 @@ export function getIssuePrioritySeverity(priority: IssuePriority): IssueBadgeSev
   return issuePriorityMetaByValue.get(priority)?.severity ?? 'secondary';
 }
 
-export function getDeleteIssueConfirmMessage(title: string): string {
-  return `Delete ${highlightDialogValue(title)}? This cannot be undone.`;
+export const outline = 'outline' as const;
+
+export function getDeleteIssueConfirmMessage(title: string): ConfirmMessagePart[] {
+  return confirmMessage('Delete ', confirmStrong(title), '? This cannot be undone.');
 }
 
-export function getDeleteAttachmentConfirmMessage(fileName: string): string {
-  return `Delete ${highlightDialogValue(fileName)}? This action cannot be undone.`;
+export function getDeleteAttachmentConfirmMessage(
+  fileName: string
+): ConfirmMessagePart[] {
+  return confirmMessage(
+    'Delete ',
+    confirmStrong(fileName),
+    '? This action cannot be undone.'
+  );
 }
-
-export const issueDeleteMenuItemDangerClasses = {
-  labelClass: 'text-red-600 dark:text-red-400',
-  iconClass: 'text-red-600 dark:text-red-400'
-} as const;
 
 export type IssueHistoryEventVisual = {
-  icon: string;
-  markerClass: string;
-  tagSeverity: IssueBadgeSeverity;
+  icon: IconName;
+  variant: Variant;
+  tagVariant: IssueBadgeSeverity;
 };
 
 const ISSUE_HISTORY_EVENT_VISUALS: Record<
@@ -112,66 +145,66 @@ const ISSUE_HISTORY_EVENT_VISUALS: Record<
   IssueHistoryEventVisual
 > = {
   ISSUE_CREATED: {
-    icon: 'pi pi-plus',
-    markerClass: 'bg-green-600 text-white dark:bg-green-500',
-    tagSeverity: 'success'
+    icon: 'add',
+    variant: 'success',
+    tagVariant: 'success'
   },
   STATUS_CHANGED: {
-    icon: 'pi pi-sync',
-    markerClass: 'bg-sky-600 text-white dark:bg-sky-500',
-    tagSeverity: 'info'
+    icon: 'arrow_sync',
+    variant: 'info',
+    tagVariant: 'info'
   },
   PRIORITY_CHANGED: {
-    icon: 'pi pi-flag-fill',
-    markerClass: 'bg-amber-500 text-white dark:bg-amber-400',
-    tagSeverity: 'warn'
+    icon: 'flag',
+    variant: 'warning',
+    tagVariant: 'warning'
   },
   ASSIGNEE_CHANGED: {
-    icon: 'pi pi-user',
-    markerClass: 'bg-violet-600 text-white dark:bg-violet-500',
-    tagSeverity: 'info'
+    icon: 'person',
+    variant: 'info',
+    tagVariant: 'info'
   },
   TITLE_CHANGED: {
-    icon: 'pi pi-pencil',
-    markerClass: 'bg-zinc-500 text-white dark:bg-zinc-400',
-    tagSeverity: 'secondary'
+    icon: 'edit',
+    variant: 'secondary',
+    tagVariant: 'secondary'
   },
   DESCRIPTION_CHANGED: {
-    icon: 'pi pi-align-left',
-    markerClass: 'bg-zinc-500 text-white dark:bg-zinc-400',
-    tagSeverity: 'secondary'
+    icon: 'align_left',
+    variant: 'secondary',
+    tagVariant: 'secondary'
   },
   ACCEPTANCE_CRITERION_ADDED: {
-    icon: 'pi pi-check-circle',
-    markerClass: 'bg-teal-600 text-white dark:bg-teal-500',
-    tagSeverity: 'success'
+    icon: 'checkmark_circle',
+    variant: 'success',
+    tagVariant: 'success'
   },
   ACCEPTANCE_CRITERION_UPDATED: {
-    icon: 'pi pi-file-edit',
-    markerClass: 'bg-sky-600 text-white dark:bg-sky-500',
-    tagSeverity: 'info'
+    icon: 'document_edit',
+    variant: 'info',
+    tagVariant: 'info'
   },
   ACCEPTANCE_CRITERION_REMOVED: {
-    icon: 'pi pi-times-circle',
-    markerClass: 'bg-red-600 text-white dark:bg-red-500',
-    tagSeverity: 'danger'
+    icon: 'dismiss_circle',
+    variant: 'danger',
+    tagVariant: 'danger'
   },
   ATTACHMENT_ADDED: {
-    icon: 'pi pi-paperclip',
-    markerClass: 'bg-indigo-600 text-white dark:bg-indigo-500',
-    tagSeverity: 'info'
+    icon: 'attach',
+    variant: 'info',
+    tagVariant: 'info'
   },
   ATTACHMENT_REMOVED: {
-    icon: 'pi pi-trash',
-    markerClass: 'bg-red-600 text-white dark:bg-red-500',
-    tagSeverity: 'danger'
+    icon: 'delete',
+    variant: 'danger',
+    tagVariant: 'danger'
   }
 };
 
 const defaultIssueHistoryEventVisual: IssueHistoryEventVisual = {
-  icon: 'pi pi-history',
-  markerClass: 'bg-primary text-primary-contrast',
-  tagSeverity: 'secondary'
+  icon: 'history',
+  variant: 'secondary',
+  tagVariant: 'secondary'
 };
 
 export function getIssueHistoryEventVisual(

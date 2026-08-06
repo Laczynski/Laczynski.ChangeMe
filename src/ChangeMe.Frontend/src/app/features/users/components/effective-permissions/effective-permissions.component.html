@@ -1,43 +1,46 @@
-<p-panel
-  class="mb-0"
-  [header]="panelHeader()"
-  [toggleable]="true"
-  [collapsed]="collapsed()"
->
-  @if (emptySelectionMessage()) {
-    <p class="text-muted-color m-0 text-sm">{{ emptySelectionMessage() }}</p>
-  } @else if (permissions().length === 0) {
-    <p class="text-muted-color m-0 text-sm">{{ UserMessages.noPermissions }}</p>
-  } @else {
-    <div class="flex flex-col gap-4">
-      @for (group of groupedPermissions(); track group.group) {
-        <div class="flex flex-col gap-2">
-          <h4
-            class="text-muted-color m-0 text-sm font-semibold tracking-wide uppercase"
-          >
-            {{ group.group }}
-          </h4>
-          <div class="flex flex-col gap-3">
-            @for (permission of group.items; track permission.code) {
-              <div
-                class="border-surface-200 flex gap-3 rounded-lg border p-3 dark:border-surface-700"
-              >
-                <span class="flex min-w-0 flex-1 flex-col gap-1">
-                  <span class="text-color font-medium">{{ permission.label }}</span>
-                  <span class="text-muted-color text-sm">
-                    {{ permission.description }}
-                  </span>
-                  @if (showFromRoles() && permission.fromRoleNames?.length) {
-                    <span class="text-muted-color text-sm">
-                      {{ formatFromRoles(permission.fromRoleNames) }}
-                    </span>
-                  }
-                </span>
-              </div>
-            }
-          </div>
+<section class="app-effective-permissions" [attr.aria-label]="panelHeader()">
+  <ui-accordion appDefaultExpanded [label]="panelHeader()" icon="shield">
+    <div class="detail-inset app-effective-permissions__inset">
+      @if (emptySelectionMessage()) {
+        <p class="detail-tab-empty">{{ emptySelectionMessage() }}</p>
+      } @else if (permissions().length === 0) {
+        <p class="detail-tab-empty">{{ UserMessages.noPermissions }}</p>
+      } @else {
+        <div class="detail-tab-panel app-effective-permissions__groups">
+          @for (group of groupedPermissions(); track group.group) {
+            <section
+              class="app-effective-permissions__group"
+              [attr.aria-label]="group.group"
+            >
+              <h3 class="app-effective-permissions__group-title">
+                {{ group.group }}
+              </h3>
+              <ul class="app-effective-permissions__list">
+                @for (permission of group.items; track permission.code) {
+                  <li class="app-effective-permissions__item">
+                    <div class="app-effective-permissions__item-head">
+                      <span class="app-effective-permissions__item-label">
+                        {{ permission.label }}
+                      </span>
+                      <code class="app-effective-permissions__code">
+                        {{ permission.code }}
+                      </code>
+                    </div>
+                    <p class="app-effective-permissions__item-desc">
+                      {{ permission.description }}
+                    </p>
+                    @if (showFromRoles() && permission.fromRoleNames?.length) {
+                      <p class="app-effective-permissions__item-roles">
+                        {{ formatFromRoles(permission.fromRoleNames!) }}
+                      </p>
+                    }
+                  </li>
+                }
+              </ul>
+            </section>
+          }
         </div>
       }
     </div>
-  }
-</p-panel>
+  </ui-accordion>
+</section>

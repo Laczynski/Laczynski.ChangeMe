@@ -3,11 +3,24 @@ import {
   computed,
   DestroyRef,
   inject,
-  signal,
-  viewChild
+  Injector
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
+import { formatGridError } from '@query-grid/core';
+import {
+  QgColumnDirective,
+  QgEmptyDirective,
+  UiDataGridComponent
+} from '@query-grid/ui';
+import {
+  ButtonComponent,
+  MenuComponent,
+  MessageBarComponent,
+  TagComponent,
+  type MenuItem
+} from '@laczynski/ui';
+import { ConfirmService } from '@core/confirm/services/confirm.service';
 import { ToastService } from '@core/toast/services/toast.service';
 import { AuthService } from '@features/auth/services/auth.service';
 import { RoleListItemDto } from '@features/roles/models/role.model';
@@ -17,34 +30,21 @@ import {
   getDeleteRoleConfirmMessage,
   RoleMessages
 } from '@features/roles/utils/roles.utils';
-import {
-  GridResourceFactory,
-  PrimeDataGridComponent,
-  QgColumnDirective,
-  QgEmptyDirective,
-  type GridResource
-} from '@query-grid/primeng';
 import { PermissionCodes } from '@shared/authorization/permission-codes';
-import { getGridListEmptyMessage } from '@shared/data/utils/grid.utils';
-import { ConfirmationService, MenuItem } from 'primeng/api';
-import { ButtonDirective } from 'primeng/button';
-import { Card } from 'primeng/card';
-import { Menu } from 'primeng/menu';
-import { Message } from 'primeng/message';
-import { Tag } from 'primeng/tag';
-import { Tooltip } from 'primeng/tooltip';
+import {
+  createAppGridResource,
+  getGridListEmptyMessage
+} from '@shared/data/utils/grid.utils';
 
 @Component({
   selector: 'app-roles-list',
   imports: [
     RouterLink,
-    Card,
-    ButtonDirective,
-    Message,
-    Tag,
-    Menu,
-    Tooltip,
-    PrimeDataGridComponent,
+    ButtonComponent,
+    MessageBarComponent,
+    TagComponent,
+    MenuComponent,
+    UiDataGridComponent,
     QgColumnDirective,
     QgEmptyDirective
   ],
@@ -53,77 +53,72 @@ import { Tooltip } from 'primeng/tooltip';
 export class RolesListComponent {
   private readonly rolesService = inject(RolesService);
   private readonly authService = inject(AuthService);
-  private readonly confirmationService = inject(ConfirmationService);
+  private readonly confirmService = inject(ConfirmService);
   private readonly toastService = inject(ToastService);
-  private readonly gridFactory = inject(GridResourceFactory);
+  private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly injector = inject(Injector);
 
   readonly RoleMessages = RoleMessages;
   readonly formatDescription = formatDescription;
   readonly permissionCodes = PermissionCodes;
+  readonly getGridListEmptyMessage = getGridListEmptyMessage;
 
-  readonly roleActionItems = signal<MenuItem[]>([]);
-  private readonly roleActionsMenu = viewChild.required<Menu>('roleActionsMenu');
+  protected readonly rowType!: RoleListItemDto;
 
-  readonly grid: GridResource<RoleListItemDto>;
+  readonly grid = createAppGridResource(this.injector, {
+    load: (query) => this.rolesService.getRoles(query),
+    defaultSort: [{ field: 'name', desc: false }],
+    defaultTake: 10,
+    persistKey: 'changeme.roles-list'
+  });
+
+  readonly errorMessage = computed(() => formatGridError(this.grid.error()));
 
   readonly canManageRoles = computed(() =>
     this.authService.hasPermission(PermissionCodes.rolesManage)
   );
 
-  readonly errorMessage = computed(() => {
-    const error = this.grid.error();
-    return error instanceof Error ? error.message : error ? String(error) : null;
-  });
-
-  readonly emptyMessage = computed(() => getGridListEmptyMessage(this.grid.query()));
-
-  constructor() {
-    this.grid = this.gridFactory.create<RoleListItemDto>({
-      destroyRef: this.destroyRef,
-      load: (query) => this.rolesService.getRoles(query),
-      defaultSort: [{ field: 'Name', desc: false }],
-      defaultTake: 10,
-      persistState: { key: 'changeme.roles-list', storage: 'session' }
-    });
-  }
-
   refresh(): void {
     this.grid.reload();
   }
 
-  openRoleActionsMenu(event: Event, role: RoleListItemDto): void {
+  getRoleMenuItems(role: RoleListItemDto): MenuItem[] {
     const items: MenuItem[] = [
-      {
-        label: 'Open details',
-        icon: 'pi pi-eye',
-        routerLink: ['/roles', role.id]
-      }
+      { id: 'open', label: 'Open details', icon: 'eye' }
     ];
 
     if (this.canManageRoles() && !role.isSystem) {
       items.push(
-        {
-          label: 'Edit role',
-          icon: 'pi pi-pencil',
-          routerLink: ['/roles', role.id, 'edit']
-        },
-        {
-          label: 'Delete role',
-          icon: 'pi pi-trash',
-          command: () => this.confirmDeleteRole(role)
-        }
+        { id: 'edit', label: 'Edit role', icon: 'edit' },
+        { id: 'delete', label: 'Delete role', icon: 'delete' }
       );
     }
 
-    this.roleActionItems.set(items);
-    this.roleActionsMenu().toggle(event);
+    return items;
+  }
+
+  onRoleMenuAction(item: MenuItem, role: RoleListItemDto): void {
+    switch (item.id) {
+      case 'open':
+        void this.router.navigate(['/roles', role.id]);
+        break;
+      case 'edit':
+        void this.router.navigate(['/roles', role.id, 'edit']);
+        break;
+      case 'delete':
+        this.confirmDeleteRole(role);
+        break;
+    }
   }
 
   confirmDeleteRole(role: RoleListItemDto): void {
-    this.confirmationService.confirm({
+    this.confirmService.confirm({
       header: 'Delete role',
       message: getDeleteRoleConfirmMessage(role.name),
+      acceptLabel: 'Delete',
+      rejectLabel: 'Cancel',
+      acceptVariant: 'danger',
       accept: () => {
         this.rolesService
           .deleteRole(role.id)
@@ -131,7 +126,7 @@ export class RolesListComponent {
           .subscribe({
             next: () => {
               this.toastService.success(RoleMessages.roleDeleted);
-              this.grid.reload();
+              this.refresh();
             },
             error: (error: Error) => {
               this.toastService.error(error.message);

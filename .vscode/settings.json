@@ -2,7 +2,6 @@
   "typescript.tsdk": "src/ChangeMe.Frontend/node_modules/typescript/lib",
   "typescript.enablePromptUseWorkspaceTsdk": true,
   "eslint.workingDirectories": ["src/ChangeMe.Frontend"],
-  "css.customData": [".vscode/tailwind.css-data.json"],
   "css.lint.unknownAtRules": "ignore",
   "tailwindCSS.experimental.configFile": "src/ChangeMe.Frontend/src/tailwind.css",
   "editor.formatOnSave": true,

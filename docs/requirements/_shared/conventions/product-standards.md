@@ -20,13 +20,13 @@ Out of scope here: email templates, push notification payloads, and API error sh
 
 Use the correct channel so behavior stays consistent across modules.
 
-| Channel                                 | When to use                                                                                  | Persistence                              |
-| --------------------------------------- | -------------------------------------------------------------------------------------------- | ---------------------------------------- |
-| **Inline field validation**             | Field-level rule failures on forms                                                           | Until the field becomes valid            |
-| **Inline screen message** (`p-message`) | Load failures, form-level errors not tied to one field                                       | Until the user retries or navigates away |
-| **Toast**                               | Successful mutations; action failures not tied to a single field; background policy warnings | Auto-dismiss; see below                  |
-| **Confirmation dialog**                 | Destructive or irreversible actions before execution                                         | Until confirm or cancel                  |
-| **Modal dialog**                        | Short secondary flows that need input (for example reject reason)                            | Until submit, cancel, or close           |
+| Channel                                      | When to use                                                                                  | Persistence                              |
+| -------------------------------------------- | -------------------------------------------------------------------------------------------- | ---------------------------------------- |
+| **Inline field validation**                  | Field-level rule failures on forms                                                           | Until the field becomes valid            |
+| **Inline screen message** (`ui-message-bar`) | Load failures, form-level errors not tied to one field                                       | Until the user retries or navigates away |
+| **Toast**                                    | Successful mutations; action failures not tied to a single field; background policy warnings | Auto-dismiss; see below                  |
+| **Confirmation dialog**                      | Destructive or irreversible actions before execution                                         | Until confirm or cancel                  |
+| **Modal dialog**                             | Short secondary flows that need input (for example reject reason)                            | Until submit, cancel, or close           |
 
 ### Toast conventions
 
@@ -77,7 +77,7 @@ Unless a functional specification specifies otherwise:
 - **Default sort** is defined in the functional specification.
 - Primary identifier links to details when the functional specification defines one.
 - Missing optional text values display **`—`** (em dash), unless the functional specification defines a different placeholder (for example **`Unassigned`**, **`Never`**).
-- **Status** and categorical values use compact badges with exact labels from the functional specification.
+- **Status** and categorical values use compact **tint badges** (`ui-tag`, `appearance="tint"`) with exact labels from the functional specification; color is supplementary — the label text must remain readable in light and dark themes.
 - Secondary row actions use an **overflow menu** unless the functional specification defines inline controls.
 - Lists are **server-paginated** unless the functional specification defines a different control.
 - Default page size: **10** rows per page.
@@ -126,7 +126,7 @@ Unless a functional specification specifies otherwise:
 
 - Content is grouped into named sections (for example **Comments**, **Sessions**, **Permissions**).
 - Section-level **Add** actions appear only when the user has the required permission.
-- Primary actions (edit, delete) appear in the page header or actions area.
+- Primary actions (edit, delete) appear in the page header toolbar or actions area — at most **one** primary-styled control per view (Fluent 2 emphasis rule).
 - **Back** navigates to the parent list named in the functional specification.
 
 ---
@@ -200,27 +200,27 @@ Do **not** copy pagination, loading, or filter control types when inheritance su
 
 Use after implementing or reviewing a feature. Check only the `STD-*` sections listed in the target `FR-*` `inherits_conventions` (plus any section cited in the spec body). **L4 overrides L2** — if the `FR-*` states an exception, the exception wins.
 
-| Check                    | STD         | Pass when…                                                                                                             |
-| ------------------------ | ----------- | ---------------------------------------------------------------------------------------------------------------------- |
-| Access denied copy       | STD-ACC-001 | Rejection uses **`You do not have permission to perform this action.`**; unauthorized actions are hidden, not disabled |
-| Guest / sign-in          | STD-ACC-001 | Protected actions redirect unauthenticated users to sign-in                                                            |
-| Field validation UX      | STD-VAL-001 | Errors inline at the field; form stays open; values preserved; server errors map to the same positions                 |
-| Success / error feedback | STD-MSG-001 | Mutations use toast; field errors do not use toast; destructive actions use confirmation dialog first                  |
-| List screen              | STD-LST-001 | Server pagination (default 10); AND filters; clear resets; sort only on FR-defined columns; loading in table area      |
-| Embedded list / tabs     | STD-LST-002 | Show more or paginator per FR; upload/add controls stay visible while list loads                                       |
-| Create / edit form       | STD-FRM-001 | Back/cancel leave without save; submit shows toast on success; form stays open on failure                              |
-| Detail view              | STD-DTL-001 | Sections grouped; header actions permission-gated                                                                      |
-| Back navigation          | STD-NAV-001 | Fixed label and route — not browser history                                                                            |
-| Delete / deactivate      | STD-OP-001  | Confirmation before irreversible action; success toast after confirm                                                   |
-| Dates and counts         | STD-FMT-001 | Locale formatting; FR-defined labels in backticks                                                                      |
-| Export                   | STD-RPT-001 | Only when the feature includes export                                                                                  |
+| Check                    | STD         | Pass when…                                                                                                                                                  |
+| ------------------------ | ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Access denied copy       | STD-ACC-001 | Rejection uses **`You do not have permission to perform this action.`**; unauthorized actions are hidden, not disabled                                      |
+| Guest / sign-in          | STD-ACC-001 | Protected actions redirect unauthenticated users to sign-in                                                                                                 |
+| Field validation UX      | STD-VAL-001 | Errors inline at the field; form stays open; values preserved; server errors map to the same positions                                                      |
+| Success / error feedback | STD-MSG-001 | Mutations use toast; field errors do not use toast; destructive actions use confirmation dialog first                                                       |
+| List screen              | STD-LST-001 | Server pagination (default 10); AND filters; clear resets; sort only on FR-defined columns; loading in table area; status uses tint badges with text labels |
+| Embedded list / tabs     | STD-LST-002 | Show more or paginator per FR; upload/add controls stay visible while list loads                                                                            |
+| Create / edit form       | STD-FRM-001 | Back/cancel leave without save; submit shows toast on success; form stays open on failure                                                                   |
+| Detail view              | STD-DTL-001 | Sections grouped; header actions permission-gated; one primary action emphasis per view                                                                     |
+| Back navigation          | STD-NAV-001 | Fixed label and route — not browser history                                                                                                                 |
+| Delete / deactivate      | STD-OP-001  | Confirmation before irreversible action; success toast after confirm                                                                                        |
+| Dates and counts         | STD-FMT-001 | Locale formatting; FR-defined labels in backticks                                                                                                           |
+| Export                   | STD-RPT-001 | Only when the feature includes export                                                                                                                       |
 
 ### Review order
 
 1. **L4** — every bullet in **Functional requirements** (authorization, data, operations, validation, business rules).
 2. **L2** — rows above for inherited `STD-*` sections.
 3. **L3** — quality docs in `inherits_quality` when the change touches perf, a11y, or i18n.
-4. **L5** — code follows `docs/guides/`; no product rules invented in implementation guides.
+4. **L5** — code follows `docs/guides/` (Tailwind layout + `@laczynski/ui` components per `frontend-guidelines.md`); no product rules invented in implementation guides.
 
 If a check fails and the `FR-*` does not document an override, fix the implementation or update the `FR-*` / `STD-*` deliberately in a requirements change — do not leave silent drift.
 

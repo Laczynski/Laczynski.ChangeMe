@@ -10,6 +10,7 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ConfirmService } from '@core/confirm/services/confirm.service';
 import { ToastService } from '@core/toast/services/toast.service';
 import { IssueAttachmentsTabComponent } from '@features/issues/components/issue-attachments-tab/issue-attachments-tab.component';
 import { IssueCommentsTabComponent } from '@features/issues/components/issue-comments-tab/issue-comments-tab.component';
@@ -23,16 +24,18 @@ import {
   getIssueStatusLabel,
   getIssueStatusSeverity
 } from '@features/issues/utils/issue.utils';
+import {
+  AccordionComponent,
+  ButtonComponent,
+  MessageBarComponent,
+  SpinnerComponent,
+  TabsComponent,
+  TagComponent,
+  TooltipDirective,
+  type Tab
+} from '@laczynski/ui';
 import { BackButtonComponent } from '@shared/components/back-button/back-button.component';
-import { ConfirmationService } from 'primeng/api';
-import { ButtonDirective } from 'primeng/button';
-import { Card } from 'primeng/card';
-import { Message } from 'primeng/message';
-import { Panel } from 'primeng/panel';
-import { ProgressSpinner } from 'primeng/progressspinner';
-import { Tab, TabList, TabPanel, TabPanels, Tabs } from 'primeng/tabs';
-import { Tag } from 'primeng/tag';
-import { Tooltip } from 'primeng/tooltip';
+import { DefaultExpandedAccordionDirective } from '@shared/directives/default-expanded-accordion.directive';
 
 type IssueDetailsTab = 'comments' | 'attachments' | 'history';
 
@@ -51,18 +54,14 @@ function resolveIssueDetailsTab(
   imports: [
     DatePipe,
     RouterLink,
-    Card,
-    ButtonDirective,
-    Message,
-    Tag,
-    Panel,
-    ProgressSpinner,
-    Tabs,
-    TabList,
-    Tab,
-    TabPanels,
-    TabPanel,
-    Tooltip,
+    ButtonComponent,
+    AccordionComponent,
+    DefaultExpandedAccordionDirective,
+    MessageBarComponent,
+    SpinnerComponent,
+    TabsComponent,
+    TagComponent,
+    TooltipDirective,
     BackButtonComponent,
     IssueCommentsTabComponent,
     IssueAttachmentsTabComponent,
@@ -74,7 +73,7 @@ export class IssueDetailsComponent {
   readonly id = input<string>();
 
   private readonly issuesService = inject(IssuesService);
-  private readonly confirmationService = inject(ConfirmationService);
+  private readonly confirmService = inject(ConfirmService);
   private readonly toastService = inject(ToastService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
@@ -92,6 +91,13 @@ export class IssueDetailsComponent {
   readonly isTogglingWatch = signal(false);
   readonly isDeleting = signal(false);
   readonly activeTab = signal<IssueDetailsTab>('comments');
+  readonly selectedTabId = signal<string | number>('comments');
+
+  readonly detailTabs: Tab[] = [
+    { id: 'comments', label: 'Comments', icon: 'comment' },
+    { id: 'attachments', label: 'Attachments', icon: 'attach' },
+    { id: 'history', label: 'History', icon: 'history' }
+  ];
 
   private lastLoadedIssueId: string | null = null;
 
@@ -99,7 +105,9 @@ export class IssueDetailsComponent {
     this.route.queryParamMap
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((params) => {
-        this.activeTab.set(resolveIssueDetailsTab(params.get('tab')));
+        const tab = resolveIssueDetailsTab(params.get('tab'));
+        this.activeTab.set(tab);
+        this.selectedTabId.set(tab);
       });
 
     effect(() => {
@@ -116,13 +124,14 @@ export class IssueDetailsComponent {
     });
   }
 
-  onTabChange(tab: string | number | undefined): void {
-    const value = resolveIssueDetailsTab(tab);
+  onTabChange(tabId: string | number): void {
+    const value = resolveIssueDetailsTab(tabId);
     if (this.activeTab() === value) {
       return;
     }
 
     this.activeTab.set(value);
+    this.selectedTabId.set(value);
 
     void this.router.navigate([], {
       relativeTo: this.route,
@@ -147,12 +156,12 @@ export class IssueDetailsComponent {
       return;
     }
 
-    this.confirmationService.confirm({
+    this.confirmService.confirm({
       header: 'Delete issue',
       message: getDeleteIssueConfirmMessage(issue.title),
-      icon: 'pi pi-exclamation-triangle',
-      acceptButtonProps: { label: 'Delete', severity: 'danger' },
-      rejectButtonProps: { label: 'Cancel', severity: 'secondary', outlined: true },
+      acceptLabel: 'Delete',
+      rejectLabel: 'Cancel',
+      acceptVariant: 'danger',
       accept: () => this.deleteIssue(issue.id)
     });
   }

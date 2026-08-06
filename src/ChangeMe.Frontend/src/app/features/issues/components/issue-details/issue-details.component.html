@@ -1,180 +1,166 @@
-<p-card
-  class="mb-4"
-  [header]="pageTitle()"
-  subheader="Review issue data, comments, attachments, and history"
->
-  <div class="mb-4 flex flex-wrap items-center gap-2">
-    <app-back-button label="Back to issues list" [route]="['/issues']" />
-    @if (issue(); as currentIssue) {
-      <a
-        pButton
-        severity="secondary"
-        [outlined]="true"
-        size="small"
-        [routerLink]="['/issues', currentIssue.id, 'edit']"
-      >
-        <i class="pi pi-pencil" aria-hidden="true"></i>
-        Edit
-      </a>
-      <button
-        type="button"
-        pButton
-        [severity]="currentIssue.isWatchedByCurrentUser ? 'success' : 'secondary'"
-        [outlined]="!currentIssue.isWatchedByCurrentUser"
-        size="small"
-        [disabled]="isTogglingWatch()"
-        [pTooltip]="getWatchTooltip(currentIssue)"
-        tooltipPosition="top"
-        [attr.aria-label]="getWatchTooltip(currentIssue)"
-        (click)="toggleWatch()"
-      >
-        @if (isTogglingWatch()) {
-          <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
-        } @else {
-          <i
-            [class]="
-              currentIssue.isWatchedByCurrentUser ? 'pi pi-bell-slash' : 'pi pi-bell'
-            "
-            aria-hidden="true"
-          ></i>
-        }
-        {{ currentIssue.watchersCount }}
-      </button>
-      <button
-        type="button"
-        pButton
-        severity="danger"
-        [outlined]="true"
-        size="small"
-        [disabled]="isDeleting()"
-        (click)="confirmDeleteIssue()"
-      >
-        @if (isDeleting()) {
-          <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
-        } @else {
-          <i class="pi pi-trash" aria-hidden="true"></i>
-        }
-        Delete
-      </button>
+<section class="flex w-full flex-col" aria-label="Issue details">
+  <div class="flex flex-col gap-0">
+    @if (isLoading()) {
+      <div class="flex flex-col items-center gap-2 py-8">
+        <ui-spinner size="medium" ariaLabel="Loading issue details" />
+        <p class="text-foreground-2">Loading issue details...</p>
+      </div>
+    } @else if (loadError()) {
+      <div class="flex flex-col items-center gap-2 py-8">
+        <ui-message-bar [title]="loadError()!" variant="danger" />
+        <ui-button
+          text="Try again"
+          icon="arrow_sync"
+          variant="secondary"
+          appearance="outline"
+          [loading]="isLoading()"
+          (click)="refresh()"
+        />
+      </div>
+    } @else if (issue(); as currentIssue) {
+      <article class="flex flex-col gap-5">
+        <header class="flex flex-col gap-1.5 pb-1">
+          <h1
+            class="m-0 break-words text-xl font-semibold tracking-tight text-foreground md:text-2xl"
+          >
+            {{ pageTitle() }}
+          </h1>
+          <p class="m-0 max-w-2xl text-sm leading-normal text-foreground-2">
+            Review issue data, comments, attachments, and history
+          </p>
+        </header>
+
+        <div class="flex flex-wrap items-center gap-2">
+          <app-back-button label="Back to issues list" [route]="['/issues']" />
+          <ui-button
+            text="Edit"
+            icon="edit"
+            variant="secondary"
+            appearance="outline"
+            [routerLink]="['/issues', currentIssue.id, 'edit']"
+          />
+          <ui-button
+            [text]="currentIssue.watchersCount.toString()"
+            [icon]="currentIssue.isWatchedByCurrentUser ? 'alert_off' : 'alert'"
+            [variant]="currentIssue.isWatchedByCurrentUser ? 'success' : 'secondary'"
+            [appearance]="currentIssue.isWatchedByCurrentUser ? 'filled' : 'outline'"
+            [loading]="isTogglingWatch()"
+            [uiTooltip]="getWatchTooltip(currentIssue)"
+            uiTooltipPosition="top"
+            [attr.aria-label]="getWatchTooltip(currentIssue)"
+            (click)="toggleWatch()"
+          />
+          <ui-button
+            text="Delete"
+            icon="delete"
+            variant="danger"
+            appearance="outline"
+            [loading]="isDeleting()"
+            (click)="confirmDeleteIssue()"
+          />
+        </div>
+
+        <dl class="detail-meta">
+          <div>
+            <dt class="detail-meta__term">Author</dt>
+            <dd class="detail-meta__value detail-meta__value--wrap">
+              {{ currentIssue.createdByName || currentIssue.createdBy }}
+            </dd>
+          </div>
+          <div>
+            <dt class="detail-meta__term">Assigned to</dt>
+            <dd class="detail-meta__value detail-meta__value--wrap">
+              {{ currentIssue.assignedToUserName || 'Unassigned' }}
+            </dd>
+          </div>
+          <div>
+            <dt class="detail-meta__term">Status</dt>
+            <dd class="detail-meta__value">
+              <ui-tag
+                [text]="getIssueStatusLabel(currentIssue.status)"
+                [variant]="getIssueStatusSeverity(currentIssue.status)"
+                appearance="outline"
+              />
+            </dd>
+          </div>
+          <div>
+            <dt class="detail-meta__term">Priority</dt>
+            <dd class="detail-meta__value">
+              <ui-tag
+                [text]="getIssuePriorityLabel(currentIssue.priority)"
+                [variant]="getIssuePrioritySeverity(currentIssue.priority)"
+                appearance="outline"
+              />
+            </dd>
+          </div>
+          <div>
+            <dt class="detail-meta__term">Created at</dt>
+            <dd class="detail-meta__value detail-meta__value--date">
+              {{ currentIssue.createdAt | date: 'dd.MM.yyyy HH:mm' }}
+            </dd>
+          </div>
+          <div>
+            <dt class="detail-meta__term">Last activity</dt>
+            <dd class="detail-meta__value detail-meta__value--date">
+              {{ currentIssue.lastActivityAt | date: 'dd.MM.yyyy HH:mm' }}
+            </dd>
+          </div>
+        </dl>
+
+        <div class="flex flex-col gap-3">
+          <ui-accordion appDefaultExpanded label="Description" icon="document">
+            <p
+              class="m-0 whitespace-pre-wrap text-sm leading-relaxed text-foreground-2"
+            >
+              {{ currentIssue.description }}
+            </p>
+          </ui-accordion>
+
+          <ui-accordion
+            appDefaultExpanded
+            label="Acceptance criteria"
+            icon="checkmark_circle"
+          >
+            @if (currentIssue.acceptanceCriteria.length > 0) {
+              <ul
+                class="m-0 flex list-disc flex-col gap-2 pl-5 text-sm leading-relaxed text-foreground-2 [&_li]:pl-0.5 [&_li::marker]:text-foreground-3"
+              >
+                @for (
+                  criterion of currentIssue.acceptanceCriteria;
+                  track criterion.id
+                ) {
+                  <li>{{ criterion.content }}</li>
+                }
+              </ul>
+            } @else {
+              <p class="m-0 text-sm text-foreground-3">
+                No acceptance criteria defined
+              </p>
+            }
+          </ui-accordion>
+
+          <section class="flex flex-col gap-4 pt-1">
+            <ui-tabs
+              [fullWidth]="true"
+              [tabs]="detailTabs"
+              [selectedTabId]="selectedTabId()"
+              (selectedTabIdChange)="onTabChange($event)"
+              appearance="transparent"
+              variant="primary"
+            />
+
+            <div class="detail-inset">
+              @if (activeTab() === 'comments') {
+                <app-issue-comments-tab [issueId]="currentIssue.id" />
+              } @else if (activeTab() === 'attachments') {
+                <app-issue-attachments-tab [issueId]="currentIssue.id" />
+              } @else if (activeTab() === 'history') {
+                <app-issue-history-tab [issueId]="currentIssue.id" />
+              }
+            </div>
+          </section>
+        </div>
+      </article>
     }
   </div>
-
-  @if (isLoading()) {
-    <div class="flex flex-col items-center gap-2 py-8">
-      <p-progress-spinner ariaLabel="Loading issue details" />
-      <p class="text-muted-color m-0 text-sm">Loading issue details...</p>
-    </div>
-  } @else if (loadError()) {
-    <div class="flex flex-col items-center gap-2">
-      <p-message severity="error">{{ loadError() }}</p-message>
-      <button
-        type="button"
-        pButton
-        size="small"
-        severity="secondary"
-        [outlined]="true"
-        [disabled]="isLoading()"
-        (click)="refresh()"
-      >
-        @if (isLoading()) {
-          <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
-        } @else {
-          <i class="pi pi-refresh" aria-hidden="true"></i>
-        }
-        Try again
-      </button>
-    </div>
-  } @else if (issue(); as currentIssue) {
-    <dl
-      class="mb-6 grid gap-4 rounded-lg border border-surface-200 p-4 sm:grid-cols-2 lg:grid-cols-3"
-    >
-      <div class="flex flex-col gap-1">
-        <dt class="text-muted-color text-sm">Author</dt>
-        <dd class="m-0 font-medium">
-          {{ currentIssue.createdByName || currentIssue.createdBy }}
-        </dd>
-      </div>
-      <div class="flex flex-col gap-1">
-        <dt class="text-muted-color text-sm">Assigned to</dt>
-        <dd class="m-0 font-medium">
-          {{ currentIssue.assignedToUserName || 'Unassigned' }}
-        </dd>
-      </div>
-      <div class="flex flex-col gap-1">
-        <dt class="text-muted-color text-sm">Status</dt>
-        <dd class="m-0">
-          <p-tag
-            [value]="getIssueStatusLabel(currentIssue.status)"
-            [severity]="getIssueStatusSeverity(currentIssue.status)"
-          />
-        </dd>
-      </div>
-      <div class="flex flex-col gap-1">
-        <dt class="text-muted-color text-sm">Priority</dt>
-        <dd class="m-0">
-          <p-tag
-            [value]="getIssuePriorityLabel(currentIssue.priority)"
-            [severity]="getIssuePrioritySeverity(currentIssue.priority)"
-          />
-        </dd>
-      </div>
-      <div class="flex flex-col gap-1">
-        <dt class="text-muted-color text-sm">Created at</dt>
-        <dd class="m-0">
-          {{ currentIssue.createdAt | date: 'dd.MM.yyyy HH:mm' }}
-        </dd>
-      </div>
-      <div class="flex flex-col gap-1">
-        <dt class="text-muted-color text-sm">Last activity</dt>
-        <dd class="m-0">
-          {{ currentIssue.lastActivityAt | date: 'dd.MM.yyyy HH:mm' }}
-        </dd>
-      </div>
-    </dl>
-
-    <div class="flex flex-col gap-4">
-      <p-panel header="Description" [toggleable]="true">
-        <p class="m-0 whitespace-pre-wrap">{{ currentIssue.description }}</p>
-      </p-panel>
-
-      <p-panel header="Acceptance criteria" [toggleable]="true">
-        @if (currentIssue.acceptanceCriteria.length > 0) {
-          <ul class="m-0 flex list-disc flex-col gap-2 pl-5">
-            @for (criterion of currentIssue.acceptanceCriteria; track criterion.id) {
-              <li>{{ criterion.content }}</li>
-            }
-          </ul>
-        } @else {
-          <p class="m-0 text-muted-color">No acceptance criteria defined</p>
-        }
-      </p-panel>
-
-      <p-tabs [value]="activeTab()" (valueChange)="onTabChange($event)">
-        <p-tablist>
-          <p-tab value="comments">Comments</p-tab>
-          <p-tab value="attachments">Attachments</p-tab>
-          <p-tab value="history">History</p-tab>
-        </p-tablist>
-        <p-tabpanels>
-          <p-tabpanel value="comments">
-            @if (activeTab() === 'comments') {
-              <app-issue-comments-tab [issueId]="currentIssue.id" />
-            }
-          </p-tabpanel>
-
-          <p-tabpanel value="attachments">
-            @if (activeTab() === 'attachments') {
-              <app-issue-attachments-tab [issueId]="currentIssue.id" />
-            }
-          </p-tabpanel>
-
-          <p-tabpanel value="history">
-            @if (activeTab() === 'history') {
-              <app-issue-history-tab [issueId]="currentIssue.id" />
-            }
-          </p-tabpanel>
-        </p-tabpanels>
-      </p-tabs>
-    </div>
-  }
-</p-card>
+</section>

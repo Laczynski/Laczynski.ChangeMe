@@ -4,7 +4,7 @@
 
 ## Repository shape
 
-- `src/ChangeMe.Frontend` - Angular 22 frontend.
+- `src/ChangeMe.Frontend` - Angular 21 frontend.
 - `src/ChangeMe.Backend` - .NET backend solution.
 - `docker-compose.yml` - local full-stack environment with frontend, backend, PostgreSQL, and MailHog.
 - `docs/` - guides, technical, and requirements (`docs/README.md` for the full index).
@@ -77,7 +77,9 @@ Configuration in containers: `appsettings.json` + `appsettings.Development.json`
 - Feature code lives under `src/app/features/<feature>/`.
 - Shared HTTP wrapper lives in `src/app/shared/api/services/api.service.ts`.
 - Cross-cutting user/session concerns live under `src/app/core/` and `features/auth/`.
-- Transient toast feedback uses `src/app/core/toast/services/toast.service.ts` with global `<p-toast>` in `app.component.ts`.
+- Transient toast feedback uses `src/app/core/toast/services/toast.service.ts` with global `<ui-toast-container />` in `app.component.ts`.
+- Destructive confirmations use `src/app/core/confirm/services/confirm.service.ts` with global `<app-confirm-dialog />`.
+- UI components come from `@laczynski/ui` with **Tailwind CSS v4** for layout; see `docs/guides/frontend-guidelines.md`.
 - Shared data models live under `src/app/shared/`.
 
 ### Backend

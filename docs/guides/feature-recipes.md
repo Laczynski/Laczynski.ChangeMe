@@ -46,9 +46,9 @@ Use any existing **list screen** as the template (for example **Issues**, **User
 ### Frontend
 
 1. Service method: `getAllX(grid: GridQuery): Observable<GridResult<TDto>>` via `apiService.get(..., { grid })`.
-2. Component: inject `GridResourceFactory`, create `grid` in constructor with `load`, `defaultSort`, `defaultTake`, optional `persistState`.
-3. Template: `<qg-prime-data-grid [grid]="grid">` with `qgColumn` templates per column; `qgEmpty` for empty state.
-4. Add component unit tests with a mocked `GridResourceFactory` (see `issues-list.component.spec.ts`).
+2. Component: create `grid` with `createAppGridResource` from `@shared/data/utils/grid.utils.ts` (`load`, `defaultSort`, `defaultTake`, optional `persistState`).
+3. Template: page layout with Tailwind utilities (see [frontend-guidelines.md](frontend-guidelines.md)); `<qg-ui-data-grid [grid]="grid">` with `qgColumn` templates per column; empty state in column templates or grid slot.
+4. Add component unit tests with a mocked grid resource (see `issues-list.component.spec.ts`).
 
 ## Change auth-sensitive behavior
 
@@ -90,4 +90,4 @@ Use the **Issues attachments** slice as the template for new file features. Shar
 1. Extend feature models and `features/<feature>/utils` with size/extension limits.
 2. Add `ApiService.postFormData()` and `getBlob()` helpers; keep endpoint strings in the feature service.
 3. Add a tab or panel component with upload control, paginated list, download, and uploader-only delete.
-4. Reuse PrimeNG `p-fileupload` (basic mode) or equivalent; show inline validation errors and toasts for mutations.
+4. Reuse `ui-file` with reactive forms for uploads; show inline validation errors (`[errorText]`, `ui-message-bar`) and toasts for mutations.

@@ -1,98 +1,100 @@
-<p-card class="mb-4" header="Edit profile" subheader="Update your name.">
-  <div class="mb-4 flex flex-wrap items-center gap-2">
+<section
+  class="app-page-fill mx-auto flex min-h-0 w-full max-w-none flex-1 flex-col gap-3 overflow-hidden"
+  aria-label="Edit profile"
+>
+  <header class="grid shrink-0 gap-1.5 pb-2">
+    <h1 class="m-0 text-xl font-semibold tracking-tight text-foreground md:text-2xl">
+      Edit profile
+    </h1>
+    <p class="m-0 max-w-3xl text-sm leading-normal text-foreground-2">
+      Update your name.
+    </p>
+  </header>
+
+  <div class="flex shrink-0 flex-wrap items-center gap-2">
     <app-back-button label="Back to my account" [route]="['/account']" />
   </div>
 
-  @if (isLoading()) {
-    <div class="flex flex-col items-center gap-2 py-8">
-      <p-progress-spinner ariaLabel="Loading profile" />
-      <p class="text-muted-color m-0 text-sm">Loading profile...</p>
-    </div>
-  } @else if (loadError()) {
-    <div class="flex flex-col items-center gap-2">
-      <p-message severity="error">{{ loadError() }}</p-message>
-      <button
-        type="button"
-        pButton
-        size="small"
-        severity="secondary"
-        [outlined]="true"
-        [disabled]="isLoading()"
-        (click)="reload()"
-      >
-        @if (isLoading()) {
-          <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
-        } @else {
-          <i class="pi pi-refresh" aria-hidden="true"></i>
-        }
-        Try again
-      </button>
-    </div>
-  } @else {
-    <form
-      class="p-fluid flex flex-col gap-4"
-      [formGroup]="form"
-      (ngSubmit)="onSubmit()"
-    >
-      <p-panel header="Profile" [toggleable]="true">
-        <div class="grid gap-4 sm:grid-cols-2">
-          <div class="flex flex-col gap-1.5">
-            <label for="firstName">First name</label>
-            <input
-              id="firstName"
-              type="text"
-              pInputText
-              [formControl]="form.controls.firstName"
-              [invalid]="shouldShowError(form.controls.firstName)"
-            />
-            @if (
-              shouldShowError(form.controls.firstName) &&
-              form.controls.firstName.errors?.['required']
-            ) {
-              <p-message severity="error" variant="simple">
-                First name is required.
-              </p-message>
-            }
-          </div>
-
-          <div class="flex flex-col gap-1.5">
-            <label for="lastName">Last name</label>
-            <input
-              id="lastName"
-              type="text"
-              pInputText
-              [formControl]="form.controls.lastName"
-              [invalid]="shouldShowError(form.controls.lastName)"
-            />
-            @if (
-              shouldShowError(form.controls.lastName) &&
-              form.controls.lastName.errors?.['required']
-            ) {
-              <p-message severity="error" variant="simple">
-                Last name is required.
-              </p-message>
-            }
-          </div>
-        </div>
-      </p-panel>
-
-      @if (submitError()) {
-        <p-message severity="error">{{ submitError() }}</p-message>
-      }
-
-      <div class="flex flex-wrap items-center justify-end gap-2">
-        <a pButton severity="secondary" [outlined]="true" [routerLink]="['/account']">
-          Cancel
-        </a>
-        <button type="submit" pButton [disabled]="isSubmitting()">
-          @if (isSubmitting()) {
-            <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
-          } @else {
-            <i class="pi pi-save" aria-hidden="true"></i>
-          }
-          {{ isSubmitting() ? 'Saving...' : 'Save changes' }}
-        </button>
+  <div class="flex min-h-0 flex-1 flex-col">
+    @if (isLoading()) {
+      <div class="flex flex-col items-center gap-2 py-8">
+        <ui-spinner size="medium" ariaLabel="Loading profile" />
+        <p class="text-foreground-2">Loading profile...</p>
       </div>
-    </form>
-  }
-</p-card>
+    } @else if (loadError()) {
+      <div class="flex flex-col items-center gap-2 py-8">
+        <ui-message-bar [title]="loadError()!" variant="danger" />
+        <ui-button
+          text="Try again"
+          icon="arrow_sync"
+          variant="secondary"
+          appearance="outline"
+          [loading]="isLoading()"
+          (click)="reload()"
+        />
+      </div>
+    } @else {
+      <form
+        class="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl bg-surface-2"
+        [formGroup]="form"
+        (ngSubmit)="onSubmit()"
+      >
+        <div class="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-4 md:p-6">
+          <ui-accordion appDefaultExpanded label="Profile" icon="person">
+            <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-2">
+              <ui-text
+                label="First name"
+                [formControl]="form.controls.firstName"
+                [required]="true"
+                [errorText]="
+                  fieldError(
+                    form.controls.firstName,
+                    AuthFieldErrors.firstName,
+                    submitted()
+                  )
+                "
+              />
+              <ui-text
+                label="Last name"
+                [formControl]="form.controls.lastName"
+                [required]="true"
+                [errorText]="
+                  fieldError(
+                    form.controls.lastName,
+                    AuthFieldErrors.lastName,
+                    submitted()
+                  )
+                "
+              />
+            </div>
+          </ui-accordion>
+
+          @if (submitError()) {
+            <ui-message-bar [title]="submitError()!" variant="danger" />
+          }
+        </div>
+
+        <footer
+          class="flex shrink-0 items-center justify-end gap-2 border-t border-stroke bg-surface-2 px-4 py-3.5 md:px-6"
+        >
+          <div class="flex w-full flex-wrap items-center justify-end gap-2">
+            <ui-button
+              type="button"
+              text="Cancel"
+              variant="secondary"
+              appearance="outline"
+              [routerLink]="['/account']"
+            />
+            <ui-button
+              type="submit"
+              [text]="isSubmitting() ? 'Saving...' : 'Save changes'"
+              icon="save"
+              variant="primary"
+              [loading]="isSubmitting()"
+            />
+          </div>
+        </footer>
+      </form>
+    }
+  </div>
+</section>

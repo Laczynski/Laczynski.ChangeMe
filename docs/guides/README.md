@@ -15,14 +15,14 @@ Full layer index: [`docs/requirements/_shared/README.md`](../requirements/_share
 
 ## Documents
 
-| Document                                         | Read when you need to…                                     |
-| ------------------------------------------------ | ---------------------------------------------------------- |
-| [repo-map.md](repo-map.md)                       | Find where code lives and which layer owns what            |
-| [frontend-guidelines.md](frontend-guidelines.md) | Angular components, forms, routing, PrimeNG, Tailwind      |
-| [backend-guidelines.md](backend-guidelines.md)   | Layers, endpoints, use cases, validation, EF               |
-| [testing-guidelines.md](testing-guidelines.md)   | Test layer ownership, anti-patterns, when to skip tests    |
-| [e2e-guidelines.md](e2e-guidelines.md)           | Playwright layout, locators, conventions, config, commands |
-| [feature-recipes.md](feature-recipes.md)         | Step-by-step recipes for common feature work               |
+| Document                                         | Read when you need to…                                             |
+| ------------------------------------------------ | ------------------------------------------------------------------ |
+| [repo-map.md](repo-map.md)                       | Find where code lives and which layer owns what                    |
+| [frontend-guidelines.md](frontend-guidelines.md) | Angular components, forms, routing, @laczynski/ui, Tailwind layout |
+| [backend-guidelines.md](backend-guidelines.md)   | Layers, endpoints, use cases, validation, EF                       |
+| [testing-guidelines.md](testing-guidelines.md)   | Test layer ownership, anti-patterns, when to skip tests            |
+| [e2e-guidelines.md](e2e-guidelines.md)           | Playwright layout, locators, conventions, config, commands         |
+| [feature-recipes.md](feature-recipes.md)         | Step-by-step recipes for common feature work                       |
 
 ## Start here by task
 

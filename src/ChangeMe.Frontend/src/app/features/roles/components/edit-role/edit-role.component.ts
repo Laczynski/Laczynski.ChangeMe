@@ -19,15 +19,22 @@ import { ToastService } from '@core/toast/services/toast.service';
 import { PermissionChecklistComponent } from '@features/roles/components/permission-checklist/permission-checklist.component';
 import { PermissionCatalogItemDto } from '@features/roles/models/role.model';
 import { RolesService } from '@features/roles/services/roles.service';
-import { RoleConstraints, RoleMessages } from '@features/roles/utils/roles.utils';
+import {
+  RoleConstraints,
+  RoleFieldErrors,
+  RoleMessages
+} from '@features/roles/utils/roles.utils';
+import {
+  AccordionComponent,
+  ButtonComponent,
+  MessageBarComponent,
+  SpinnerComponent,
+  TextareaComponent,
+  TextComponent
+} from '@laczynski/ui';
 import { BackButtonComponent } from '@shared/components/back-button/back-button.component';
-import { ButtonDirective } from 'primeng/button';
-import { Card } from 'primeng/card';
-import { InputText } from 'primeng/inputtext';
-import { Message } from 'primeng/message';
-import { Panel } from 'primeng/panel';
-import { ProgressSpinner } from 'primeng/progressspinner';
-import { Textarea } from 'primeng/textarea';
+import { DefaultExpandedAccordionDirective } from '@shared/directives/default-expanded-accordion.directive';
+import { fieldError } from '@shared/forms/field-error';
 
 @Component({
   selector: 'app-edit-role',
@@ -35,13 +42,13 @@ import { Textarea } from 'primeng/textarea';
     ReactiveFormsModule,
     RouterLink,
     BackButtonComponent,
-    Card,
-    ButtonDirective,
-    InputText,
-    Textarea,
-    Message,
-    Panel,
-    ProgressSpinner,
+    ButtonComponent,
+    TextComponent,
+    TextareaComponent,
+    MessageBarComponent,
+    AccordionComponent,
+    DefaultExpandedAccordionDirective,
+    SpinnerComponent,
     PermissionChecklistComponent
   ],
   templateUrl: './edit-role.component.html'
@@ -63,6 +70,9 @@ export class EditRoleComponent {
   readonly permissionsError = signal(false);
   readonly isLoading = signal(true);
   readonly isSubmitting = signal(false);
+  readonly submitted = signal(false);
+  protected readonly fieldError = fieldError;
+  protected readonly RoleFieldErrors = RoleFieldErrors;
   readonly pageTitle = computed(() => {
     const name = this.form.controls.name.value.trim();
     return name ? `Edit ${name}` : 'Edit Role';
@@ -133,17 +143,10 @@ export class EditRoleComponent {
     this.loadRole(this.id());
   }
 
-  shouldShowError(control: {
-    invalid: boolean;
-    dirty: boolean;
-    touched: boolean;
-  }): boolean {
-    return control.invalid && (control.dirty || control.touched);
-  }
-
   onSubmit(): void {
     this.submitError.set(null);
     this.permissionsError.set(false);
+    this.submitted.set(true);
 
     if (this.form.invalid) {
       this.form.markAllAsTouched();
