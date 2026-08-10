@@ -12,11 +12,11 @@
 
   <p-menu #issueActionsMenu [model]="issueActionItems()" [popup]="true" />
 
-  <dg-prime-data-grid [grid]="grid" dataKey="id" searchPlaceholder="Search issuesâ€¦">
+  <dg-prime-data-grid [grid]="grid" dataKey="id" searchPlaceholder="Search issues…">
     <ng-template
       dgColumn="Title"
       header="Title"
-      [filter]="{ type: 'text', placeholder: 'Title containsâ€¦' }"
+      [filter]="{ type: 'text', placeholder: 'Title contains…' }"
       let-issue
     >
       <a

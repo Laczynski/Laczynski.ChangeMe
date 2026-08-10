@@ -18,11 +18,11 @@
 
   <p-menu #roleActionsMenu [model]="roleActionItems()" [popup]="true" />
 
-  <dg-prime-data-grid [grid]="grid" dataKey="id" searchPlaceholder="Search rolesâ€¦">
+  <dg-prime-data-grid [grid]="grid" dataKey="id" searchPlaceholder="Search roles…">
     <ng-template
       dgColumn="Name"
       header="Name"
-      [filter]="{ type: 'text', placeholder: 'Name containsâ€¦' }"
+      [filter]="{ type: 'text', placeholder: 'Name contains…' }"
       let-role
     >
       <a
@@ -36,7 +36,7 @@
     <ng-template
       dgColumn="Description"
       header="Description"
-      [filter]="{ type: 'text', placeholder: 'Description containsâ€¦' }"
+      [filter]="{ type: 'text', placeholder: 'Description contains…' }"
       let-role
     >
       {{ formatDescription(role.description) }}

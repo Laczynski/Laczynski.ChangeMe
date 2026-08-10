@@ -18,25 +18,25 @@
 
   <p-menu #userActionsMenu [model]="userActionItems()" [popup]="true" />
 
-  <dg-prime-data-grid [grid]="grid" dataKey="id" searchPlaceholder="Search usersâ€¦">
+  <dg-prime-data-grid [grid]="grid" dataKey="id" searchPlaceholder="Search users…">
     <ng-template
       dgColumn="LastName"
       header="Name"
-      [filter]="{ type: 'text', placeholder: 'Name containsâ€¦' }"
+      [filter]="{ type: 'text', placeholder: 'Name contains…' }"
       let-user
     >
       <a
         class="text-primary font-medium hover:underline"
         [routerLink]="['/users', user.id]"
       >
-        {{ formatUserName(user) || 'â€”' }}
+        {{ formatUserName(user) || '—' }}
       </a>
     </ng-template>
 
     <ng-template
       dgColumn="Email"
       header="Email"
-      [filter]="{ type: 'text', placeholder: 'Email containsâ€¦' }"
+      [filter]="{ type: 'text', placeholder: 'Email contains…' }"
       let-user
     >
       {{ user.email }}
