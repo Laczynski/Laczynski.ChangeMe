@@ -59,7 +59,6 @@ export class LayoutService {
   }
 
   private applyTheme(mode: ThemeMode): void {
-    document.documentElement.classList.toggle('dark', mode === 'dark');
     document.documentElement.classList.toggle('app-dark', mode === 'dark');
   }
 

@@ -1,7 +1,13 @@
-import { Component, computed, DestroyRef, inject, signal } from '@angular/core';
+import {
+  Component,
+  computed,
+  DestroyRef,
+  inject,
+  signal,
+  viewChild
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
-import { ConfirmDialogService } from '@core/confirm/services/confirm-dialog.service';
 import { ToastService } from '@core/toast/services/toast.service';
 import { AuthService } from '@features/auth/services/auth.service';
 import { RoleListItemDto } from '@features/roles/models/role.model';
@@ -11,63 +17,43 @@ import {
   getDeleteRoleConfirmMessage,
   RoleMessages
 } from '@features/roles/utils/roles.utils';
-import { NgIcon, provideIcons } from '@ng-icons/core';
-import {
-  lucideEllipsisVertical,
-  lucideEye,
-  lucidePencil,
-  lucidePlus,
-  lucideRefreshCw,
-  lucideTrash
-} from '@ng-icons/lucide';
 import {
   GridResourceFactory,
+  PrimeDataGridComponent,
   DgColumnDirective,
   DgEmptyDirective,
-  SpartanDataGridComponent,
   type GridResource
-} from '@laczynski/datagrid-spartan';
+} from '@laczynski/datagrid-primeng';
 import { PermissionCodes } from '@shared/authorization/permission-codes';
 import { getGridListEmptyMessage } from '@shared/data/utils/grid.utils';
-import type { ListRowMenuItem } from '@shared/ui/utils/list-row-menu.utils';
-import { HlmAlertImports } from '@spartan/ui/alert';
-import { HlmBadgeImports } from '@spartan/ui/badge';
-import { HlmButtonImports } from '@spartan/ui/button';
-import { HlmCardImports } from '@spartan/ui/card';
-import { HlmDropdownMenuImports } from '@spartan/ui/dropdown-menu';
-import { HlmTooltipImports } from '@spartan/ui/tooltip';
+import { ConfirmationService, MenuItem } from 'primeng/api';
+import { ButtonDirective } from 'primeng/button';
+import { Card } from 'primeng/card';
+import { Menu } from 'primeng/menu';
+import { Message } from 'primeng/message';
+import { Tag } from 'primeng/tag';
+import { Tooltip } from 'primeng/tooltip';
 
 @Component({
   selector: 'app-roles-list',
   imports: [
     RouterLink,
-    NgIcon,
-    ...HlmCardImports,
-    ...HlmButtonImports,
-    ...HlmAlertImports,
-    ...HlmBadgeImports,
-    ...HlmDropdownMenuImports,
-    ...HlmTooltipImports,
-    SpartanDataGridComponent,
+    Card,
+    ButtonDirective,
+    Message,
+    Tag,
+    Menu,
+    Tooltip,
+    PrimeDataGridComponent,
     DgColumnDirective,
     DgEmptyDirective
-  ],
-  providers: [
-    provideIcons({
-      lucideEllipsisVertical,
-      lucideEye,
-      lucidePencil,
-      lucidePlus,
-      lucideRefreshCw,
-      lucideTrash
-    })
   ],
   templateUrl: './roles-list.component.html'
 })
 export class RolesListComponent {
   private readonly rolesService = inject(RolesService);
   private readonly authService = inject(AuthService);
-  private readonly confirmDialogService = inject(ConfirmDialogService);
+  private readonly confirmationService = inject(ConfirmationService);
   private readonly toastService = inject(ToastService);
   private readonly gridFactory = inject(GridResourceFactory);
   private readonly destroyRef = inject(DestroyRef);
@@ -76,7 +62,8 @@ export class RolesListComponent {
   readonly formatDescription = formatDescription;
   readonly permissionCodes = PermissionCodes;
 
-  readonly roleActionItems = signal<ListRowMenuItem[]>([]);
+  readonly roleActionItems = signal<MenuItem[]>([]);
+  private readonly roleActionsMenu = viewChild.required<Menu>('roleActionsMenu');
 
   readonly grid: GridResource<RoleListItemDto>;
 
@@ -97,7 +84,7 @@ export class RolesListComponent {
       load: (query) => this.rolesService.getRoles(query),
       defaultSort: [{ field: 'Name', desc: false }],
       defaultTake: 10,
-      persistState: { key: 'changeMe.roles-list', storage: 'session' }
+      persistState: { key: 'changeme.roles-list', storage: 'session' }
     });
   }
 
@@ -105,11 +92,11 @@ export class RolesListComponent {
     this.grid.reload();
   }
 
-  setRoleActionItems(role: RoleListItemDto): void {
-    const items: ListRowMenuItem[] = [
+  openRoleActionsMenu(event: Event, role: RoleListItemDto): void {
+    const items: MenuItem[] = [
       {
         label: 'Open details',
-        icon: 'lucideEye',
+        icon: 'pi pi-eye',
         routerLink: ['/roles', role.id]
       }
     ];
@@ -118,28 +105,25 @@ export class RolesListComponent {
       items.push(
         {
           label: 'Edit role',
-          icon: 'lucidePencil',
+          icon: 'pi pi-pencil',
           routerLink: ['/roles', role.id, 'edit']
         },
         {
           label: 'Delete role',
-          icon: 'lucideTrash',
-          variant: 'destructive',
+          icon: 'pi pi-trash',
           command: () => this.confirmDeleteRole(role)
         }
       );
     }
 
     this.roleActionItems.set(items);
+    this.roleActionsMenu().toggle(event);
   }
 
   confirmDeleteRole(role: RoleListItemDto): void {
-    this.confirmDialogService.confirm({
+    this.confirmationService.confirm({
       header: 'Delete role',
       message: getDeleteRoleConfirmMessage(role.name),
-      acceptLabel: 'Delete',
-      rejectLabel: 'Cancel',
-      acceptVariant: 'destructive',
       accept: () => {
         this.rolesService
           .deleteRole(role.id)

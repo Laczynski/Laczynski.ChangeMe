@@ -22,17 +22,15 @@ import {
   issuePriorities,
   issueStatuses
 } from '@features/issues/utils/issue.utils';
-import { NgIcon, provideIcons } from '@ng-icons/core';
-import { lucideCheck, lucideLoader2, lucidePlus, lucideTrash } from '@ng-icons/lucide';
 import { BackButtonComponent } from '@shared/components/back-button/back-button.component';
-import { HlmAlertImports } from '@spartan/ui/alert';
-import { HlmButtonImports } from '@spartan/ui/button';
-import { HlmCardImports } from '@spartan/ui/card';
-import { HlmCheckboxImports } from '@spartan/ui/checkbox';
-import { HlmFieldImports } from '@spartan/ui/field';
-import { HlmInputImports } from '@spartan/ui/input';
-import { HlmSelectImports } from '@spartan/ui/select';
-import { HlmTextareaImports } from '@spartan/ui/textarea';
+import { ButtonDirective } from 'primeng/button';
+import { Card } from 'primeng/card';
+import { Checkbox } from 'primeng/checkbox';
+import { InputText } from 'primeng/inputtext';
+import { Message } from 'primeng/message';
+import { Panel } from 'primeng/panel';
+import { Select } from 'primeng/select';
+import { Textarea } from 'primeng/textarea';
 
 type CreateIssueForm = {
   title: FormControl<string>;
@@ -52,18 +50,16 @@ type AcceptanceCriterionForm = {
   selector: 'app-create-issue',
   imports: [
     ReactiveFormsModule,
-    NgIcon,
-    ...HlmCardImports,
-    ...HlmButtonImports,
-    ...HlmFieldImports,
-    ...HlmInputImports,
-    ...HlmTextareaImports,
-    ...HlmSelectImports,
-    ...HlmCheckboxImports,
-    ...HlmAlertImports,
-    BackButtonComponent
+    Card,
+    BackButtonComponent,
+    ButtonDirective,
+    InputText,
+    Textarea,
+    Select,
+    Checkbox,
+    Message,
+    Panel
   ],
-  providers: [provideIcons({ lucideCheck, lucideLoader2, lucidePlus, lucideTrash })],
   templateUrl: './create-issue.component.html'
 })
 export class CreateIssueComponent {
@@ -80,6 +76,7 @@ export class CreateIssueComponent {
   readonly isLoadingAssignableUsers = signal(true);
   readonly isSubmitting = signal(false);
   readonly submitError = signal<string | null>(null);
+  readonly isSubmitted = signal(false);
 
   readonly form = new FormGroup<CreateIssueForm>({
     title: new FormControl('', {
@@ -138,6 +135,7 @@ export class CreateIssueComponent {
   }
 
   onSubmit(): void {
+    this.isSubmitted.set(true);
     this.submitError.set(null);
 
     if (this.form.invalid) {
@@ -177,20 +175,10 @@ export class CreateIssueComponent {
       });
   }
 
-  onStatusChange(value: IssueStatus | null | undefined): void {
-    if (value !== null && value !== undefined) {
-      this.form.controls.status.setValue(value);
-    }
-  }
-
-  onPriorityChange(value: IssuePriority | null | undefined): void {
-    if (value !== null && value !== undefined) {
-      this.form.controls.priority.setValue(value);
-    }
-  }
-
-  onAssignedToChange(value: string | null | undefined): void {
-    this.form.controls.assignedToUserId.setValue(value ?? null);
+  shouldShowError(
+    control: FormControl<string> | FormControl<IssueStatus> | FormControl<IssuePriority>
+  ): boolean {
+    return !!control.errors && (control.touched || this.isSubmitted());
   }
 
   private createAcceptanceCriterionGroup(

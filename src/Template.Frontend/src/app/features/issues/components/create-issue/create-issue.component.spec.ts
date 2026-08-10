@@ -7,6 +7,7 @@ import {
   IssueStatus
 } from '@features/issues/models/issue.model';
 import { IssuesService } from '@features/issues/services/issues.service';
+import { MessageService } from 'primeng/api';
 import { of } from 'rxjs';
 import { CreateIssueComponent } from './create-issue.component';
 
@@ -36,6 +37,7 @@ describe('CreateIssueComponent', () => {
           { path: 'issues/:id', component: CreateIssueComponent },
           { path: 'issues', component: CreateIssueComponent }
         ]),
+        MessageService,
         ToastService,
         { provide: IssuesService, useValue: issuesService }
       ]

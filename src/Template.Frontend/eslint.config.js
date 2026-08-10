@@ -38,20 +38,6 @@ export default defineConfig(
     }
   },
   {
-    files: ['src/app/shared/ui/**/*.ts'],
-    rules: {
-      '@angular-eslint/directive-selector': [
-        'error',
-        { type: 'attribute', prefix: ['app', 'hlm'], style: 'camelCase' }
-      ],
-      '@angular-eslint/component-selector': [
-        'error',
-        { type: 'element', prefix: ['app', 'hlm'], style: 'kebab-case' }
-      ],
-      '@angular-eslint/no-input-rename': 'off'
-    }
-  },
-  {
     files: ['src/**/*.spec.ts'],
     languageOptions: {
       parserOptions: {

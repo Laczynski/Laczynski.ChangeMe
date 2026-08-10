@@ -10,7 +10,6 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { ConfirmDialogService } from '@core/confirm/services/confirm-dialog.service';
 import { ToastService } from '@core/toast/services/toast.service';
 import {
   formatUserName,
@@ -31,30 +30,19 @@ import {
   getUserStatusSeverity,
   toUserMembershipStatus
 } from '@features/users/utils/users.utils';
-import { NgIcon, provideIcons } from '@ng-icons/core';
-import {
-  lucideLoader2,
-  lucidePencil,
-  lucideRefreshCw,
-  lucideTrash2,
-  lucideUserMinus
-} from '@ng-icons/lucide';
 import { PermissionCodes } from '@shared/authorization/permission-codes';
 import { BackButtonComponent } from '@shared/components/back-button/back-button.component';
-import { GridPaginatorComponent } from '@shared/components/grid-paginator/grid-paginator.component';
-import {
-  createGridQuery,
-  DEFAULT_GRID_PAGE_SIZE,
-  type GridPageChangeEvent
-} from '@shared/data/utils/grid.utils';
-import { mapBadgeSeverity } from '@shared/ui/utils/badge.utils';
-import { HlmAlertImports } from '@spartan/ui/alert';
-import { HlmBadgeImports } from '@spartan/ui/badge';
-import { HlmButtonImports } from '@spartan/ui/button';
-import { HlmCardImports } from '@spartan/ui/card';
-import { HlmInputImports } from '@spartan/ui/input';
-import { HlmLabelImports } from '@spartan/ui/label';
-import { HlmSpinnerImports } from '@spartan/ui/spinner';
+import { createGridQuery, DEFAULT_GRID_PAGE_SIZE } from '@shared/data/utils/grid.utils';
+import { ConfirmationService } from 'primeng/api';
+import { ButtonDirective } from 'primeng/button';
+import { Card } from 'primeng/card';
+import { InputText } from 'primeng/inputtext';
+import { Message } from 'primeng/message';
+import { Paginator, PaginatorState } from 'primeng/paginator';
+import { Panel } from 'primeng/panel';
+import { ProgressSpinner } from 'primeng/progressspinner';
+import { TableModule } from 'primeng/table';
+import { Tag } from 'primeng/tag';
 import { debounceTime, distinctUntilChanged } from 'rxjs';
 
 @Component({
@@ -63,25 +51,16 @@ import { debounceTime, distinctUntilChanged } from 'rxjs';
     ReactiveFormsModule,
     RouterLink,
     BackButtonComponent,
-    GridPaginatorComponent,
-    ...HlmCardImports,
-    ...HlmButtonImports,
-    ...HlmInputImports,
-    ...HlmLabelImports,
-    ...HlmAlertImports,
-    ...HlmBadgeImports,
-    ...HlmSpinnerImports,
-    NgIcon,
+    Card,
+    ButtonDirective,
+    InputText,
+    TableModule,
+    Message,
+    Tag,
+    Paginator,
+    Panel,
+    ProgressSpinner,
     EffectivePermissionsComponent
-  ],
-  providers: [
-    provideIcons({
-      lucideLoader2,
-      lucidePencil,
-      lucideRefreshCw,
-      lucideTrash2,
-      lucideUserMinus
-    })
   ],
   templateUrl: './role-details.component.html'
 })
@@ -94,7 +73,7 @@ export class RoleDetailsComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly authService = inject(AuthService);
-  private readonly confirmDialogService = inject(ConfirmDialogService);
+  private readonly confirmationService = inject(ConfirmationService);
   private readonly toastService = inject(ToastService);
   private readonly destroyRef = inject(DestroyRef);
 
@@ -103,7 +82,6 @@ export class RoleDetailsComponent {
   readonly getUserStatusLabel = getUserStatusLabel;
   readonly getUserStatusSeverity = getUserStatusSeverity;
   readonly toUserMembershipStatus = toUserMembershipStatus;
-  readonly mapBadgeSeverity = mapBadgeSeverity;
   readonly DEFAULT_GRID_PAGE_SIZE = DEFAULT_GRID_PAGE_SIZE;
 
   readonly role = signal<RoleDetailsDto | null>(null);
@@ -169,8 +147,9 @@ export class RoleDetailsComponent {
     this.loadRole();
   }
 
-  onAssignedUsersPageChange(event: GridPageChangeEvent): void {
-    const { take, skip } = event;
+  onAssignedUsersPageChange(event: PaginatorState): void {
+    const take = event.rows ?? DEFAULT_GRID_PAGE_SIZE;
+    const skip = event.first ?? 0;
     this.assignedUsersGrid.update((current) =>
       createGridQuery({
         skip,
@@ -223,12 +202,9 @@ export class RoleDetailsComponent {
       return;
     }
 
-    this.confirmDialogService.confirm({
+    this.confirmationService.confirm({
       header: 'Delete role',
       message: getDeleteRoleConfirmMessage(current.name),
-      acceptLabel: 'Delete',
-      rejectLabel: 'Cancel',
-      acceptVariant: 'destructive',
       accept: () => {
         this.rolesService.deleteRole(current.id).subscribe({
           next: () => {
@@ -247,15 +223,12 @@ export class RoleDetailsComponent {
       return;
     }
 
-    this.confirmDialogService.confirm({
+    this.confirmationService.confirm({
       header: 'Remove from role',
       message: getRemoveUserFromRoleConfirmMessage(
         formatUserReference(user),
         current.name
       ),
-      acceptLabel: 'Remove',
-      rejectLabel: 'Cancel',
-      acceptVariant: 'destructive',
       accept: () => {
         this.rolesService.removeUserFromRole(current.id, user.id).subscribe({
           next: () => {

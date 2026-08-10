@@ -10,7 +10,6 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
-import { ConfirmDialogService } from '@core/confirm/services/confirm-dialog.service';
 import { ToastService } from '@core/toast/services/toast.service';
 import {
   formatUserName,
@@ -28,30 +27,18 @@ import {
   getUserStatusSeverity,
   UserMessages
 } from '@features/users/utils/users.utils';
-import { NgIcon, provideIcons } from '@ng-icons/core';
-import {
-  lucideBan,
-  lucideCheck,
-  lucideLoader2,
-  lucidePencil,
-  lucideRefreshCw,
-  lucideX,
-  lucideXCircle
-} from '@ng-icons/lucide';
 import { PermissionCodes } from '@shared/authorization/permission-codes';
 import { BackButtonComponent } from '@shared/components/back-button/back-button.component';
-import { GridPaginatorComponent } from '@shared/components/grid-paginator/grid-paginator.component';
-import {
-  createGridQuery,
-  DEFAULT_GRID_PAGE_SIZE,
-  type GridPageChangeEvent
-} from '@shared/data/utils/grid.utils';
-import { mapBadgeSeverity } from '@shared/ui/utils/badge.utils';
-import { HlmAlertImports } from '@spartan/ui/alert';
-import { HlmBadgeImports } from '@spartan/ui/badge';
-import { HlmButtonImports } from '@spartan/ui/button';
-import { HlmCardImports } from '@spartan/ui/card';
-import { HlmSpinnerImports } from '@spartan/ui/spinner';
+import { createGridQuery, DEFAULT_GRID_PAGE_SIZE } from '@shared/data/utils/grid.utils';
+import { ConfirmationService } from 'primeng/api';
+import { ButtonDirective } from 'primeng/button';
+import { Card } from 'primeng/card';
+import { Message } from 'primeng/message';
+import { Paginator, PaginatorState } from 'primeng/paginator';
+import { Panel } from 'primeng/panel';
+import { ProgressSpinner } from 'primeng/progressspinner';
+import { TableModule } from 'primeng/table';
+import { Tag } from 'primeng/tag';
 
 @Component({
   selector: 'app-user-details',
@@ -59,25 +46,15 @@ import { HlmSpinnerImports } from '@spartan/ui/spinner';
     DatePipe,
     RouterLink,
     BackButtonComponent,
-    GridPaginatorComponent,
-    ...HlmCardImports,
-    ...HlmButtonImports,
-    ...HlmAlertImports,
-    ...HlmBadgeImports,
-    ...HlmSpinnerImports,
-    NgIcon,
+    Card,
+    ButtonDirective,
+    Message,
+    Tag,
+    TableModule,
+    Paginator,
+    Panel,
+    ProgressSpinner,
     EffectivePermissionsComponent
-  ],
-  providers: [
-    provideIcons({
-      lucideBan,
-      lucideCheck,
-      lucideLoader2,
-      lucidePencil,
-      lucideRefreshCw,
-      lucideX,
-      lucideXCircle
-    })
   ],
   templateUrl: './user-details.component.html'
 })
@@ -86,7 +63,7 @@ export class UserDetailsComponent {
 
   private readonly usersService = inject(UsersService);
   private readonly authService = inject(AuthService);
-  private readonly confirmDialogService = inject(ConfirmDialogService);
+  private readonly confirmationService = inject(ConfirmationService);
   private readonly toastService = inject(ToastService);
   private readonly destroyRef = inject(DestroyRef);
 
@@ -97,7 +74,6 @@ export class UserDetailsComponent {
   });
 
   readonly formatUserName = formatUserName;
-  readonly mapBadgeSeverity = mapBadgeSeverity;
   readonly sessions = signal<AdminUserSessionDto[]>([]);
   readonly sessionsGrid = signal(
     createGridQuery({ sort: [{ field: 'LastActivityAt', desc: true }] })
@@ -136,12 +112,12 @@ export class UserDetailsComponent {
       return;
     }
 
-    this.confirmDialogService.confirm({
+    this.confirmationService.confirm({
       header: 'Deactivate user',
       message: getDeactivateConfirmMessage(formatUserReference(profile)),
-      acceptLabel: 'Deactivate',
-      rejectLabel: 'Cancel',
-      acceptVariant: 'destructive',
+      icon: 'pi pi-exclamation-triangle',
+      acceptButtonProps: { label: 'Deactivate', severity: 'danger' },
+      rejectButtonProps: { label: 'Cancel', severity: 'secondary', outlined: true },
       accept: () => this.deactivateUser()
     });
   }
@@ -152,33 +128,34 @@ export class UserDetailsComponent {
       return;
     }
 
-    this.confirmDialogService.confirm({
+    this.confirmationService.confirm({
       header: 'Activate user',
       message: getActivateConfirmMessage(formatUserReference(profile)),
-      acceptLabel: 'Activate',
-      rejectLabel: 'Cancel',
+      icon: 'pi pi-exclamation-triangle',
+      acceptButtonProps: { label: 'Activate', severity: 'success' },
+      rejectButtonProps: { label: 'Cancel', severity: 'secondary', outlined: true },
       accept: () => this.activateUser()
     });
   }
 
   confirmRevokeAllSessions(): void {
-    this.confirmDialogService.confirm({
+    this.confirmationService.confirm({
       header: UserMessages.revokeAllSessionsTitle,
       message: UserMessages.revokeAllSessionsMessage,
-      acceptLabel: 'Revoke all',
-      rejectLabel: 'Cancel',
-      acceptVariant: 'destructive',
+      icon: 'pi pi-exclamation-triangle',
+      acceptButtonProps: { label: 'Revoke all', severity: 'danger' },
+      rejectButtonProps: { label: 'Cancel', severity: 'secondary', outlined: true },
       accept: () => this.revokeAllSessions()
     });
   }
 
   confirmRevokeSession(session: AdminUserSessionDto): void {
-    this.confirmDialogService.confirm({
+    this.confirmationService.confirm({
       header: UserMessages.revokeSessionTitle,
       message: UserMessages.revokeSessionMessage,
-      acceptLabel: 'Revoke',
-      rejectLabel: 'Cancel',
-      acceptVariant: 'destructive',
+      icon: 'pi pi-exclamation-triangle',
+      acceptButtonProps: { label: 'Revoke', severity: 'danger' },
+      rejectButtonProps: { label: 'Cancel', severity: 'secondary', outlined: true },
       accept: () => this.revokeSession(session)
     });
   }
@@ -217,8 +194,9 @@ export class UserDetailsComponent {
       });
   }
 
-  onSessionsPageChange(event: GridPageChangeEvent): void {
-    const { take, skip } = event;
+  onSessionsPageChange(event: PaginatorState): void {
+    const take = event.rows ?? DEFAULT_GRID_PAGE_SIZE;
+    const skip = event.first ?? 0;
     this.sessionsGrid.set(
       createGridQuery({
         skip,

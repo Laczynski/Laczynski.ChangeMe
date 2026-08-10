@@ -8,18 +8,9 @@ import { LayoutService } from '@core/layout/services/layout.service';
 import { formatUserReference } from '@core/user/utils/user-display.utils';
 import { AuthService } from '@features/auth/services/auth.service';
 import { NotificationsBellComponent } from '@features/notifications/components/notifications-bell/notifications-bell.component';
-import { NgIcon, provideIcons } from '@ng-icons/core';
-import {
-  lucideChevronRight,
-  lucideLogOut,
-  lucideMenu,
-  lucideMoon,
-  lucideSun,
-  lucideZap
-} from '@ng-icons/lucide';
 import { PermissionCodes } from '@shared/authorization/permission-codes';
-import { HlmButtonImports } from '@spartan/ui/button';
-import { HlmSheetImports } from '@spartan/ui/sheet';
+import { ButtonDirective } from 'primeng/button';
+import { Drawer } from 'primeng/drawer';
 import { filter, map } from 'rxjs/operators';
 
 @Component({
@@ -29,19 +20,8 @@ import { filter, map } from 'rxjs/operators';
     RouterLink,
     SidebarNavComponent,
     NotificationsBellComponent,
-    ...HlmButtonImports,
-    ...HlmSheetImports,
-    NgIcon
-  ],
-  providers: [
-    provideIcons({
-      lucideChevronRight,
-      lucideLogOut,
-      lucideMenu,
-      lucideMoon,
-      lucideSun,
-      lucideZap
-    })
+    ButtonDirective,
+    Drawer
   ],
   templateUrl: './app-shell.component.html'
 })
@@ -63,20 +43,17 @@ export class AppShellComponent {
       .pipe(map((state) => state.matches)),
     { initialValue: false }
   );
-  readonly mobileNavState = computed(() =>
-    this.layoutService.$mobileNavOpen() ? 'open' : 'closed'
-  );
 
   readonly authenticatedNavItems = computed<LayoutNavItem[]>(() => {
     const items: LayoutNavItem[] = [
-      { label: 'Issues list', icon: 'lucideList', routerLink: '/issues', exact: true },
-      { label: 'Create issue', icon: 'lucidePlus', routerLink: '/issues/create' }
+      { label: 'Issues list', icon: 'pi pi-list', routerLink: '/issues', exact: true },
+      { label: 'Create issue', icon: 'pi pi-plus', routerLink: '/issues/create' }
     ];
 
     if (this.authService.hasPermission(PermissionCodes.usersView)) {
       items.push({
         label: 'Users list',
-        icon: 'lucideUsers',
+        icon: 'pi pi-users',
         routerLink: '/users',
         exact: true
       });
@@ -85,13 +62,13 @@ export class AppShellComponent {
     if (this.authService.hasPermission(PermissionCodes.rolesView)) {
       items.push({
         label: 'Roles list',
-        icon: 'lucideShield',
+        icon: 'pi pi-shield',
         routerLink: '/roles',
         exact: true
       });
     }
 
-    items.push({ label: 'My account', icon: 'lucideUser', routerLink: '/account' });
+    items.push({ label: 'My account', icon: 'pi pi-user', routerLink: '/account' });
     return items;
   });
 
@@ -122,8 +99,8 @@ export class AppShellComponent {
     this.layoutService.toggleMobileNav();
   }
 
-  onMobileNavStateChanged(state: 'open' | 'closed'): void {
-    if (state === 'open') {
+  onMobileNavVisibleChange(visible: boolean): void {
+    if (visible) {
       this.layoutService.openMobileNav();
       return;
     }

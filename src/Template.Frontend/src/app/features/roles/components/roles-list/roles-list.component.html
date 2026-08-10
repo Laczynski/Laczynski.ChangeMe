@@ -1,145 +1,111 @@
-<section hlmCard class="mb-4">
-  <div hlmCardHeader>
-    <h1 hlmCardTitle>Roles list</h1>
-    <p hlmCardDescription>Browse, search and manage roles and permissions.</p>
-  </div>
-  <div hlmCardContent>
-    <div class="mb-4 flex justify-end">
-      @if (canManageRoles()) {
-        <a hlmBtn [routerLink]="['/roles/create']">
-          <ng-icon name="lucidePlus" aria-hidden="true" />
-          Add role
-        </a>
-      }
-    </div>
-
-    @if (errorMessage()) {
-      <hlm-alert variant="destructive" class="mb-4">
-        <p hlmAlertDescription>{{ errorMessage() }}</p>
-      </hlm-alert>
+<p-card
+  class="mb-4"
+  header="Roles list"
+  subheader="Browse, search and manage roles and permissions."
+>
+  <div class="mb-4 flex justify-end">
+    @if (canManageRoles()) {
+      <a pButton [routerLink]="['/roles/create']">
+        <i class="pi pi-plus" aria-hidden="true"></i>
+        Add role
+      </a>
     }
+  </div>
 
-    <dg-spartan-data-grid [grid]="grid" dataKey="id" searchPlaceholder="Search roles…">
-      <ng-template
-        dgColumn="Name"
-        header="Name"
-        [filter]="{ type: 'text', placeholder: 'Name contains…' }"
-        let-role
+  @if (errorMessage()) {
+    <p-message severity="error" class="mb-4">{{ errorMessage() }}</p-message>
+  }
+
+  <p-menu #roleActionsMenu [model]="roleActionItems()" [popup]="true" />
+
+  <dg-prime-data-grid [grid]="grid" dataKey="id" searchPlaceholder="Search rolesâ€¦">
+    <ng-template
+      dgColumn="Name"
+      header="Name"
+      [filter]="{ type: 'text', placeholder: 'Name containsâ€¦' }"
+      let-role
+    >
+      <a
+        class="text-primary font-medium hover:underline"
+        [routerLink]="['/roles', role.id]"
       >
-        <a
-          class="text-primary font-medium hover:underline"
-          [routerLink]="['/roles', role.id]"
-        >
-          {{ role.name }}
-        </a>
-      </ng-template>
+        {{ role.name }}
+      </a>
+    </ng-template>
 
-      <ng-template
-        dgColumn="Description"
-        header="Description"
-        [filter]="{ type: 'text', placeholder: 'Description contains…' }"
-        let-role
+    <ng-template
+      dgColumn="Description"
+      header="Description"
+      [filter]="{ type: 'text', placeholder: 'Description containsâ€¦' }"
+      let-role
+    >
+      {{ formatDescription(role.description) }}
+    </ng-template>
+
+    <ng-template
+      dgColumn="PermissionCount"
+      header="Permissions"
+      [filter]="{ type: 'number' }"
+      let-role
+    >
+      {{ RoleMessages.permissionsCount(role.permissionCount) }}
+    </ng-template>
+
+    <ng-template
+      dgColumn="UserCount"
+      header="Users"
+      [filter]="{ type: 'number' }"
+      let-role
+    >
+      {{ RoleMessages.usersCount(role.userCount) }}
+    </ng-template>
+
+    <ng-template dgColumn="IsSystem" header="System" [sortable]="false" let-role>
+      @if (role.isSystem) {
+        <p-tag value="System" severity="info" />
+      }
+    </ng-template>
+
+    <ng-template dgColumn="actions" header="" [sortable]="false" let-role>
+      <button
+        type="button"
+        pButton
+        severity="secondary"
+        [text]="true"
+        size="small"
+        [iconOnly]="true"
+        pTooltip="Role actions"
+        tooltipPosition="top"
+        [attr.aria-label]="'Actions for ' + role.name"
+        (click)="openRoleActionsMenu($event, role)"
       >
-        {{ formatDescription(role.description) }}
-      </ng-template>
+        <i class="pi pi-ellipsis-v" aria-hidden="true"></i>
+      </button>
+    </ng-template>
 
-      <ng-template
-        dgColumn="PermissionCount"
-        header="Permissions"
-        [filter]="{ type: 'number' }"
-        let-role
-      >
-        {{ RoleMessages.permissionsCount(role.permissionCount) }}
-      </ng-template>
-
-      <ng-template
-        dgColumn="UserCount"
-        header="Users"
-        [filter]="{ type: 'number' }"
-        let-role
-      >
-        {{ RoleMessages.usersCount(role.userCount) }}
-      </ng-template>
-
-      <ng-template dgColumn="IsSystem" header="System" [sortable]="false" let-role>
-        @if (role.isSystem) {
-          <span hlmBadge>System</span>
-        }
-      </ng-template>
-
-      <ng-template dgColumn="actions" header="" [sortable]="false" let-role>
-        <button
-          type="button"
-          hlmBtn
-          variant="ghost"
-          size="icon-sm"
-          [hlmDropdownMenuTrigger]="roleActionsMenu"
-          [hlmTooltip]="'Role actions'"
-          position="top"
-          [attr.aria-label]="'Actions for ' + role.name"
-          (click)="setRoleActionItems(role)"
-        >
-          <ng-icon name="lucideEllipsisVertical" aria-hidden="true" />
-        </button>
-      </ng-template>
-
-      <ng-template dgEmpty>
-        <div class="flex flex-col items-center gap-2 py-4">
-          <p class="text-muted-foreground m-0 text-center">{{ emptyMessage() }}</p>
-          <div class="flex flex-wrap items-center justify-center gap-2">
-            @if (canManageRoles()) {
-              <a hlmBtn size="sm" [routerLink]="['/roles/create']">
-                <ng-icon name="lucidePlus" aria-hidden="true" />
-                Add role
-              </a>
-            }
-            <button
-              type="button"
-              hlmBtn
-              size="sm"
-              variant="outline"
-              (click)="refresh()"
-            >
-              <ng-icon name="lucideRefreshCw" aria-hidden="true" />
-              Refresh
-            </button>
-          </div>
+    <ng-template dgEmpty>
+      <div class="flex flex-col items-center gap-2 py-4">
+        <p class="text-muted-color m-0 text-center">{{ emptyMessage() }}</p>
+        <div class="flex flex-wrap items-center justify-center gap-2">
+          @if (canManageRoles()) {
+            <a pButton size="small" [routerLink]="['/roles/create']">
+              <i class="pi pi-plus" aria-hidden="true"></i>
+              Add role
+            </a>
+          }
+          <button
+            type="button"
+            pButton
+            size="small"
+            severity="secondary"
+            [outlined]="true"
+            (click)="refresh()"
+          >
+            <i class="pi pi-refresh" aria-hidden="true"></i>
+            Refresh
+          </button>
         </div>
-      </ng-template>
-    </dg-spartan-data-grid>
-  </div>
-</section>
-
-<ng-template #roleActionsMenu>
-  <hlm-dropdown-menu class="w-52">
-    @for (item of roleActionItems(); track $index) {
-      @if (item.separator) {
-        <hlm-dropdown-menu-separator />
-      } @else if (item.routerLink) {
-        <a
-          hlmDropdownMenuItem
-          [routerLink]="item.routerLink"
-          [variant]="item.variant ?? 'default'"
-        >
-          @if (item.icon) {
-            <ng-icon [name]="item.icon" aria-hidden="true" />
-          }
-          {{ item.label }}
-        </a>
-      } @else {
-        <button
-          hlmDropdownMenuItem
-          type="button"
-          [variant]="item.variant ?? 'default'"
-          [disabled]="item.disabled"
-          (click)="item.command?.()"
-        >
-          @if (item.icon) {
-            <ng-icon [name]="item.icon" aria-hidden="true" />
-          }
-          {{ item.label }}
-        </button>
-      }
-    }
-  </hlm-dropdown-menu>
-</ng-template>
+      </div>
+    </ng-template>
+  </dg-prime-data-grid>
+</p-card>

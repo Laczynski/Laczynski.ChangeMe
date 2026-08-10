@@ -17,8 +17,10 @@ export async function selectMultiselectOption(
   label: string,
   optionLabel: string
 ): Promise<void> {
-  const fieldId = label.toLowerCase();
-  await page.locator(`#${fieldId}`).click();
+  const panel = page
+    .getByRole('main')
+    .getByRole('region', { name: label, exact: true });
+  await panel.locator('.p-select').click();
   await page.getByRole('option', { name: optionLabel, exact: true }).click();
   await page.keyboard.press('Escape');
 }

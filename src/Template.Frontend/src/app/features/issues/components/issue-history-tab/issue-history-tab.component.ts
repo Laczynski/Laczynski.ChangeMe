@@ -1,4 +1,4 @@
-import { DatePipe } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import {
   Component,
   computed,
@@ -16,54 +16,22 @@ import {
   createIssueTabGridQuery,
   hasMoreGridItems
 } from '@shared/data/utils/grid.utils';
-import { mapBadgeSeverity } from '@shared/ui/utils/badge.utils';
-import { NgIcon, provideIcons } from '@ng-icons/core';
-import {
-  lucideAlignLeft,
-  lucideCircleCheck,
-  lucideCircleX,
-  lucideFilePen,
-  lucideFlag,
-  lucideHistory,
-  lucideLoader2,
-  lucidePaperclip,
-  lucidePencil,
-  lucidePlus,
-  lucideRefreshCw,
-  lucideTrash2,
-  lucideUser
-} from '@ng-icons/lucide';
-import { HlmAlertImports } from '@spartan/ui/alert';
-import { HlmBadgeImports } from '@spartan/ui/badge';
-import { HlmButtonImports } from '@spartan/ui/button';
-import { HlmSpinnerImports } from '@spartan/ui/spinner';
+import { ButtonDirective } from 'primeng/button';
+import { Message } from 'primeng/message';
+import { ProgressSpinner } from 'primeng/progressspinner';
+import { Tag } from 'primeng/tag';
+import { Timeline } from 'primeng/timeline';
 
 @Component({
   selector: 'app-issue-history-tab',
   imports: [
+    CommonModule,
     DatePipe,
-    NgIcon,
-    ...HlmButtonImports,
-    ...HlmAlertImports,
-    ...HlmSpinnerImports,
-    ...HlmBadgeImports
-  ],
-  providers: [
-    provideIcons({
-      lucideAlignLeft,
-      lucideCircleCheck,
-      lucideCircleX,
-      lucideFilePen,
-      lucideFlag,
-      lucideHistory,
-      lucideLoader2,
-      lucidePaperclip,
-      lucidePencil,
-      lucidePlus,
-      lucideRefreshCw,
-      lucideTrash2,
-      lucideUser
-    })
+    ButtonDirective,
+    Message,
+    ProgressSpinner,
+    Tag,
+    Timeline
   ],
   templateUrl: './issue-history-tab.component.html',
   host: { class: 'block' }
@@ -75,7 +43,6 @@ export class IssueHistoryTabComponent {
   private readonly destroyRef = inject(DestroyRef);
 
   readonly getIssueHistoryEventVisual = getIssueHistoryEventVisual;
-  readonly mapBadgeSeverity = mapBadgeSeverity;
 
   readonly historyEntries = signal<IssueHistoryEntryDto[]>([]);
   readonly historyTotalCount = signal(0);

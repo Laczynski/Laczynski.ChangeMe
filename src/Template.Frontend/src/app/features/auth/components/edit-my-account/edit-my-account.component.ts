@@ -11,15 +11,13 @@ import { ToastService } from '@core/toast/services/toast.service';
 import { MyAccountDto } from '@features/auth/models/auth.model';
 import { AuthService } from '@features/auth/services/auth.service';
 import { AuthConstraints, AuthMessages } from '@features/auth/utils/auth.utils';
-import { NgIcon, provideIcons } from '@ng-icons/core';
-import { lucideRefreshCw, lucideSave } from '@ng-icons/lucide';
 import { BackButtonComponent } from '@shared/components/back-button/back-button.component';
-import { HlmAlertImports } from '@spartan/ui/alert';
-import { HlmButtonImports } from '@spartan/ui/button';
-import { HlmCardImports } from '@spartan/ui/card';
-import { HlmFieldImports } from '@spartan/ui/field';
-import { HlmInputImports } from '@spartan/ui/input';
-import { HlmSpinnerImports } from '@spartan/ui/spinner';
+import { ButtonDirective } from 'primeng/button';
+import { Card } from 'primeng/card';
+import { InputText } from 'primeng/inputtext';
+import { Message } from 'primeng/message';
+import { Panel } from 'primeng/panel';
+import { ProgressSpinner } from 'primeng/progressspinner';
 
 @Component({
   selector: 'app-edit-my-account',
@@ -27,15 +25,13 @@ import { HlmSpinnerImports } from '@spartan/ui/spinner';
     ReactiveFormsModule,
     RouterLink,
     BackButtonComponent,
-    ...HlmAlertImports,
-    ...HlmButtonImports,
-    ...HlmCardImports,
-    ...HlmFieldImports,
-    ...HlmInputImports,
-    ...HlmSpinnerImports,
-    NgIcon
+    Card,
+    ButtonDirective,
+    InputText,
+    Message,
+    Panel,
+    ProgressSpinner
   ],
-  providers: [provideIcons({ lucideRefreshCw, lucideSave })],
   templateUrl: './edit-my-account.component.html'
 })
 export class EditMyAccountComponent {
@@ -126,5 +122,9 @@ export class EditMyAccountComponent {
           this.isSubmitting.set(false);
         }
       });
+  }
+
+  shouldShowError(control: FormControl<string>): boolean {
+    return control.touched && control.invalid;
   }
 }

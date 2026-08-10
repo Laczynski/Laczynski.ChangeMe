@@ -18,20 +18,16 @@ import { EffectivePermissionsComponent } from '@features/users/components/effect
 import { EffectivePermissionDto } from '@features/users/models/user.model';
 import { UsersService } from '@features/users/services/users.service';
 import { UserConstraints, UserMessages } from '@features/users/utils/users.utils';
-import { NgIcon, provideIcons } from '@ng-icons/core';
-import {
-  lucideEye,
-  lucideEyeOff,
-  lucideLoader2,
-  lucideUserPlus
-} from '@ng-icons/lucide';
 import { BackButtonComponent } from '@shared/components/back-button/back-button.component';
-import { HlmAlertImports } from '@spartan/ui/alert';
-import { HlmButtonImports } from '@spartan/ui/button';
-import { HlmCardImports } from '@spartan/ui/card';
-import { HlmFieldImports } from '@spartan/ui/field';
-import { HlmInputImports } from '@spartan/ui/input';
-import { HlmSelectImports } from '@spartan/ui/select';
+import { ButtonDirective } from 'primeng/button';
+import { Card } from 'primeng/card';
+import { IconField } from 'primeng/iconfield';
+import { InputIcon } from 'primeng/inputicon';
+import { InputPassword } from 'primeng/inputpassword';
+import { InputText } from 'primeng/inputtext';
+import { Message } from 'primeng/message';
+import { Panel } from 'primeng/panel';
+import { Select } from 'primeng/select';
 import { catchError, debounceTime, of, startWith, switchMap } from 'rxjs';
 
 @Component({
@@ -40,16 +36,17 @@ import { catchError, debounceTime, of, startWith, switchMap } from 'rxjs';
     ReactiveFormsModule,
     RouterLink,
     BackButtonComponent,
-    ...HlmCardImports,
-    ...HlmButtonImports,
-    ...HlmFieldImports,
-    ...HlmInputImports,
-    ...HlmSelectImports,
-    ...HlmAlertImports,
-    NgIcon,
+    Card,
+    ButtonDirective,
+    IconField,
+    InputIcon,
+    InputPassword,
+    InputText,
+    Select,
+    Message,
+    Panel,
     EffectivePermissionsComponent
   ],
-  providers: [provideIcons({ lucideEye, lucideEyeOff, lucideLoader2, lucideUserPlus })],
   templateUrl: './create-user.component.html'
 })
 export class CreateUserComponent {
@@ -141,12 +138,6 @@ export class CreateUserComponent {
       .subscribe((permissions) => this.effectivePermissions.set(permissions));
   }
 
-  roleItemToString = (item: unknown): string => {
-    const id = String(item);
-    const role = this.roleOptions().find((option) => option.id === id);
-    return role?.name ?? id;
-  };
-
   onSubmit(): void {
     if (this.form.invalid || this.isSubmitting()) {
       this.form.markAllAsTouched();
@@ -180,6 +171,10 @@ export class CreateUserComponent {
           this.isSubmitting.set(false);
         }
       });
+  }
+
+  shouldShowError(control: FormControl<string | string[]>): boolean {
+    return control.touched && control.invalid;
   }
 }
 

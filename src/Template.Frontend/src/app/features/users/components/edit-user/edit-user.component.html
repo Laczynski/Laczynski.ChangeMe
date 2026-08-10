@@ -1,179 +1,137 @@
-<section hlmCard class="mb-4">
-  <div hlmCardHeader>
-    <h1 hlmCardTitle>{{ pageTitle() }}</h1>
-    <p hlmCardDescription>Update profile, roles, and account status</p>
+<p-card
+  class="mb-4"
+  [header]="pageTitle()"
+  subheader="Update profile, roles, and account status"
+>
+  <div class="mb-4 flex flex-wrap items-center gap-2">
+    <app-back-button label="Back to user details" [route]="['/users', id()]" />
   </div>
-  <div hlmCardContent>
-    <div class="mb-4 flex flex-wrap items-center gap-2">
-      <app-back-button label="Back to user details" [route]="['/users', id()]" />
-    </div>
 
-    @if (isLoading()) {
-      <div class="flex flex-col items-center gap-2 py-8">
-        <hlm-spinner aria-label="Loading user form" />
-        <p class="text-muted-foreground m-0 text-sm">Loading user data...</p>
-      </div>
-    } @else if (loadError()) {
-      <div class="flex flex-col items-center gap-2">
-        <div hlmAlert variant="destructive">
-          <p hlmAlertDescription>{{ loadError() }}</p>
-        </div>
-        <button
-          type="button"
-          hlmBtn
-          size="sm"
-          variant="outline"
-          [disabled]="isLoading()"
-          (click)="refresh()"
-        >
-          @if (isLoading()) {
-            <ng-icon
-              name="lucideLoader2"
-              class="motion-safe:animate-spin"
-              aria-hidden="true"
+  @if (isLoading()) {
+    <div class="flex flex-col items-center gap-2 py-8">
+      <p-progress-spinner ariaLabel="Loading user form" />
+      <p class="text-muted-color m-0 text-sm">Loading user data...</p>
+    </div>
+  } @else if (loadError()) {
+    <div class="flex flex-col items-center gap-2">
+      <p-message severity="error">{{ loadError() }}</p-message>
+      <button
+        type="button"
+        pButton
+        size="small"
+        severity="secondary"
+        [outlined]="true"
+        [disabled]="isLoading()"
+        (click)="refresh()"
+      >
+        @if (isLoading()) {
+          <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
+        } @else {
+          <i class="pi pi-refresh" aria-hidden="true"></i>
+        }
+        Try again
+      </button>
+    </div>
+  } @else {
+    <form
+      class="p-fluid flex flex-col gap-4"
+      [formGroup]="form"
+      (ngSubmit)="onSubmit()"
+    >
+      <p-panel header="Profile" [toggleable]="true">
+        <div class="grid gap-4 sm:grid-cols-2">
+          <div class="flex flex-col gap-1.5">
+            <label for="firstName">First name</label>
+            <input
+              id="firstName"
+              type="text"
+              pInputText
+              [formControl]="form.controls.firstName"
+              [invalid]="shouldShowError(form.controls.firstName)"
             />
+          </div>
+          <div class="flex flex-col gap-1.5">
+            <label for="lastName">Last name</label>
+            <input
+              id="lastName"
+              type="text"
+              pInputText
+              [formControl]="form.controls.lastName"
+              [invalid]="shouldShowError(form.controls.lastName)"
+            />
+          </div>
+        </div>
+
+        <div class="mt-4 flex flex-col gap-1.5">
+          <label for="email">Email</label>
+          <input
+            id="email"
+            type="email"
+            pInputText
+            [formControl]="form.controls.email"
+            [invalid]="shouldShowError(form.controls.email)"
+          />
+        </div>
+      </p-panel>
+
+      @if (showRolesField()) {
+        <p-panel header="Roles" [toggleable]="true">
+          <div class="flex flex-col gap-1.5">
+            <label for="roles">Roles</label>
+            <p-select
+              inputId="roles"
+              [multiple]="true"
+              [formControl]="form.controls.roleIds"
+              [options]="roleOptions()"
+              optionLabel="name"
+              optionValue="id"
+              placeholder="Select roles"
+              [invalid]="shouldShowError(form.controls.roleIds)"
+            />
+          </div>
+        </p-panel>
+
+        <app-effective-permissions
+          [permissions]="effectivePermissions()"
+          [roleIdsSelected]="form.controls.roleIds.value.length > 0"
+        />
+      }
+
+      @if (showStatusField()) {
+        <p-panel header="Account status" [toggleable]="true">
+          <div class="flex items-center gap-2">
+            <p-checkbox
+              inputId="deactivated"
+              [formControl]="form.controls.deactivated"
+              [binary]="true"
+            />
+            <label for="deactivated">Deactivated</label>
+          </div>
+        </p-panel>
+      }
+
+      @if (submitError()) {
+        <p-message severity="error">{{ submitError() }}</p-message>
+      }
+
+      <div class="flex flex-wrap items-center justify-end gap-2">
+        <a
+          pButton
+          severity="secondary"
+          [outlined]="true"
+          [routerLink]="['/users', id()]"
+        >
+          Cancel
+        </a>
+        <button type="submit" pButton [disabled]="isSubmitting()">
+          @if (isSubmitting()) {
+            <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
           } @else {
-            <ng-icon name="lucideRefreshCw" aria-hidden="true" />
+            <i class="pi pi-save" aria-hidden="true"></i>
           }
-          Try again
+          {{ isSubmitting() ? 'Saving...' : 'Save changes' }}
         </button>
       </div>
-    } @else {
-      <form class="flex flex-col gap-4" [formGroup]="form" (ngSubmit)="onSubmit()">
-        <section hlmCard>
-          <div hlmCardHeader>
-            <h2 hlmCardTitle>Profile</h2>
-          </div>
-          <div hlmCardContent>
-            <div class="grid gap-4 sm:grid-cols-2">
-              <div hlmField>
-                <label hlmFieldLabel for="firstName">First name</label>
-                <input
-                  id="firstName"
-                  type="text"
-                  hlmInput
-                  [formControl]="form.controls.firstName"
-                />
-                <hlm-field-error validator="required">
-                  First name is required.
-                </hlm-field-error>
-              </div>
-              <div hlmField>
-                <label hlmFieldLabel for="lastName">Last name</label>
-                <input
-                  id="lastName"
-                  type="text"
-                  hlmInput
-                  [formControl]="form.controls.lastName"
-                />
-                <hlm-field-error validator="required">
-                  Last name is required.
-                </hlm-field-error>
-              </div>
-            </div>
-
-            <div hlmField class="mt-4">
-              <label hlmFieldLabel for="email">Email</label>
-              <input
-                id="email"
-                type="email"
-                hlmInput
-                [formControl]="form.controls.email"
-              />
-              <hlm-field-error validator="required">Email is required.</hlm-field-error>
-              <hlm-field-error validator="email">
-                Enter a valid email address.
-              </hlm-field-error>
-            </div>
-          </div>
-        </section>
-
-        @if (showRolesField()) {
-          <section hlmCard>
-            <div hlmCardHeader>
-              <h2 hlmCardTitle>Roles</h2>
-            </div>
-            <div hlmCardContent>
-              <div
-                hlmField
-                [forceInvalid]="
-                  form.controls.roleIds.touched && !!form.controls.roleIds.errors
-                "
-              >
-                <label hlmFieldLabel for="roles">Roles</label>
-                <hlm-select-multiple
-                  class="w-full"
-                  [value]="form.controls.roleIds.value"
-                  [itemToString]="roleItemToString"
-                  (valueChange)="form.controls.roleIds.setValue($event ?? [])"
-                >
-                  <hlm-select-trigger class="w-full" id="roles">
-                    <hlm-select-value placeholder="Select roles" />
-                  </hlm-select-trigger>
-                  <hlm-select-content *hlmSelectPortal>
-                    @for (role of roleOptions(); track role.id) {
-                      <hlm-select-item [value]="role.id">
-                        {{ role.name }}
-                      </hlm-select-item>
-                    }
-                  </hlm-select-content>
-                </hlm-select-multiple>
-                @if (
-                  form.controls.roleIds.touched &&
-                  form.controls.roleIds.errors?.['required']
-                ) {
-                  <hlm-field-error forceShow>Select at least one role.</hlm-field-error>
-                }
-              </div>
-            </div>
-          </section>
-
-          <app-effective-permissions
-            [permissions]="effectivePermissions()"
-            [roleIdsSelected]="form.controls.roleIds.value.length > 0"
-          />
-        }
-
-        @if (showStatusField()) {
-          <section hlmCard>
-            <div hlmCardHeader>
-              <h2 hlmCardTitle>Account status</h2>
-            </div>
-            <div hlmCardContent>
-              <div hlmField orientation="horizontal">
-                <hlm-checkbox
-                  inputId="deactivated"
-                  [checked]="form.controls.deactivated.value"
-                  (checkedChange)="form.controls.deactivated.setValue($event)"
-                />
-                <label hlmFieldLabel for="deactivated">Deactivated</label>
-              </div>
-            </div>
-          </section>
-        }
-
-        @if (submitError()) {
-          <div hlmAlert variant="destructive">
-            <p hlmAlertDescription>{{ submitError() }}</p>
-          </div>
-        }
-
-        <div class="flex flex-wrap items-center justify-end gap-2">
-          <a hlmBtn variant="outline" [routerLink]="['/users', id()]">Cancel</a>
-          <button type="submit" hlmBtn [disabled]="isSubmitting()">
-            @if (isSubmitting()) {
-              <ng-icon
-                name="lucideLoader2"
-                class="motion-safe:animate-spin"
-                aria-hidden="true"
-              />
-            } @else {
-              <ng-icon name="lucideSave" aria-hidden="true" />
-            }
-            {{ isSubmitting() ? 'Saving...' : 'Save changes' }}
-          </button>
-        </div>
-      </form>
-    }
-  </div>
-</section>
+    </form>
+  }
+</p-card>

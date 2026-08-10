@@ -1,162 +1,129 @@
-<section hlmCard class="mb-4">
-  <div hlmCardHeader>
-    <h1 hlmCardTitle>Users list</h1>
-    <p hlmCardDescription>Browse, search and manage user accounts.</p>
-  </div>
-  <div hlmCardContent>
-    <div class="mb-4 flex justify-end">
-      @if (canCreateUsers()) {
-        <a hlmBtn [routerLink]="['/users/create']">
-          <ng-icon name="lucideUserPlus" aria-hidden="true" />
-          Create user
-        </a>
-      }
-    </div>
-
-    @if (errorMessage()) {
-      <hlm-alert variant="destructive" class="mb-4">
-        <p hlmAlertDescription>{{ errorMessage() }}</p>
-      </hlm-alert>
+<p-card
+  class="mb-4"
+  header="Users list"
+  subheader="Browse, search and manage user accounts."
+>
+  <div class="mb-4 flex justify-end">
+    @if (canCreateUsers()) {
+      <a pButton [routerLink]="['/users/create']">
+        <i class="pi pi-user-plus" aria-hidden="true"></i>
+        Create user
+      </a>
     }
+  </div>
 
-    <dg-spartan-data-grid [grid]="grid" dataKey="id" searchPlaceholder="Search users…">
-      <ng-template
-        dgColumn="LastName"
-        header="Name"
-        [filter]="{ type: 'text', placeholder: 'Name contains…' }"
-        let-user
+  @if (errorMessage()) {
+    <p-message severity="error" class="mb-4">{{ errorMessage() }}</p-message>
+  }
+
+  <p-menu #userActionsMenu [model]="userActionItems()" [popup]="true" />
+
+  <dg-prime-data-grid [grid]="grid" dataKey="id" searchPlaceholder="Search usersâ€¦">
+    <ng-template
+      dgColumn="LastName"
+      header="Name"
+      [filter]="{ type: 'text', placeholder: 'Name containsâ€¦' }"
+      let-user
+    >
+      <a
+        class="text-primary font-medium hover:underline"
+        [routerLink]="['/users', user.id]"
       >
-        <a
-          class="text-primary font-medium hover:underline"
-          [routerLink]="['/users', user.id]"
-        >
-          {{ formatUserName(user) || '—' }}
-        </a>
-      </ng-template>
+        {{ formatUserName(user) || 'â€”' }}
+      </a>
+    </ng-template>
 
-      <ng-template
-        dgColumn="Email"
-        header="Email"
-        [filter]="{ type: 'text', placeholder: 'Email contains…' }"
-        let-user
-      >
-        {{ user.email }}
-      </ng-template>
+    <ng-template
+      dgColumn="Email"
+      header="Email"
+      [filter]="{ type: 'text', placeholder: 'Email containsâ€¦' }"
+      let-user
+    >
+      {{ user.email }}
+    </ng-template>
 
-      <ng-template
-        dgColumn="Status"
-        header="Status"
-        [filter]="{ type: 'enum', options: statusFilters }"
-        let-user
-      >
-        <span hlmBadge [variant]="mapBadgeSeverity(getUserStatusSeverity(user.status))">
-          {{ getUserStatusLabel(user.status) }}
-        </span>
-      </ng-template>
+    <ng-template
+      dgColumn="Status"
+      header="Status"
+      [filter]="{ type: 'enum', options: statusFilters }"
+      let-user
+    >
+      <p-tag
+        [value]="getUserStatusLabel(user.status)"
+        [severity]="getUserStatusSeverity(user.status)"
+      />
+    </ng-template>
 
-      <ng-template dgColumn="RoleNames" header="Roles" [sortable]="false" let-user>
-        <div class="flex flex-wrap gap-1">
-          @for (roleName of user.roleNames; track roleName) {
-            <span hlmBadge variant="secondary">{{ roleName }}</span>
-          }
-        </div>
-      </ng-template>
-
-      <ng-template
-        dgColumn="LastSignInAt"
-        header="Last sign-in"
-        [filter]="{ type: 'date' }"
-        let-user
-      >
-        @if (user.lastSignInAt) {
-          {{ user.lastSignInAt | date: 'dd.MM.yyyy HH:mm' }}
-        } @else {
-          {{ UserMessages.neverSignedIn }}
+    <ng-template dgColumn="RoleNames" header="Roles" [sortable]="false" let-user>
+      <div class="flex flex-wrap gap-1">
+        @for (roleName of user.roleNames; track roleName) {
+          <p-tag [value]="roleName" severity="secondary" />
         }
-      </ng-template>
+      </div>
+    </ng-template>
 
-      <ng-template
-        dgColumn="CreatedAt"
-        header="Created at"
-        [filter]="{ type: 'date' }"
-        let-user
-      >
-        {{ user.createdAt | date: 'dd.MM.yyyy HH:mm' }}
-      </ng-template>
-
-      <ng-template dgColumn="actions" header="" [sortable]="false" let-user>
-        <button
-          type="button"
-          hlmBtn
-          variant="ghost"
-          size="icon-sm"
-          [hlmDropdownMenuTrigger]="userActionsMenu"
-          [hlmTooltip]="'User actions'"
-          position="top"
-          [attr.aria-label]="'Actions for ' + formatUserReference(user)"
-          (click)="setUserActionItems(user)"
-        >
-          <ng-icon name="lucideEllipsisVertical" aria-hidden="true" />
-        </button>
-      </ng-template>
-
-      <ng-template dgEmpty>
-        <div class="flex flex-col items-center gap-2 py-4">
-          <p class="text-muted-foreground m-0 text-center">{{ emptyMessage() }}</p>
-          <div class="flex flex-wrap items-center justify-center gap-2">
-            @if (canCreateUsers()) {
-              <a hlmBtn size="sm" [routerLink]="['/users/create']">
-                <ng-icon name="lucideUserPlus" aria-hidden="true" />
-                Create user
-              </a>
-            }
-            <button
-              type="button"
-              hlmBtn
-              size="sm"
-              variant="outline"
-              (click)="refresh()"
-            >
-              <ng-icon name="lucideRefreshCw" aria-hidden="true" />
-              Refresh
-            </button>
-          </div>
-        </div>
-      </ng-template>
-    </dg-spartan-data-grid>
-  </div>
-</section>
-
-<ng-template #userActionsMenu>
-  <hlm-dropdown-menu class="w-52">
-    @for (item of userActionItems(); track $index) {
-      @if (item.separator) {
-        <hlm-dropdown-menu-separator />
-      } @else if (item.routerLink) {
-        <a
-          hlmDropdownMenuItem
-          [routerLink]="item.routerLink"
-          [variant]="item.variant ?? 'default'"
-        >
-          @if (item.icon) {
-            <ng-icon [name]="item.icon" aria-hidden="true" />
-          }
-          {{ item.label }}
-        </a>
+    <ng-template
+      dgColumn="LastSignInAt"
+      header="Last sign-in"
+      [filter]="{ type: 'date' }"
+      let-user
+    >
+      @if (user.lastSignInAt) {
+        {{ user.lastSignInAt | date: 'dd.MM.yyyy HH:mm' }}
       } @else {
-        <button
-          hlmDropdownMenuItem
-          type="button"
-          [variant]="item.variant ?? 'default'"
-          [disabled]="item.disabled"
-          (click)="item.command?.()"
-        >
-          @if (item.icon) {
-            <ng-icon [name]="item.icon" aria-hidden="true" />
-          }
-          {{ item.label }}
-        </button>
+        {{ UserMessages.neverSignedIn }}
       }
-    }
-  </hlm-dropdown-menu>
-</ng-template>
+    </ng-template>
+
+    <ng-template
+      dgColumn="CreatedAt"
+      header="Created at"
+      [filter]="{ type: 'date' }"
+      let-user
+    >
+      {{ user.createdAt | date: 'dd.MM.yyyy HH:mm' }}
+    </ng-template>
+
+    <ng-template dgColumn="actions" header="" [sortable]="false" let-user>
+      <button
+        type="button"
+        pButton
+        severity="secondary"
+        [text]="true"
+        size="small"
+        [iconOnly]="true"
+        pTooltip="User actions"
+        tooltipPosition="top"
+        [attr.aria-label]="'Actions for ' + formatUserReference(user)"
+        (click)="openUserActionsMenu($event, user)"
+      >
+        <i class="pi pi-ellipsis-v" aria-hidden="true"></i>
+      </button>
+    </ng-template>
+
+    <ng-template dgEmpty>
+      <div class="flex flex-col items-center gap-2 py-4">
+        <p class="text-muted-color m-0 text-center">{{ emptyMessage() }}</p>
+        <div class="flex flex-wrap items-center justify-center gap-2">
+          @if (canCreateUsers()) {
+            <a pButton size="small" [routerLink]="['/users/create']">
+              <i class="pi pi-user-plus" aria-hidden="true"></i>
+              Create user
+            </a>
+          }
+          <button
+            type="button"
+            pButton
+            size="small"
+            severity="secondary"
+            [outlined]="true"
+            (click)="refresh()"
+          >
+            <i class="pi pi-refresh" aria-hidden="true"></i>
+            Refresh
+          </button>
+        </div>
+      </div>
+    </ng-template>
+  </dg-prime-data-grid>
+</p-card>

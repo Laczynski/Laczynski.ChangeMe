@@ -7,28 +7,26 @@ import { AuthService } from '@features/auth/services/auth.service';
 import { EffectivePermissionsComponent } from '@features/users/components/effective-permissions/effective-permissions.component';
 import { UserMessages } from '@features/users/utils/users.utils';
 import { PermissionCodes } from '@shared/authorization/permission-codes';
-import { NgIcon, provideIcons } from '@ng-icons/core';
-import { lucidePencil, lucideRefreshCw } from '@ng-icons/lucide';
-import { HlmAlertImports } from '@spartan/ui/alert';
-import { HlmBadgeImports } from '@spartan/ui/badge';
-import { HlmButtonImports } from '@spartan/ui/button';
-import { HlmCardImports } from '@spartan/ui/card';
-import { HlmSpinnerImports } from '@spartan/ui/spinner';
+import { ButtonDirective } from 'primeng/button';
+import { Card } from 'primeng/card';
+import { Message } from 'primeng/message';
+import { Panel } from 'primeng/panel';
+import { ProgressSpinner } from 'primeng/progressspinner';
+import { Tag } from 'primeng/tag';
 
 @Component({
   selector: 'app-my-account',
   imports: [
     DatePipe,
     RouterLink,
-    ...HlmAlertImports,
-    ...HlmBadgeImports,
-    ...HlmButtonImports,
-    ...HlmCardImports,
-    ...HlmSpinnerImports,
-    NgIcon,
+    Card,
+    ButtonDirective,
+    Message,
+    Tag,
+    Panel,
+    ProgressSpinner,
     EffectivePermissionsComponent
   ],
-  providers: [provideIcons({ lucidePencil, lucideRefreshCw })],
   templateUrl: './my-account.component.html'
 })
 export class MyAccountComponent {

@@ -9,7 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ### Changed
 
 - **Rebrand to Laczynski ecosystem** — NuGet package `Laczynski.Template`; `dotnet new laczynski-fullstack`; template `sourceName` is `Template` (folders/namespaces `Template.*`).
-- **DataGrid** — migrated from QueryGrid / `@query-grid/*` to `Laczynski.DataGrid.*` and `@laczynski/datagrid*` (`0.1.0-preview.19`); Spartan grid selectors `dg-spartan-data-grid`, `dgColumn`, `dgEmpty`.
+- **DataGrid** — migrated from QueryGrid / `@query-grid/*` to `Laczynski.DataGrid.*` and `@laczynski/datagrid` / `@laczynski/datagrid-primeng` (`0.1.0-preview.19`); PrimeNG grid selectors `dg-prime-data-grid`, `dgColumn`, `dgEmpty`.
 - **Repository** — `https://github.com/Laczynski/Template`; JWT sample issuer/audience use `Template`.
 - **Database schema** — EF migrations default schema `template_backend` (aligned with `Template.Backend.Infrastructure` assembly naming).
 
@@ -17,7 +17,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 1. **Install** — `dotnet new uninstall ChangeMe` (if installed), then `dotnet new install Laczynski.Template`.
 2. **Scaffold** — `dotnet new laczynski-fullstack -n YourApp -o YourApp` (replaces `dotnet new changeme`).
-3. **DataGrid** — update NuGet to `Laczynski.DataGrid.*` and npm to `@laczynski/datagrid` / `@laczynski/datagrid-spartan`; rename `qg-*` selectors to `dg-*`.
+3. **DataGrid** — update NuGet to `Laczynski.DataGrid.*` and npm to `@laczynski/datagrid` / `@laczynski/datagrid-primeng`; rename `qg-*` selectors to `dg-*`.
 4. **Merge** — if syncing an existing generated app, rename `ChangeMe.*` projects/namespaces to your app name and update package references manually.
 
 ## [2.2.0] - 2026-07-20

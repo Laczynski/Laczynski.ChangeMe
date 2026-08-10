@@ -19,17 +19,14 @@ import { ToastService } from '@core/toast/services/toast.service';
 import { IssueCommentDto } from '@features/issues/models/issue.model';
 import { IssuesService } from '@features/issues/services/issues.service';
 import { IssueCommentConstraints } from '@features/issues/utils/issue.utils';
-import { NgIcon, provideIcons } from '@ng-icons/core';
-import { lucideLoader2, lucideSend } from '@ng-icons/lucide';
 import {
   createIssueTabGridQuery,
   hasMoreGridItems
 } from '@shared/data/utils/grid.utils';
-import { HlmAlertImports } from '@spartan/ui/alert';
-import { HlmButtonImports } from '@spartan/ui/button';
-import { HlmFieldImports } from '@spartan/ui/field';
-import { HlmSpinnerImports } from '@spartan/ui/spinner';
-import { HlmTextareaImports } from '@spartan/ui/textarea';
+import { ButtonDirective } from 'primeng/button';
+import { Message } from 'primeng/message';
+import { ProgressSpinner } from 'primeng/progressspinner';
+import { Textarea } from 'primeng/textarea';
 
 type CommentForm = {
   content: FormControl<string>;
@@ -40,14 +37,11 @@ type CommentForm = {
   imports: [
     DatePipe,
     ReactiveFormsModule,
-    NgIcon,
-    ...HlmButtonImports,
-    ...HlmFieldImports,
-    ...HlmTextareaImports,
-    ...HlmAlertImports,
-    ...HlmSpinnerImports
+    ButtonDirective,
+    Textarea,
+    Message,
+    ProgressSpinner
   ],
-  providers: [provideIcons({ lucideLoader2, lucideSend })],
   templateUrl: './issue-comments-tab.component.html',
   host: { class: 'block' }
 })
@@ -64,6 +58,7 @@ export class IssueCommentsTabComponent {
   readonly commentsTotalCount = signal(0);
   readonly loadError = signal<string | null>(null);
   readonly commentError = signal<string | null>(null);
+  readonly isSubmitted = signal(false);
   readonly isSubmittingComment = signal(false);
   readonly isLoadingComments = signal(false);
   readonly isLoadingMoreComments = signal(false);
@@ -99,7 +94,15 @@ export class IssueCommentsTabComponent {
     });
   }
 
+  shouldShowCommentError(): boolean {
+    return (
+      !!this.commentForm.controls.content.errors &&
+      (this.commentForm.controls.content.touched || this.isSubmitted())
+    );
+  }
+
   addComment(): void {
+    this.isSubmitted.set(true);
     this.commentError.set(null);
 
     if (this.commentForm.invalid) {
@@ -120,6 +123,7 @@ export class IssueCommentsTabComponent {
           this.commentForm.reset({ content: '' });
           this.commentForm.markAsPristine();
           this.commentForm.markAsUntouched();
+          this.isSubmitted.set(false);
           this.isSubmittingComment.set(false);
           this.toastService.success('Comment added');
         },

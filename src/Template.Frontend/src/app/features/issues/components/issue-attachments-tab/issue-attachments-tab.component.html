@@ -1,71 +1,58 @@
 <div class="flex flex-col gap-4 pt-2">
-  <div class="flex flex-col gap-2 rounded-lg border border-border p-4">
+  <div class="flex flex-col gap-2 rounded-lg border border-surface-200 p-4">
     <p class="m-0 font-medium">Upload file</p>
     <div class="flex flex-wrap items-center gap-3">
-      <input
-        #fileInput
-        type="file"
-        class="hidden"
+      <p-fileupload
+        mode="basic"
+        chooseLabel="Choose file"
+        chooseIcon="pi pi-upload"
+        [customUpload]="true"
+        [auto]="false"
         [accept]="issueAttachmentAccept"
         [disabled]="isUploading()"
-        (change)="onFileSelected($event)"
+        (onSelect)="onFileSelected($event)"
       />
-      <button
-        type="button"
-        hlmBtn
-        variant="outline"
-        size="sm"
-        [disabled]="isUploading()"
-        (click)="chooseFile()"
-      >
-        <ng-icon name="lucideUpload" />
-        Choose file
-      </button>
       @if (selectedFile(); as file) {
-        <span class="text-muted-foreground text-sm">{{ file.name }}</span>
+        <span class="text-muted-color text-sm">{{ file.name }}</span>
       }
       <button
         type="button"
-        hlmBtn
-        size="sm"
+        pButton
+        size="small"
         [disabled]="!selectedFile() || isUploading()"
         (click)="uploadAttachment()"
       >
         @if (isUploading()) {
-          <ng-icon name="lucideLoader2" class="animate-spin" />
+          <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
         } @else {
-          <ng-icon name="lucideCloudUpload" />
+          <i class="pi pi-cloud-upload" aria-hidden="true"></i>
         }
         Upload
       </button>
     </div>
-    <p class="text-muted-foreground m-0 text-sm">
+    <p class="text-muted-color m-0 text-sm">
       Max {{ formatFileSize(IssueConstraints.ATTACHMENT_MAX_FILE_SIZE_BYTES) }} per
       file, up to
       {{ IssueConstraints.ATTACHMENT_MAX_ATTACHMENTS_PER_ISSUE }} attachments per issue.
     </p>
     @if (uploadError()) {
-      <hlm-alert variant="destructive">
-        <p hlmAlertDescription>{{ uploadError() }}</p>
-      </hlm-alert>
+      <p-message severity="error">{{ uploadError() }}</p-message>
     }
   </div>
 
   @if (loadError()) {
-    <hlm-alert variant="destructive">
-      <p hlmAlertDescription>{{ loadError() }}</p>
-    </hlm-alert>
+    <p-message severity="error">{{ loadError() }}</p-message>
   } @else if (isLoadingAttachments()) {
-    <hlm-spinner aria-label="Loading attachments" class="size-8" />
+    <p-progress-spinner ariaLabel="Loading attachments" class="!size-8" />
   } @else if (attachments().length > 0) {
     <ul class="m-0 flex list-none flex-col gap-3 p-0">
       @for (attachment of attachments(); track attachment.id) {
         <li
-          class="flex flex-col gap-3 rounded-lg border border-border p-4 sm:flex-row sm:items-center sm:justify-between"
+          class="flex flex-col gap-3 rounded-lg border border-surface-200 p-4 sm:flex-row sm:items-center sm:justify-between"
         >
           <div class="min-w-0 flex-1">
             <p class="m-0 truncate font-medium">{{ attachment.originalFileName }}</p>
-            <p class="text-muted-foreground m-0 mt-1 text-sm">
+            <p class="text-muted-color m-0 mt-1 text-sm">
               {{ formatFileSize(attachment.sizeBytes) }}
               ·
               {{ attachment.uploadedByName || attachment.uploadedByUserId }}
@@ -76,32 +63,34 @@
           <div class="flex flex-wrap items-center gap-2">
             <button
               type="button"
-              hlmBtn
-              size="sm"
-              variant="outline"
+              pButton
+              size="small"
+              severity="secondary"
+              [outlined]="true"
               [disabled]="downloadingAttachmentId() === attachment.id"
               (click)="downloadAttachment(attachment)"
             >
               @if (downloadingAttachmentId() === attachment.id) {
-                <ng-icon name="lucideLoader2" class="animate-spin" />
+                <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
               } @else {
-                <ng-icon name="lucideDownload" />
+                <i class="pi pi-download" aria-hidden="true"></i>
               }
               Download
             </button>
             @if (attachment.canDelete) {
               <button
                 type="button"
-                hlmBtn
-                size="sm"
-                variant="destructive"
+                pButton
+                size="small"
+                severity="danger"
+                [outlined]="true"
                 [disabled]="deletingAttachmentId() === attachment.id"
                 (click)="confirmDeleteAttachment(attachment)"
               >
                 @if (deletingAttachmentId() === attachment.id) {
-                  <ng-icon name="lucideLoader2" class="animate-spin" />
+                  <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
                 } @else {
-                  <ng-icon name="lucideTrash" />
+                  <i class="pi pi-trash" aria-hidden="true"></i>
                 }
                 Delete
               </button>
@@ -111,20 +100,20 @@
       }
     </ul>
   } @else if (hasLoadedAttachments()) {
-    <p class="text-muted-foreground m-0">No attachments yet</p>
+    <p class="m-0 text-muted-color">No attachments yet</p>
   }
 
   @if (canShowMoreAttachments()) {
     <div class="flex justify-center">
       <button
         type="button"
-        hlmBtn
-        variant="ghost"
+        pButton
+        [text]="true"
         [disabled]="isLoadingMoreAttachments()"
         (click)="showMoreAttachments()"
       >
         @if (isLoadingMoreAttachments()) {
-          <ng-icon name="lucideLoader2" class="animate-spin" />
+          <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
         }
         Show more
       </button>

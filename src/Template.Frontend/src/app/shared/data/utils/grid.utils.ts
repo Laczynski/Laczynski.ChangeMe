@@ -2,11 +2,6 @@ import type { GridQuery } from '@laczynski/datagrid';
 
 export const DEFAULT_GRID_PAGE_SIZE = 10;
 
-export interface GridPageChangeEvent {
-  skip: number;
-  take: number;
-}
-
 export const GridListMessages = {
   noItemsMatchFilters: 'No items match the filters.',
   noItemsYet: 'No items yet.'

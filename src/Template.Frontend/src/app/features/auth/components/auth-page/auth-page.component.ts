@@ -1,24 +1,24 @@
 import { booleanAttribute, Component, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { HlmButtonImports } from '@spartan/ui/button';
+import { ButtonDirective } from 'primeng/button';
 
 @Component({
   selector: 'app-auth-page',
   host: { class: 'flex min-h-0 flex-1 flex-col' },
-  imports: [...HlmButtonImports, RouterLink],
+  imports: [ButtonDirective, RouterLink],
   template: `
     <div class="flex flex-1 flex-col items-center justify-center px-4 py-8 md:py-12">
       <div
-        class="border-border bg-background w-full rounded-2xl border p-6 shadow-sm md:p-8"
+        class="border-surface-200 bg-surface-0 w-full rounded-2xl border p-6 shadow-sm md:p-8 dark:border-surface-700 dark:bg-surface-900"
         [class.max-w-lg]="wide()"
         [class.max-w-md]="!wide()"
       >
         <header class="mb-6 text-center sm:text-left">
-          <h1 class="text-foreground m-0 text-2xl font-semibold tracking-tight">
+          <h1 class="text-color m-0 text-2xl font-semibold tracking-tight">
             {{ title() }}
           </h1>
           @if (subtitle()) {
-            <p class="text-muted-foreground m-0 mt-2 text-sm leading-relaxed">
+            <p class="text-muted-color m-0 mt-2 text-sm leading-relaxed">
               {{ subtitle() }}
             </p>
           }
@@ -27,12 +27,14 @@ import { HlmButtonImports } from '@spartan/ui/button';
         <ng-content />
 
         @if (footerPrompt() && footerLinkLabel() && footerRoute()) {
-          <div class="border-border mt-8 border-t pt-6 text-center">
+          <div
+            class="border-surface-200 mt-8 border-t pt-6 text-center dark:border-surface-700"
+          >
             <p
-              class="text-muted-foreground m-0 flex flex-wrap items-center justify-center gap-x-1 gap-y-2 text-sm leading-normal"
+              class="text-muted-color m-0 flex flex-wrap items-center justify-center gap-x-1 gap-y-2 text-sm leading-normal"
             >
               <span>{{ footerPrompt() }}</span>
-              <a hlmBtn variant="link" [routerLink]="footerRoute()">
+              <a pButton [link]="true" [routerLink]="footerRoute()">
                 {{ footerLinkLabel() }}
               </a>
             </p>

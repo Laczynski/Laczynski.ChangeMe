@@ -1,7 +1,7 @@
-import { Component, signal } from '@angular/core';
+import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { AppShellComponent } from '@core/layout/components/app-shell/app-shell.component';
-import { LayoutService } from '@core/layout/services/layout.service';
+import { ConfirmationService, MessageService } from 'primeng/api';
 import { AppComponent } from './app.component';
 
 @Component({
@@ -14,14 +14,7 @@ describe('AppComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [AppComponent],
-      providers: [
-        {
-          provide: LayoutService,
-          useValue: {
-            $themeMode: signal('light')
-          }
-        }
-      ]
+      providers: [MessageService, ConfirmationService]
     })
       .overrideComponent(AppComponent, {
         remove: { imports: [AppShellComponent] },

@@ -4,8 +4,9 @@ import { provideRouter } from '@angular/router';
 import { ToastService } from '@core/toast/services/toast.service';
 import { IssueDto } from '@features/issues/models/issue.model';
 import { IssuesService } from '@features/issues/services/issues.service';
+import { GridResourceFactory, type GridResource } from '@laczynski/datagrid-primeng';
 import type { GridQuery } from '@laczynski/datagrid';
-import { GridResourceFactory, type GridResource } from '@laczynski/datagrid-spartan';
+import { ConfirmationService, MessageService } from 'primeng/api';
 import { of } from 'rxjs';
 import { IssuesComponent } from './issues-list.component';
 
@@ -70,6 +71,8 @@ describe('IssuesComponent', () => {
       imports: [IssuesComponent],
       providers: [
         provideRouter([]),
+        MessageService,
+        ConfirmationService,
         ToastService,
         { provide: IssuesService, useValue: issuesService },
         {

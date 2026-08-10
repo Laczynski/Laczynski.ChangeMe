@@ -1,16 +1,20 @@
 import { Component, inject, input } from '@angular/core';
 import { Router } from '@angular/router';
-import { NgIcon, provideIcons } from '@ng-icons/core';
-import { lucideArrowLeft } from '@ng-icons/lucide';
-import { HlmButtonImports } from '@spartan/ui/button';
+import { ButtonDirective } from 'primeng/button';
 
 @Component({
   selector: 'app-back-button',
-  imports: [...HlmButtonImports, NgIcon],
-  providers: [provideIcons({ lucideArrowLeft })],
+  imports: [ButtonDirective],
   template: `
-    <button type="button" hlmBtn variant="outline" size="sm" (click)="onBack()">
-      <ng-icon name="lucideArrowLeft" aria-hidden="true" />
+    <button
+      type="button"
+      pButton
+      size="small"
+      severity="secondary"
+      [outlined]="true"
+      (click)="onBack()"
+    >
+      <i class="pi pi-arrow-left" aria-hidden="true"></i>
       {{ label() }}
     </button>
   `

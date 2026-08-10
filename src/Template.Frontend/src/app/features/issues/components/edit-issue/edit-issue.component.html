@@ -1,257 +1,259 @@
-<hlm-card class="mb-4">
-  <div hlmCardHeader>
-    <h3 hlmCardTitle>Edit Issue</h3>
-    <p hlmCardDescription>Update issue data, acceptance criteria and assignee</p>
+<p-card
+  class="mb-4"
+  header="Edit Issue"
+  subheader="Update issue data, acceptance criteria and assignee"
+>
+  <div class="mb-4 flex flex-wrap items-center gap-2">
+    @if (id(); as issueId) {
+      <app-back-button label="Back to issue details" [route]="['/issues', issueId]" />
+    }
   </div>
-  <div hlmCardContent>
-    <div class="mb-4 flex flex-wrap items-center gap-2">
-      @if (id(); as issueId) {
-        <app-back-button label="Back to issue details" [route]="['/issues', issueId]" />
-      }
+
+  @if (isLoadingIssue()) {
+    <div class="flex flex-col items-center gap-2 py-8">
+      <p-progress-spinner ariaLabel="Loading issue form" />
+      <p class="text-muted-color m-0 text-sm">Loading issue data...</p>
     </div>
-
-    @if (isLoadingIssue()) {
-      <div class="flex flex-col items-center gap-2 py-8">
-        <hlm-spinner aria-label="Loading issue form" />
-        <p class="text-muted-foreground m-0 text-sm">Loading issue data...</p>
-      </div>
-    } @else if (loadError()) {
-      <div class="flex flex-col items-center gap-2">
-        <hlm-alert variant="destructive">
-          <p hlmAlertDescription>{{ loadError() }}</p>
-        </hlm-alert>
-        <button
-          type="button"
-          hlmBtn
-          size="sm"
-          variant="outline"
-          [disabled]="isLoadingIssue()"
-          (click)="refresh()"
-        >
-          @if (isLoadingIssue()) {
-            <ng-icon name="lucideLoader2" class="animate-spin" />
-          } @else {
-            <ng-icon name="lucideRefreshCw" />
-          }
-          Try again
-        </button>
-      </div>
-    } @else if (issue(); as currentIssue) {
-      <dl
-        class="mb-6 grid gap-4 rounded-lg border border-border p-4 sm:grid-cols-2 lg:grid-cols-3"
+  } @else if (loadError()) {
+    <div class="flex flex-col items-center gap-2">
+      <p-message severity="error">{{ loadError() }}</p-message>
+      <button
+        type="button"
+        pButton
+        size="small"
+        severity="secondary"
+        [outlined]="true"
+        [disabled]="isLoadingIssue()"
+        (click)="refresh()"
       >
-        <div class="flex flex-col gap-1">
-          <dt class="text-muted-foreground text-sm">Author</dt>
-          <dd class="m-0 font-medium">
-            {{ currentIssue.createdByName || currentIssue.createdBy }}
-          </dd>
-        </div>
-        <div class="flex flex-col gap-1">
-          <dt class="text-muted-foreground text-sm">Created at</dt>
-          <dd class="m-0">
-            {{ currentIssue.createdAt | date: 'dd.MM.yyyy HH:mm' }}
-          </dd>
-        </div>
-        <div class="flex flex-col gap-1">
-          <dt class="text-muted-foreground text-sm">Last activity</dt>
-          <dd class="m-0">
-            {{ currentIssue.lastActivityAt | date: 'dd.MM.yyyy HH:mm' }}
-          </dd>
-        </div>
-      </dl>
+        @if (isLoadingIssue()) {
+          <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
+        } @else {
+          <i class="pi pi-refresh" aria-hidden="true"></i>
+        }
+        Try again
+      </button>
+    </div>
+  } @else if (issue(); as currentIssue) {
+    <dl
+      class="mb-6 grid gap-4 rounded-lg border border-surface-200 p-4 sm:grid-cols-2 lg:grid-cols-3"
+    >
+      <div class="flex flex-col gap-1">
+        <dt class="text-muted-color text-sm">Author</dt>
+        <dd class="m-0 font-medium">
+          {{ currentIssue.createdByName || currentIssue.createdBy }}
+        </dd>
+      </div>
+      <div class="flex flex-col gap-1">
+        <dt class="text-muted-color text-sm">Created at</dt>
+        <dd class="m-0">
+          {{ currentIssue.createdAt | date: 'dd.MM.yyyy HH:mm' }}
+        </dd>
+      </div>
+      <div class="flex flex-col gap-1">
+        <dt class="text-muted-color text-sm">Last activity</dt>
+        <dd class="m-0">
+          {{ currentIssue.lastActivityAt | date: 'dd.MM.yyyy HH:mm' }}
+        </dd>
+      </div>
+    </dl>
 
-      <form class="flex flex-col gap-4" [formGroup]="form" (ngSubmit)="onSubmit()">
-        <hlm-card>
-          <div hlmCardHeader>
-            <h4 hlmCardTitle>Issue details</h4>
-          </div>
-          <div hlmCardContent class="flex flex-col gap-4">
-            <div hlmField>
-              <label hlmFieldLabel for="title">Title</label>
-              <input
-                id="title"
-                type="text"
-                hlmInput
-                [formControl]="form.controls.title"
-                placeholder="e.g. Login button disabled on mobile"
-              />
-              <hlm-field-error validator="required">Title is required</hlm-field-error>
-              <hlm-field-error validator="minlength">
+    <form
+      class="p-fluid flex flex-col gap-4"
+      [formGroup]="form"
+      (ngSubmit)="onSubmit()"
+    >
+      <p-panel header="Issue details" [toggleable]="true">
+        <div class="flex flex-col gap-1.5">
+          <label for="title">Title</label>
+          <input
+            id="title"
+            type="text"
+            pInputText
+            [formControl]="form.controls.title"
+            placeholder="e.g. Login button disabled on mobile"
+            [invalid]="form.controls.title.touched && form.controls.title.errors"
+          />
+          @if (shouldShowError(form.controls.title)) {
+            @if (form.controls.title.errors?.['required']) {
+              <p-message severity="error" variant="simple">Title is required</p-message>
+            }
+            @if (form.controls.title.errors?.['minlength']) {
+              <p-message severity="error" variant="simple">
                 Title must be at least
                 {{ issueConstraints.TITLE_MIN_LENGTH }} characters
-              </hlm-field-error>
-              <hlm-field-error validator="maxlength">
+              </p-message>
+            }
+            @if (form.controls.title.errors?.['maxlength']) {
+              <p-message severity="error" variant="simple">
                 Title must be at most {{ issueConstraints.TITLE_MAX_LENGTH }} characters
-              </hlm-field-error>
-            </div>
+              </p-message>
+            }
+          }
+        </div>
 
-            <div hlmField>
-              <label hlmFieldLabel for="description">Description</label>
-              <textarea
-                id="description"
-                hlmTextarea
-                [formControl]="form.controls.description"
-                rows="5"
-                placeholder="What is wrong, who is affected, and what should happen instead..."
-              ></textarea>
-              <hlm-field-error validator="required">
+        <div class="mt-4 flex flex-col gap-1.5">
+          <label for="description">Description</label>
+          <textarea
+            id="description"
+            pTextarea
+            [formControl]="form.controls.description"
+            rows="5"
+            placeholder="What is wrong, who is affected, and what should happen instead..."
+            [invalid]="
+              form.controls.description.touched && form.controls.description.errors
+            "
+          ></textarea>
+          @if (shouldShowError(form.controls.description)) {
+            @if (form.controls.description.errors?.['required']) {
+              <p-message severity="error" variant="simple">
                 Description is required
-              </hlm-field-error>
-              <hlm-field-error validator="maxlength">
+              </p-message>
+            }
+            @if (form.controls.description.errors?.['maxlength']) {
+              <p-message severity="error" variant="simple">
                 Description must be at most
                 {{ issueConstraints.DESCRIPTION_MAX_LENGTH }} characters
-              </hlm-field-error>
-            </div>
+              </p-message>
+            }
+          }
+        </div>
 
-            <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-              <div hlmField>
-                <label hlmFieldLabel for="status">Status</label>
-                <hlm-select
-                  [value]="form.controls.status.value"
-                  (valueChange)="onStatusChange($event)"
-                >
-                  <hlm-select-trigger id="status">
-                    <hlm-select-value placeholder="Select status" />
-                  </hlm-select-trigger>
-                  <hlm-select-content *hlmSelectPortal>
-                    @for (option of issueStatuses(); track option.value) {
-                      <hlm-select-item [value]="option.value">
-                        {{ option.label }}
-                      </hlm-select-item>
-                    }
-                  </hlm-select-content>
-                </hlm-select>
-              </div>
-
-              <div hlmField>
-                <label hlmFieldLabel for="priority">Priority</label>
-                <hlm-select
-                  [value]="form.controls.priority.value"
-                  (valueChange)="onPriorityChange($event)"
-                >
-                  <hlm-select-trigger id="priority">
-                    <hlm-select-value placeholder="Select priority" />
-                  </hlm-select-trigger>
-                  <hlm-select-content *hlmSelectPortal>
-                    @for (option of issuePriorities(); track option.value) {
-                      <hlm-select-item [value]="option.value">
-                        {{ option.label }}
-                      </hlm-select-item>
-                    }
-                  </hlm-select-content>
-                </hlm-select>
-              </div>
-
-              <div hlmField>
-                <label hlmFieldLabel for="assignedToUserId">Assigned to</label>
-                <hlm-select
-                  [disabled]="isLoadingAssignableUsers()"
-                  [value]="form.controls.assignedToUserId.value"
-                  (valueChange)="onAssignedToChange($event)"
-                >
-                  <hlm-select-trigger id="assignedToUserId">
-                    <hlm-select-value placeholder="Unassigned" />
-                  </hlm-select-trigger>
-                  <hlm-select-content *hlmSelectPortal>
-                    <hlm-select-item [value]="null">Unassigned</hlm-select-item>
-                    @for (user of assignableUsers(); track user.id) {
-                      <hlm-select-item [value]="user.id">
-                        {{ user.displayLabel }}
-                      </hlm-select-item>
-                    }
-                  </hlm-select-content>
-                </hlm-select>
-              </div>
-            </div>
+        <div class="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          <div class="flex flex-col gap-1.5">
+            <label for="status">Status</label>
+            <p-select
+              inputId="status"
+              [formControl]="form.controls.status"
+              [options]="issueStatuses()"
+              optionLabel="label"
+              optionValue="value"
+              [invalid]="form.controls.status.touched && form.controls.status.errors"
+            />
           </div>
-        </hlm-card>
 
-        <hlm-card>
-          <div hlmCardHeader>
-            <h4 hlmCardTitle>Acceptance criteria</h4>
+          <div class="flex flex-col gap-1.5">
+            <label for="priority">Priority</label>
+            <p-select
+              inputId="priority"
+              [formControl]="form.controls.priority"
+              [options]="issuePriorities()"
+              optionLabel="label"
+              optionValue="value"
+              [invalid]="
+                form.controls.priority.touched && form.controls.priority.errors
+              "
+            />
           </div>
-          <div hlmCardContent>
-            <div class="flex flex-col gap-3">
-              @for (
-                criterion of form.controls.acceptanceCriteria.controls;
-                track $index
-              ) {
-                <div class="rounded-lg border border-border p-4">
-                  <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
-                    <span class="font-medium">Criterion {{ $index + 1 }}</span>
-                    <button
-                      type="button"
-                      hlmBtn
-                      variant="destructive"
-                      size="sm"
-                      (click)="removeAcceptanceCriterion($index)"
-                    >
-                      <ng-icon name="lucideTrash" />
-                      Remove
-                    </button>
-                  </div>
-                  <div hlmField>
-                    <label
-                      class="sr-only"
-                      hlmFieldLabel
-                      [for]="'acceptance-criterion-' + $index"
-                    >
-                      Acceptance criterion {{ $index + 1 }}
-                    </label>
-                    <textarea
-                      [id]="'acceptance-criterion-' + $index"
-                      hlmTextarea
-                      [formControl]="criterion.controls.content"
-                      rows="3"
-                      placeholder="e.g. User can sign in with valid credentials on mobile"
-                    ></textarea>
-                    <hlm-field-error validator="required">
+
+          <div class="flex flex-col gap-1.5">
+            <label for="assignedToUserId">Assigned to</label>
+            <p-select
+              inputId="assignedToUserId"
+              [formControl]="form.controls.assignedToUserId"
+              [options]="assignableUsers()"
+              optionLabel="displayLabel"
+              optionValue="id"
+              placeholder="Unassigned"
+              [showClear]="true"
+              [loading]="isLoadingAssignableUsers()"
+            />
+          </div>
+        </div>
+      </p-panel>
+
+      <p-panel header="Acceptance criteria" [toggleable]="true">
+        <div class="flex flex-col gap-3">
+          @for (criterion of form.controls.acceptanceCriteria.controls; track $index) {
+            <div class="p-4">
+              <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
+                <span class="font-medium">Criterion {{ $index + 1 }}</span>
+                <button
+                  type="button"
+                  pButton
+                  severity="danger"
+                  [outlined]="true"
+                  size="small"
+                  (click)="removeAcceptanceCriterion($index)"
+                >
+                  <i class="pi pi-trash" aria-hidden="true"></i>
+                  Remove
+                </button>
+              </div>
+              <div class="flex flex-col gap-1.5">
+                <label class="sr-only" [for]="'acceptance-criterion-' + $index">
+                  Acceptance criterion {{ $index + 1 }}
+                </label>
+                <textarea
+                  [id]="'acceptance-criterion-' + $index"
+                  pTextarea
+                  [formControl]="criterion.controls.content"
+                  rows="3"
+                  placeholder="e.g. User can sign in with valid credentials on mobile"
+                  [invalid]="
+                    criterion.controls.content.touched &&
+                    criterion.controls.content.errors
+                  "
+                ></textarea>
+                @if (
+                  criterion.controls.content.errors &&
+                  (criterion.controls.content.touched || isSubmitted())
+                ) {
+                  @if (criterion.controls.content.errors['required']) {
+                    <p-message severity="error" variant="simple">
                       Acceptance criterion is required
-                    </hlm-field-error>
-                    <hlm-field-error validator="maxlength">
+                    </p-message>
+                  }
+                  @if (criterion.controls.content.errors['maxlength']) {
+                    <p-message severity="error" variant="simple">
                       Acceptance criterion must be at most
                       {{ issueAcceptanceCriteriaConstraints.CONTENT_MAX_LENGTH }}
                       characters
-                    </hlm-field-error>
-                  </div>
-                </div>
-              }
+                    </p-message>
+                  }
+                }
+              </div>
             </div>
+          }
+        </div>
 
-            <div class="mt-4">
-              <button
-                type="button"
-                hlmBtn
-                variant="outline"
-                (click)="addAcceptanceCriterion()"
-              >
-                <ng-icon name="lucidePlus" />
-                Add acceptance criterion
-              </button>
-            </div>
-          </div>
-        </hlm-card>
-
-        @if (submitError()) {
-          <hlm-alert variant="destructive">
-            <p hlmAlertDescription>{{ submitError() }}</p>
-          </hlm-alert>
-        }
-
-        <div class="flex flex-wrap items-center justify-end gap-2">
-          <button type="button" hlmBtn variant="outline" (click)="cancel()">
-            Cancel
-          </button>
-          <button type="submit" hlmBtn [disabled]="isSubmitting()">
-            @if (isSubmitting()) {
-              <ng-icon name="lucideLoader2" class="animate-spin" />
-            } @else {
-              <ng-icon name="lucideCheck" />
-            }
-            {{ isSubmitting() ? 'Saving changes...' : 'Save changes' }}
+        <div class="mt-4">
+          <button
+            type="button"
+            pButton
+            severity="secondary"
+            [outlined]="true"
+            (click)="addAcceptanceCriterion()"
+          >
+            <i class="pi pi-plus" aria-hidden="true"></i>
+            Add acceptance criterion
           </button>
         </div>
-      </form>
-    }
-  </div>
-</hlm-card>
+      </p-panel>
+
+      @if (submitError()) {
+        <p-message severity="error">{{ submitError() }}</p-message>
+      }
+
+      <div class="flex flex-wrap items-center justify-end gap-2">
+        <button
+          type="button"
+          pButton
+          severity="secondary"
+          [outlined]="true"
+          (click)="cancel()"
+        >
+          Cancel
+        </button>
+        <button type="submit" pButton [disabled]="isSubmitting()">
+          @if (isSubmitting()) {
+            <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
+          } @else {
+            <i class="pi pi-check" aria-hidden="true"></i>
+          }
+          {{ isSubmitting() ? 'Saving changes...' : 'Save changes' }}
+        </button>
+      </div>
+    </form>
+  }
+</p-card>

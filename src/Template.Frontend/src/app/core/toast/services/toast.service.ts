@@ -1,6 +1,6 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { ToastConfig, ToastSeverity } from '@core/toast/utils/toast.utils';
-import { toast } from '@spartan-ng/brain/sonner';
+import { MessageService, ToastMessageOptions } from 'primeng/api';
 
 export type ToastShowOptions = {
   severity?: ToastSeverity;
@@ -14,22 +14,29 @@ export type ToastShowOptions = {
   providedIn: 'root'
 })
 export class ToastService {
+  private readonly messageService = inject(MessageService);
+
   readonly toastKey = ToastConfig.KEY;
 
   success(summary: string, detail?: string, life?: number): void {
-    this.add('success', summary, detail, life);
+    this.add({ severity: 'success', summary, detail, life });
   }
 
   info(summary: string, detail?: string, life?: number): void {
-    this.add('info', summary, detail, life);
+    this.add({ severity: 'info', summary, detail, life });
   }
 
   warn(summary: string, detail?: string, life?: number): void {
-    this.add('warn', summary, detail, life);
+    this.add({ severity: 'warn', summary, detail, life });
   }
 
   error(summary: string, detail?: string, life?: number): void {
-    this.add('error', summary, detail, life ?? ToastConfig.ERROR_LIFE_MS);
+    this.add({
+      severity: 'error',
+      summary,
+      detail,
+      life: life ?? ToastConfig.ERROR_LIFE_MS
+    });
   }
 
   showIssueNotification(issueTitle: string, message: string): void {
@@ -46,40 +53,26 @@ export class ToastService {
 
   show(options: ToastShowOptions): void {
     const { severity = 'info', summary, detail, life, sticky } = options;
-    this.add(severity, summary, detail, life, sticky);
+
+    this.add({
+      severity,
+      summary,
+      detail,
+      life,
+      sticky
+    });
   }
 
   clear(): void {
-    toast.dismiss();
+    this.messageService.clear(ToastConfig.KEY);
   }
 
-  private add(
-    severity: ToastSeverity,
-    summary: string,
-    detail?: string,
-    life?: number,
-    sticky?: boolean
-  ): void {
-    const duration = sticky ? Number.MAX_SAFE_INTEGER : (life ?? ToastConfig.LIFE_MS);
-    const options = {
-      description: detail,
-      duration,
-      dismissible: true
-    };
-
-    switch (severity) {
-      case 'success':
-        toast.success(summary, options);
-        break;
-      case 'error':
-        toast.error(summary, options);
-        break;
-      case 'warn':
-        toast.warning(summary, options);
-        break;
-      default:
-        toast.info(summary, options);
-        break;
-    }
+  private add(message: ToastMessageOptions): void {
+    this.messageService.add({
+      key: ToastConfig.KEY,
+      life: ToastConfig.LIFE_MS,
+      closable: true,
+      ...message
+    });
   }
 }

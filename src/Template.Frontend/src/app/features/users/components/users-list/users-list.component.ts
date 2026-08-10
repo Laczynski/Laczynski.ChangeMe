@@ -1,8 +1,14 @@
 import { DatePipe } from '@angular/common';
-import { Component, computed, DestroyRef, inject, signal } from '@angular/core';
+import {
+  Component,
+  computed,
+  DestroyRef,
+  inject,
+  signal,
+  viewChild
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
-import { ConfirmDialogService } from '@core/confirm/services/confirm-dialog.service';
 import { ToastService } from '@core/toast/services/toast.service';
 import {
   formatUserName,
@@ -19,71 +25,47 @@ import {
   statusFilters,
   UserMessages
 } from '@features/users/utils/users.utils';
-import { NgIcon, provideIcons } from '@ng-icons/core';
-import {
-  lucideBan,
-  lucideCheck,
-  lucideEllipsisVertical,
-  lucideEye,
-  lucidePencil,
-  lucideRefreshCw,
-  lucideUserPlus
-} from '@ng-icons/lucide';
 import {
   GridResourceFactory,
+  PrimeDataGridComponent,
   DgColumnDirective,
   DgEmptyDirective,
-  SpartanDataGridComponent,
   type GridResource
-} from '@laczynski/datagrid-spartan';
+} from '@laczynski/datagrid-primeng';
 import { PermissionCodes } from '@shared/authorization/permission-codes';
 import { getGridListEmptyMessage } from '@shared/data/utils/grid.utils';
-import { mapBadgeSeverity } from '@shared/ui/utils/badge.utils';
-import type { ListRowMenuItem } from '@shared/ui/utils/list-row-menu.utils';
-import { HlmAlertImports } from '@spartan/ui/alert';
-import { HlmBadgeImports } from '@spartan/ui/badge';
-import { HlmButtonImports } from '@spartan/ui/button';
-import { HlmCardImports } from '@spartan/ui/card';
-import { HlmDropdownMenuImports } from '@spartan/ui/dropdown-menu';
-import { HlmTooltipImports } from '@spartan/ui/tooltip';
+import { ConfirmationService, MenuItem } from 'primeng/api';
+import { ButtonDirective } from 'primeng/button';
+import { Card } from 'primeng/card';
+import { Menu } from 'primeng/menu';
+import { Message } from 'primeng/message';
+import { Tag } from 'primeng/tag';
+import { Tooltip } from 'primeng/tooltip';
 
 @Component({
   selector: 'app-users-list',
   imports: [
     DatePipe,
     RouterLink,
-    NgIcon,
-    ...HlmCardImports,
-    ...HlmButtonImports,
-    ...HlmAlertImports,
-    ...HlmBadgeImports,
-    ...HlmDropdownMenuImports,
-    ...HlmTooltipImports,
-    SpartanDataGridComponent,
+    Card,
+    ButtonDirective,
+    Message,
+    Tag,
+    Menu,
+    Tooltip,
+    PrimeDataGridComponent,
     DgColumnDirective,
     DgEmptyDirective
-  ],
-  providers: [
-    provideIcons({
-      lucideBan,
-      lucideCheck,
-      lucideEllipsisVertical,
-      lucideEye,
-      lucidePencil,
-      lucideRefreshCw,
-      lucideUserPlus
-    })
   ],
   templateUrl: './users-list.component.html'
 })
 export class UsersListComponent {
   readonly formatUserName = formatUserName;
   readonly formatUserReference = formatUserReference;
-  readonly mapBadgeSeverity = mapBadgeSeverity;
 
   private readonly usersService = inject(UsersService);
   private readonly authService = inject(AuthService);
-  private readonly confirmDialogService = inject(ConfirmDialogService);
+  private readonly confirmationService = inject(ConfirmationService);
   private readonly toastService = inject(ToastService);
   private readonly gridFactory = inject(GridResourceFactory);
   private readonly destroyRef = inject(DestroyRef);
@@ -94,7 +76,8 @@ export class UsersListComponent {
   readonly UserMessages = UserMessages;
   readonly permissionCodes = PermissionCodes;
 
-  readonly userActionItems = signal<ListRowMenuItem[]>([]);
+  readonly userActionItems = signal<MenuItem[]>([]);
+  private readonly userActionsMenu = viewChild.required<Menu>('userActionsMenu');
 
   readonly grid: GridResource<UserListItemDto>;
 
@@ -123,7 +106,7 @@ export class UsersListComponent {
       load: (query) => this.usersService.getUsers(query),
       defaultSort: [{ field: 'LastName', desc: false }],
       defaultTake: 10,
-      persistState: { key: 'changeMe.users-list', storage: 'session' }
+      persistState: { key: 'changeme.users-list', storage: 'session' }
     });
   }
 
@@ -131,11 +114,11 @@ export class UsersListComponent {
     this.grid.reload();
   }
 
-  setUserActionItems(user: UserListItemDto): void {
-    const items: ListRowMenuItem[] = [
+  openUserActionsMenu(event: Event, user: UserListItemDto): void {
+    const items: MenuItem[] = [
       {
         label: 'Open details',
-        icon: 'lucideEye',
+        icon: 'pi pi-eye',
         routerLink: ['/users', user.id]
       }
     ];
@@ -143,7 +126,7 @@ export class UsersListComponent {
     if (this.canManageUsers()) {
       items.push({
         label: 'Edit',
-        icon: 'lucidePencil',
+        icon: 'pi pi-pencil',
         routerLink: ['/users', user.id, 'edit']
       });
     }
@@ -152,38 +135,40 @@ export class UsersListComponent {
       if (user.deactivated) {
         items.push({
           label: 'Activate',
-          icon: 'lucideCheck',
+          icon: 'pi pi-check',
           command: () => this.confirmActivate(user)
         });
       } else {
         items.push({
           label: 'Deactivate',
-          icon: 'lucideBan',
+          icon: 'pi pi-ban',
           command: () => this.confirmDeactivate(user)
         });
       }
     }
 
     this.userActionItems.set(items);
+    this.userActionsMenu().toggle(event);
   }
 
   confirmDeactivate(user: UserListItemDto): void {
-    this.confirmDialogService.confirm({
+    this.confirmationService.confirm({
       header: 'Deactivate user',
       message: getDeactivateConfirmMessage(formatUserReference(user)),
-      acceptLabel: 'Deactivate',
-      rejectLabel: 'Cancel',
-      acceptVariant: 'destructive',
+      icon: 'pi pi-exclamation-triangle',
+      acceptButtonProps: { label: 'Deactivate', severity: 'danger' },
+      rejectButtonProps: { label: 'Cancel', severity: 'secondary', outlined: true },
       accept: () => this.deactivateUser(user)
     });
   }
 
   confirmActivate(user: UserListItemDto): void {
-    this.confirmDialogService.confirm({
+    this.confirmationService.confirm({
       header: 'Activate user',
       message: getActivateConfirmMessage(formatUserReference(user)),
-      acceptLabel: 'Activate',
-      rejectLabel: 'Cancel',
+      icon: 'pi pi-exclamation-triangle',
+      acceptButtonProps: { label: 'Activate', severity: 'success' },
+      rejectButtonProps: { label: 'Cancel', severity: 'secondary', outlined: true },
       accept: () => this.activateUser(user)
     });
   }

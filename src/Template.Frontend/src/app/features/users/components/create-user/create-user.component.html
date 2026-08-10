@@ -1,201 +1,183 @@
-<section hlmCard class="mb-4">
-  <div hlmCardHeader>
-    <h1 hlmCardTitle>Create user</h1>
-    <p hlmCardDescription>Create a user account with email, password, and roles.</p>
+<p-card
+  class="mb-4"
+  header="Create user"
+  subheader="Create a user account with email, password, and roles."
+>
+  <div class="mb-4 flex flex-wrap items-center gap-2">
+    <app-back-button label="Back to users list" [route]="['/users']" />
   </div>
-  <div hlmCardContent>
-    <div class="mb-4 flex flex-wrap items-center gap-2">
-      <app-back-button label="Back to users list" [route]="['/users']" />
-    </div>
 
-    <form class="flex flex-col gap-4" [formGroup]="form" (ngSubmit)="onSubmit()">
-      <section hlmCard>
-        <div hlmCardHeader>
-          <h2 hlmCardTitle>Profile</h2>
-        </div>
-        <div hlmCardContent>
-          <div class="grid gap-4 sm:grid-cols-2">
-            <div hlmField>
-              <label hlmFieldLabel for="firstName">First name</label>
-              <input
-                id="firstName"
-                type="text"
-                hlmInput
-                [formControl]="form.controls.firstName"
-              />
-              <hlm-field-error validator="required">
-                First name is required.
-              </hlm-field-error>
-            </div>
-            <div hlmField>
-              <label hlmFieldLabel for="lastName">Last name</label>
-              <input
-                id="lastName"
-                type="text"
-                hlmInput
-                [formControl]="form.controls.lastName"
-              />
-              <hlm-field-error validator="required">
-                Last name is required.
-              </hlm-field-error>
-            </div>
-          </div>
-
-          <div hlmField class="mt-4">
-            <label hlmFieldLabel for="email">Email</label>
-            <input
-              id="email"
-              type="email"
-              hlmInput
-              [formControl]="form.controls.email"
-            />
-            <hlm-field-error validator="required">Email is required.</hlm-field-error>
-            <hlm-field-error validator="email">
-              Enter a valid email address.
-            </hlm-field-error>
-          </div>
-        </div>
-      </section>
-
-      <section hlmCard>
-        <div hlmCardHeader>
-          <h2 hlmCardTitle>Password</h2>
-        </div>
-        <div hlmCardContent>
-          <div class="grid gap-4 sm:grid-cols-2">
-            <div hlmField>
-              <label hlmFieldLabel for="password">Password</label>
-              <div class="relative">
-                <input
-                  id="password"
-                  hlmInput
-                  class="pe-9"
-                  [type]="passwordMasked ? 'password' : 'text'"
-                  autocomplete="new-password"
-                  [formControl]="form.controls.password"
-                />
-                <button
-                  type="button"
-                  hlmBtn
-                  variant="ghost"
-                  size="icon-xs"
-                  class="absolute end-1 top-1/2 -translate-y-1/2"
-                  [attr.aria-label]="passwordMasked ? 'Show password' : 'Hide password'"
-                  (click)="passwordMasked = !passwordMasked"
-                >
-                  <ng-icon
-                    [name]="passwordMasked ? 'lucideEye' : 'lucideEyeOff'"
-                    aria-hidden="true"
-                  />
-                </button>
-              </div>
-              <hlm-field-error validator="passwordPolicy">
-                {{ form.controls.password.getError('passwordPolicy') }}
-              </hlm-field-error>
-            </div>
-            <div hlmField>
-              <label hlmFieldLabel for="confirmPassword">Confirm password</label>
-              <div class="relative">
-                <input
-                  id="confirmPassword"
-                  hlmInput
-                  class="pe-9"
-                  [type]="confirmPasswordMasked ? 'password' : 'text'"
-                  autocomplete="new-password"
-                  [formControl]="form.controls.confirmPassword"
-                />
-                <button
-                  type="button"
-                  hlmBtn
-                  variant="ghost"
-                  size="icon-xs"
-                  class="absolute end-1 top-1/2 -translate-y-1/2"
-                  [attr.aria-label]="
-                    confirmPasswordMasked ? 'Show password' : 'Hide password'
-                  "
-                  (click)="confirmPasswordMasked = !confirmPasswordMasked"
-                >
-                  <ng-icon
-                    [name]="confirmPasswordMasked ? 'lucideEye' : 'lucideEyeOff'"
-                    aria-hidden="true"
-                  />
-                </button>
-              </div>
-              <hlm-field-error validator="required">
-                Confirm password is required.
-              </hlm-field-error>
-              @if (form.touched && form.errors?.['passwordMismatch']) {
-                <hlm-field-error forceShow>Passwords do not match.</hlm-field-error>
-              }
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section hlmCard>
-        <div hlmCardHeader>
-          <h2 hlmCardTitle>Roles</h2>
-        </div>
-        <div hlmCardContent>
-          <div
-            hlmField
-            [forceInvalid]="
-              form.controls.roleIds.touched && !!form.controls.roleIds.errors
-            "
-          >
-            <label hlmFieldLabel for="roles">Roles</label>
-            <hlm-select-multiple
-              class="w-full"
-              [value]="form.controls.roleIds.value"
-              [itemToString]="roleItemToString"
-              [disabled]="isLoadingRoles()"
-              (valueChange)="form.controls.roleIds.setValue($event ?? [])"
-            >
-              <hlm-select-trigger class="w-full" id="roles">
-                <hlm-select-value placeholder="Select roles" />
-              </hlm-select-trigger>
-              <hlm-select-content *hlmSelectPortal>
-                @for (role of roleOptions(); track role.id) {
-                  <hlm-select-item [value]="role.id">{{ role.name }}</hlm-select-item>
-                }
-              </hlm-select-content>
-            </hlm-select-multiple>
-            @if (
-              form.controls.roleIds.touched &&
-              form.controls.roleIds.errors?.['required']
-            ) {
-              <hlm-field-error forceShow>Select at least one role.</hlm-field-error>
-            }
-          </div>
-        </div>
-      </section>
-
-      <app-effective-permissions
-        [permissions]="effectivePermissions()"
-        [roleIdsSelected]="form.controls.roleIds.value.length > 0"
-      />
-
-      @if (submitError()) {
-        <div hlmAlert variant="destructive">
-          <p hlmAlertDescription>{{ submitError() }}</p>
-        </div>
-      }
-
-      <div class="flex flex-wrap items-center justify-end gap-2">
-        <a hlmBtn variant="outline" [routerLink]="['/users']">Cancel</a>
-        <button type="submit" hlmBtn [disabled]="isSubmitting()">
-          @if (isSubmitting()) {
-            <ng-icon
-              name="lucideLoader2"
-              class="motion-safe:animate-spin"
-              aria-hidden="true"
-            />
-          } @else {
-            <ng-icon name="lucideUserPlus" aria-hidden="true" />
+  <form class="p-fluid flex flex-col gap-4" [formGroup]="form" (ngSubmit)="onSubmit()">
+    <p-panel header="Profile" [toggleable]="true">
+      <div class="grid gap-4 sm:grid-cols-2">
+        <div class="flex flex-col gap-1.5">
+          <label for="firstName">First name</label>
+          <input
+            id="firstName"
+            type="text"
+            pInputText
+            [formControl]="form.controls.firstName"
+            [invalid]="shouldShowError(form.controls.firstName)"
+          />
+          @if (
+            shouldShowError(form.controls.firstName) &&
+            form.controls.firstName.errors?.['required']
+          ) {
+            <p-message severity="error" variant="simple">
+              First name is required.
+            </p-message>
           }
-          {{ isSubmitting() ? 'Creating user...' : 'Create user' }}
-        </button>
+        </div>
+        <div class="flex flex-col gap-1.5">
+          <label for="lastName">Last name</label>
+          <input
+            id="lastName"
+            type="text"
+            pInputText
+            [formControl]="form.controls.lastName"
+            [invalid]="shouldShowError(form.controls.lastName)"
+          />
+          @if (
+            shouldShowError(form.controls.lastName) &&
+            form.controls.lastName.errors?.['required']
+          ) {
+            <p-message severity="error" variant="simple">
+              Last name is required.
+            </p-message>
+          }
+        </div>
       </div>
-    </form>
-  </div>
-</section>
+
+      <div class="mt-4 flex flex-col gap-1.5">
+        <label for="email">Email</label>
+        <input
+          id="email"
+          type="email"
+          pInputText
+          [formControl]="form.controls.email"
+          [invalid]="shouldShowError(form.controls.email)"
+        />
+        @if (
+          shouldShowError(form.controls.email) &&
+          form.controls.email.errors?.['required']
+        ) {
+          <p-message severity="error" variant="simple">Email is required.</p-message>
+        }
+      </div>
+    </p-panel>
+
+    <p-panel header="Password" [toggleable]="true">
+      <div class="grid gap-4 sm:grid-cols-2">
+        <div class="flex flex-col gap-1.5">
+          <label for="password">Password</label>
+          <p-iconfield iconPosition="right">
+            <input
+              id="password"
+              pInputText
+              pInputPassword
+              [(mask)]="passwordMasked"
+              autocomplete="new-password"
+              [formControl]="form.controls.password"
+              [fluid]="true"
+              [invalid]="shouldShowError(form.controls.password)"
+            />
+            <p-inputicon>
+              <button
+                type="button"
+                class="text-muted-color hover:text-color border-0 bg-transparent p-0"
+                [attr.aria-label]="passwordMasked ? 'Show password' : 'Hide password'"
+                (click)="passwordMasked = !passwordMasked"
+              >
+                <i
+                  [class]="passwordMasked ? 'pi pi-eye' : 'pi pi-eye-slash'"
+                  aria-hidden="true"
+                ></i>
+              </button>
+            </p-inputicon>
+          </p-iconfield>
+          @if (
+            shouldShowError(form.controls.password) &&
+            form.controls.password.errors?.['passwordPolicy']
+          ) {
+            <p-message severity="error" variant="simple">
+              {{ form.controls.password.errors['passwordPolicy'] }}
+            </p-message>
+          }
+        </div>
+        <div class="flex flex-col gap-1.5">
+          <label for="confirmPassword">Confirm password</label>
+          <p-iconfield iconPosition="right">
+            <input
+              id="confirmPassword"
+              pInputText
+              pInputPassword
+              [(mask)]="confirmPasswordMasked"
+              autocomplete="new-password"
+              [formControl]="form.controls.confirmPassword"
+              [fluid]="true"
+              [invalid]="shouldShowError(form.controls.confirmPassword)"
+            />
+            <p-inputicon>
+              <button
+                type="button"
+                class="text-muted-color hover:text-color border-0 bg-transparent p-0"
+                [attr.aria-label]="
+                  confirmPasswordMasked ? 'Show password' : 'Hide password'
+                "
+                (click)="confirmPasswordMasked = !confirmPasswordMasked"
+              >
+                <i
+                  [class]="confirmPasswordMasked ? 'pi pi-eye' : 'pi pi-eye-slash'"
+                  aria-hidden="true"
+                ></i>
+              </button>
+            </p-inputicon>
+          </p-iconfield>
+        </div>
+      </div>
+      @if (form.touched && form.errors?.['passwordMismatch']) {
+        <p-message severity="error" variant="simple">Passwords do not match.</p-message>
+      }
+    </p-panel>
+
+    <p-panel header="Roles" [toggleable]="true">
+      <div class="flex flex-col gap-1.5">
+        <label for="roles">Roles</label>
+        <p-select
+          inputId="roles"
+          [multiple]="true"
+          [formControl]="form.controls.roleIds"
+          [options]="roleOptions()"
+          optionLabel="name"
+          optionValue="id"
+          placeholder="Select roles"
+          [loading]="isLoadingRoles()"
+          [invalid]="shouldShowError(form.controls.roleIds)"
+        />
+      </div>
+    </p-panel>
+
+    <app-effective-permissions
+      [permissions]="effectivePermissions()"
+      [roleIdsSelected]="form.controls.roleIds.value.length > 0"
+    />
+
+    @if (submitError()) {
+      <p-message severity="error">{{ submitError() }}</p-message>
+    }
+
+    <div class="flex flex-wrap items-center justify-end gap-2">
+      <a pButton severity="secondary" [outlined]="true" [routerLink]="['/users']">
+        Cancel
+      </a>
+      <button type="submit" pButton [disabled]="isSubmitting()">
+        @if (isSubmitting()) {
+          <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
+        } @else {
+          <i class="pi pi-user-plus" aria-hidden="true"></i>
+        }
+        {{ isSubmitting() ? 'Creating user...' : 'Create user' }}
+      </button>
+    </div>
+  </form>
+</p-card>

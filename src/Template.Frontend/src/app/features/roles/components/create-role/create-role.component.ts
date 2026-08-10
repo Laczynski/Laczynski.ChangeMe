@@ -12,31 +12,27 @@ import { PermissionChecklistComponent } from '@features/roles/components/permiss
 import { PermissionCatalogItemDto } from '@features/roles/models/role.model';
 import { RolesService } from '@features/roles/services/roles.service';
 import { RoleConstraints, RoleMessages } from '@features/roles/utils/roles.utils';
-import { NgIcon, provideIcons } from '@ng-icons/core';
-import { lucideCheck, lucideLoader2 } from '@ng-icons/lucide';
 import { BackButtonComponent } from '@shared/components/back-button/back-button.component';
-import { HlmAlertImports } from '@spartan/ui/alert';
-import { HlmButtonImports } from '@spartan/ui/button';
-import { HlmCardImports } from '@spartan/ui/card';
-import { HlmFieldImports } from '@spartan/ui/field';
-import { HlmInputImports } from '@spartan/ui/input';
-import { HlmTextareaImports } from '@spartan/ui/textarea';
+import { ButtonDirective } from 'primeng/button';
+import { Card } from 'primeng/card';
+import { InputText } from 'primeng/inputtext';
+import { Message } from 'primeng/message';
+import { Panel } from 'primeng/panel';
+import { Textarea } from 'primeng/textarea';
 
 @Component({
   selector: 'app-create-role',
   imports: [
     ReactiveFormsModule,
     BackButtonComponent,
-    ...HlmCardImports,
-    ...HlmButtonImports,
-    ...HlmFieldImports,
-    ...HlmInputImports,
-    ...HlmTextareaImports,
-    ...HlmAlertImports,
-    NgIcon,
+    Card,
+    ButtonDirective,
+    InputText,
+    Textarea,
+    Message,
+    Panel,
     PermissionChecklistComponent
   ],
-  providers: [provideIcons({ lucideCheck, lucideLoader2 })],
   templateUrl: './create-role.component.html'
 })
 export class CreateRoleComponent {
@@ -79,6 +75,14 @@ export class CreateRoleComponent {
         next: (items) => this.catalog.set(items),
         error: (error: Error) => this.submitError.set(error.message)
       });
+  }
+
+  shouldShowError(control: {
+    invalid: boolean;
+    dirty: boolean;
+    touched: boolean;
+  }): boolean {
+    return control.invalid && (control.dirty || control.touched);
   }
 
   cancel(): void {

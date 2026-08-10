@@ -1,4 +1,4 @@
-import { DatePipe } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { Component, DestroyRef, effect, inject, input, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
@@ -24,23 +24,15 @@ import {
   issuePriorities,
   issueStatuses
 } from '@features/issues/utils/issue.utils';
-import { NgIcon, provideIcons } from '@ng-icons/core';
-import {
-  lucideCheck,
-  lucideLoader2,
-  lucidePlus,
-  lucideRefreshCw,
-  lucideTrash
-} from '@ng-icons/lucide';
 import { BackButtonComponent } from '@shared/components/back-button/back-button.component';
-import { HlmAlertImports } from '@spartan/ui/alert';
-import { HlmButtonImports } from '@spartan/ui/button';
-import { HlmCardImports } from '@spartan/ui/card';
-import { HlmFieldImports } from '@spartan/ui/field';
-import { HlmInputImports } from '@spartan/ui/input';
-import { HlmSelectImports } from '@spartan/ui/select';
-import { HlmSpinnerImports } from '@spartan/ui/spinner';
-import { HlmTextareaImports } from '@spartan/ui/textarea';
+import { ButtonDirective } from 'primeng/button';
+import { Card } from 'primeng/card';
+import { InputText } from 'primeng/inputtext';
+import { Message } from 'primeng/message';
+import { Panel } from 'primeng/panel';
+import { ProgressSpinner } from 'primeng/progressspinner';
+import { Select } from 'primeng/select';
+import { Textarea } from 'primeng/textarea';
 
 type EditIssueForm = {
   title: FormControl<string>;
@@ -59,27 +51,17 @@ type EditAcceptanceCriterionForm = {
 @Component({
   selector: 'app-edit-issue',
   imports: [
-    DatePipe,
+    CommonModule,
     ReactiveFormsModule,
-    NgIcon,
-    ...HlmCardImports,
-    ...HlmButtonImports,
-    ...HlmInputImports,
-    ...HlmTextareaImports,
-    ...HlmSelectImports,
-    ...HlmFieldImports,
-    ...HlmAlertImports,
-    ...HlmSpinnerImports,
-    BackButtonComponent
-  ],
-  providers: [
-    provideIcons({
-      lucideCheck,
-      lucideLoader2,
-      lucidePlus,
-      lucideRefreshCw,
-      lucideTrash
-    })
+    Card,
+    BackButtonComponent,
+    ButtonDirective,
+    InputText,
+    Textarea,
+    Select,
+    Message,
+    Panel,
+    ProgressSpinner
   ],
   templateUrl: './edit-issue.component.html'
 })
@@ -102,6 +84,7 @@ export class EditIssueComponent {
   readonly isSubmitting = signal(false);
   readonly loadError = signal<string | null>(null);
   readonly submitError = signal<string | null>(null);
+  readonly isSubmitted = signal(false);
 
   readonly form = new FormGroup<EditIssueForm>({
     title: new FormControl('', {
@@ -216,6 +199,7 @@ export class EditIssueComponent {
   }
 
   onSubmit(): void {
+    this.isSubmitted.set(true);
     this.submitError.set(null);
 
     if (this.form.invalid) {
@@ -263,20 +247,10 @@ export class EditIssueComponent {
       });
   }
 
-  onStatusChange(value: IssueStatus | null | undefined): void {
-    if (value !== null && value !== undefined) {
-      this.form.controls.status.setValue(value);
-    }
-  }
-
-  onPriorityChange(value: IssuePriority | null | undefined): void {
-    if (value !== null && value !== undefined) {
-      this.form.controls.priority.setValue(value);
-    }
-  }
-
-  onAssignedToChange(value: string | null | undefined): void {
-    this.form.controls.assignedToUserId.setValue(value ?? null);
+  shouldShowError(
+    control: FormControl<string> | FormControl<IssueStatus> | FormControl<IssuePriority>
+  ): boolean {
+    return !!control.errors && (control.touched || this.isSubmitted());
   }
 
   private setAcceptanceCriteria(issue: IssueDetailsDto): void {

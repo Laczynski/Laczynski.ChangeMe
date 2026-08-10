@@ -2,68 +2,92 @@
   title="Welcome back"
   subtitle="Sign in to create, edit and delete issues."
 >
-  <form class="flex flex-col gap-4" [formGroup]="form" (ngSubmit)="onSubmit()">
-    <div hlmField>
-      <label hlmFieldLabel for="email">Email</label>
+  <form class="p-fluid flex flex-col gap-4" [formGroup]="form" (ngSubmit)="onSubmit()">
+    <div class="flex flex-col gap-1.5">
+      <label class="text-color text-sm font-medium" for="email">Email</label>
       <input
         id="email"
         type="email"
-        hlmInput
+        pInputText
         autocomplete="email"
         [formControl]="form.controls.email"
+        [invalid]="form.controls.email.touched && form.controls.email.errors"
       />
-      <hlm-field-error validator="required">Email is required.</hlm-field-error>
-      <hlm-field-error validator="email">Enter a valid email address.</hlm-field-error>
-      <hlm-field-error validator="maxlength">
-        Email must be less than {{ authConstraints.EMAIL_MAX_LENGTH }} characters long.
-      </hlm-field-error>
+      @if (form.controls.email.touched && form.controls.email.errors?.['required']) {
+        <p-message severity="error" variant="simple">Email is required.</p-message>
+      }
+      @if (form.controls.email.touched && form.controls.email.errors?.['email']) {
+        <p-message severity="error" variant="simple">
+          Enter a valid email address.
+        </p-message>
+      }
+      @if (form.controls.email.touched && form.controls.email.errors?.['maxlength']) {
+        <p-message severity="error" variant="simple">
+          Email must be less than {{ authConstraints.EMAIL_MAX_LENGTH }} characters
+          long.
+        </p-message>
+      }
     </div>
 
-    <div hlmField>
-      <label hlmFieldLabel for="password">Password</label>
-      <div class="relative">
+    <div class="flex flex-col gap-1.5">
+      <label class="text-color text-sm font-medium" for="password">Password</label>
+      <p-iconfield iconPosition="right">
         <input
           id="password"
-          hlmInput
-          [type]="passwordMasked ? 'password' : 'text'"
+          pInputText
+          pInputPassword
+          [(mask)]="passwordMasked"
           autocomplete="current-password"
-          class="pe-9"
           [formControl]="form.controls.password"
+          [fluid]="true"
+          [invalid]="form.controls.password.touched && form.controls.password.errors"
         />
-        <button
-          type="button"
-          class="text-muted-foreground hover:text-foreground absolute inset-y-0 end-0 flex items-center border-0 bg-transparent px-2.5"
-          [attr.aria-label]="passwordMasked ? 'Show password' : 'Hide password'"
-          (click)="passwordMasked = !passwordMasked"
-        >
-          <ng-icon
-            [name]="passwordMasked ? 'lucideEye' : 'lucideEyeOff'"
-            aria-hidden="true"
-          />
-        </button>
-      </div>
-      <hlm-field-error validator="required">Password is required.</hlm-field-error>
-      <hlm-field-error validator="minlength">
-        Password must be at least {{ authConstraints.PASSWORD_MIN_LENGTH }} characters
-        long.
-      </hlm-field-error>
-      <hlm-field-error validator="maxlength">
-        Password must be less than {{ authConstraints.PASSWORD_MAX_LENGTH }} characters
-        long.
-      </hlm-field-error>
+        <p-inputicon>
+          <button
+            type="button"
+            class="text-muted-color hover:text-color border-0 bg-transparent p-0"
+            [attr.aria-label]="passwordMasked ? 'Show password' : 'Hide password'"
+            (click)="passwordMasked = !passwordMasked"
+          >
+            <i
+              [class]="passwordMasked ? 'pi pi-eye' : 'pi pi-eye-slash'"
+              aria-hidden="true"
+            ></i>
+          </button>
+        </p-inputicon>
+      </p-iconfield>
+      @if (
+        form.controls.password.touched && form.controls.password.errors?.['required']
+      ) {
+        <p-message severity="error" variant="simple">Password is required.</p-message>
+      }
+      @if (
+        form.controls.password.touched && form.controls.password.errors?.['minlength']
+      ) {
+        <p-message severity="error" variant="simple">
+          Password must be at least
+          {{ authConstraints.PASSWORD_MIN_LENGTH }} characters long.
+        </p-message>
+      }
+      @if (
+        form.controls.password.touched && form.controls.password.errors?.['maxlength']
+      ) {
+        <p-message severity="error" variant="simple">
+          Password must be less than
+          {{ authConstraints.PASSWORD_MAX_LENGTH }} characters long.
+        </p-message>
+      }
     </div>
 
     @if (errorMessage()) {
-      <hlm-alert variant="destructive">
-        <p hlmAlertDescription>{{ errorMessage() }}</p>
-      </hlm-alert>
+      <p-message severity="error">{{ errorMessage() }}</p-message>
     }
 
-    <button type="submit" hlmBtn class="w-full" [disabled]="isSubmitting()">
+    <button type="submit" pButton [fluid]="true" [disabled]="isSubmitting()">
       @if (isSubmitting()) {
-        <hlm-spinner aria-label="Signing in" />
+        <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
       } @else {
-        <ng-icon name="lucideLogIn" aria-hidden="true" />
+        <i class="pi pi-sign-in" aria-hidden="true"></i>
       }
       {{ isSubmitting() ? 'Signing in...' : 'Sign in' }}
     </button>

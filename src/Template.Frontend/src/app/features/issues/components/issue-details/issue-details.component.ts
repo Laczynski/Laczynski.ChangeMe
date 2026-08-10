@@ -10,7 +10,6 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { ConfirmDialogService } from '@core/confirm/services/confirm-dialog.service';
 import { ToastService } from '@core/toast/services/toast.service';
 import { IssueAttachmentsTabComponent } from '@features/issues/components/issue-attachments-tab/issue-attachments-tab.component';
 import { IssueCommentsTabComponent } from '@features/issues/components/issue-comments-tab/issue-comments-tab.component';
@@ -25,23 +24,15 @@ import {
   getIssueStatusSeverity
 } from '@features/issues/utils/issue.utils';
 import { BackButtonComponent } from '@shared/components/back-button/back-button.component';
-import { mapBadgeSeverity } from '@shared/ui/utils/badge.utils';
-import { NgIcon, provideIcons } from '@ng-icons/core';
-import {
-  lucideBell,
-  lucideBellOff,
-  lucideLoader2,
-  lucidePencil,
-  lucideRefreshCw,
-  lucideTrash
-} from '@ng-icons/lucide';
-import { HlmAlertImports } from '@spartan/ui/alert';
-import { HlmBadgeImports } from '@spartan/ui/badge';
-import { HlmButtonImports } from '@spartan/ui/button';
-import { HlmCardImports } from '@spartan/ui/card';
-import { HlmSpinnerImports } from '@spartan/ui/spinner';
-import { HlmTabsImports } from '@spartan/ui/tabs';
-import { HlmTooltipImports } from '@spartan/ui/tooltip';
+import { ConfirmationService } from 'primeng/api';
+import { ButtonDirective } from 'primeng/button';
+import { Card } from 'primeng/card';
+import { Message } from 'primeng/message';
+import { Panel } from 'primeng/panel';
+import { ProgressSpinner } from 'primeng/progressspinner';
+import { Tab, TabList, TabPanel, TabPanels, Tabs } from 'primeng/tabs';
+import { Tag } from 'primeng/tag';
+import { Tooltip } from 'primeng/tooltip';
 
 type IssueDetailsTab = 'comments' | 'attachments' | 'history';
 
@@ -60,28 +51,22 @@ function resolveIssueDetailsTab(
   imports: [
     DatePipe,
     RouterLink,
-    NgIcon,
-    ...HlmCardImports,
-    ...HlmButtonImports,
-    ...HlmAlertImports,
-    ...HlmBadgeImports,
-    ...HlmSpinnerImports,
-    ...HlmTabsImports,
-    ...HlmTooltipImports,
+    Card,
+    ButtonDirective,
+    Message,
+    Tag,
+    Panel,
+    ProgressSpinner,
+    Tabs,
+    TabList,
+    Tab,
+    TabPanels,
+    TabPanel,
+    Tooltip,
     BackButtonComponent,
     IssueCommentsTabComponent,
     IssueAttachmentsTabComponent,
     IssueHistoryTabComponent
-  ],
-  providers: [
-    provideIcons({
-      lucideBell,
-      lucideBellOff,
-      lucideLoader2,
-      lucidePencil,
-      lucideRefreshCw,
-      lucideTrash
-    })
   ],
   templateUrl: './issue-details.component.html'
 })
@@ -89,7 +74,7 @@ export class IssueDetailsComponent {
   readonly id = input<string>();
 
   private readonly issuesService = inject(IssuesService);
-  private readonly confirmDialogService = inject(ConfirmDialogService);
+  private readonly confirmationService = inject(ConfirmationService);
   private readonly toastService = inject(ToastService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
@@ -99,7 +84,6 @@ export class IssueDetailsComponent {
   readonly getIssueStatusSeverity = getIssueStatusSeverity;
   readonly getIssuePriorityLabel = getIssuePriorityLabel;
   readonly getIssuePrioritySeverity = getIssuePrioritySeverity;
-  readonly mapBadgeSeverity = mapBadgeSeverity;
 
   readonly issue = signal<IssueDetailsDto | null>(null);
   readonly pageTitle = computed(() => this.issue()?.title ?? 'Issue Details');
@@ -163,12 +147,12 @@ export class IssueDetailsComponent {
       return;
     }
 
-    this.confirmDialogService.confirm({
+    this.confirmationService.confirm({
       header: 'Delete issue',
       message: getDeleteIssueConfirmMessage(issue.title),
-      acceptLabel: 'Delete',
-      rejectLabel: 'Cancel',
-      acceptVariant: 'destructive',
+      icon: 'pi pi-exclamation-triangle',
+      acceptButtonProps: { label: 'Delete', severity: 'danger' },
+      rejectButtonProps: { label: 'Cancel', severity: 'secondary', outlined: true },
       accept: () => this.deleteIssue(issue.id)
     });
   }

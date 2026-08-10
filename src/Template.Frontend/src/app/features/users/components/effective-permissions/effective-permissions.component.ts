@@ -4,8 +4,7 @@ import {
   formatFromRoles,
   groupEffectivePermissions
 } from '@features/users/utils/users.utils';
-import { HlmCardImports } from '@spartan/ui/card';
-
+import { Panel } from 'primeng/panel';
 export interface PermissionListItem {
   code: string;
   label: string;
@@ -16,7 +15,7 @@ export interface PermissionListItem {
 
 @Component({
   selector: 'app-effective-permissions',
-  imports: [...HlmCardImports],
+  imports: [Panel],
   templateUrl: './effective-permissions.component.html',
   host: { class: 'block' }
 })

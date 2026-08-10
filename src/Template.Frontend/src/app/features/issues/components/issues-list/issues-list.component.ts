@@ -1,8 +1,14 @@
-import { DatePipe } from '@angular/common';
-import { Component, computed, DestroyRef, inject, signal } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import {
+  Component,
+  computed,
+  DestroyRef,
+  inject,
+  signal,
+  viewChild
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
-import { ConfirmDialogService } from '@core/confirm/services/confirm-dialog.service';
 import { ToastService } from '@core/toast/services/toast.service';
 import { IssueAssignableUserDto, IssueDto } from '@features/issues/models/issue.model';
 import { IssuesService } from '@features/issues/services/issues.service';
@@ -12,78 +18,51 @@ import {
   getIssuePrioritySeverity,
   getIssueStatusLabel,
   getIssueStatusSeverity,
+  issueDeleteMenuItemDangerClasses,
   issuePriorities,
   issueStatuses
 } from '@features/issues/utils/issue.utils';
-import { NgIcon, provideIcons } from '@ng-icons/core';
-import {
-  lucideBell,
-  lucideBellOff,
-  lucideEllipsisVertical,
-  lucideEye,
-  lucideLoader2,
-  lucidePencil,
-  lucidePlus,
-  lucideRefreshCw,
-  lucideTrash
-} from '@ng-icons/lucide';
 import {
   GridResourceFactory,
+  PrimeDataGridComponent,
   DgColumnDirective,
   DgEmptyDirective,
-  SpartanDataGridComponent,
   type GridColumnFilter,
   type GridResource
-} from '@laczynski/datagrid-spartan';
+} from '@laczynski/datagrid-primeng';
 import { getGridListEmptyMessage } from '@shared/data/utils/grid.utils';
-import { mapBadgeSeverity } from '@shared/ui/utils/badge.utils';
-import type { ListRowMenuItem } from '@shared/ui/utils/list-row-menu.utils';
-import { HlmAlertImports } from '@spartan/ui/alert';
-import { HlmBadgeImports } from '@spartan/ui/badge';
-import { HlmButtonImports } from '@spartan/ui/button';
-import { HlmCardImports } from '@spartan/ui/card';
-import { HlmDropdownMenuImports } from '@spartan/ui/dropdown-menu';
-import { HlmTooltipImports } from '@spartan/ui/tooltip';
+import { ConfirmationService, MenuItem } from 'primeng/api';
+import { ButtonDirective } from 'primeng/button';
+import { Card } from 'primeng/card';
+import { Menu } from 'primeng/menu';
+import { Message } from 'primeng/message';
+import { Tag } from 'primeng/tag';
+import { Tooltip } from 'primeng/tooltip';
 
 @Component({
   selector: 'app-issues',
   imports: [
-    DatePipe,
+    CommonModule,
     RouterLink,
-    NgIcon,
-    ...HlmCardImports,
-    ...HlmButtonImports,
-    ...HlmAlertImports,
-    ...HlmBadgeImports,
-    ...HlmDropdownMenuImports,
-    ...HlmTooltipImports,
-    SpartanDataGridComponent,
+    Card,
+    ButtonDirective,
+    Message,
+    Tag,
+    Tooltip,
+    Menu,
+    PrimeDataGridComponent,
     DgColumnDirective,
     DgEmptyDirective
-  ],
-  providers: [
-    provideIcons({
-      lucideBell,
-      lucideBellOff,
-      lucideEllipsisVertical,
-      lucideEye,
-      lucideLoader2,
-      lucidePencil,
-      lucidePlus,
-      lucideRefreshCw,
-      lucideTrash
-    })
   ],
   templateUrl: './issues-list.component.html'
 })
 export class IssuesComponent {
   private readonly issuesService = inject(IssuesService);
-  private readonly confirmDialogService = inject(ConfirmDialogService);
+  private readonly confirmationService = inject(ConfirmationService);
   private readonly toastService = inject(ToastService);
   private readonly gridFactory = inject(GridResourceFactory);
   private readonly destroyRef = inject(DestroyRef);
 
-  readonly mapBadgeSeverity = mapBadgeSeverity;
   readonly getIssueStatusLabel = getIssueStatusLabel;
   readonly getIssueStatusSeverity = getIssueStatusSeverity;
   readonly getIssuePriorityLabel = getIssuePriorityLabel;
@@ -94,7 +73,8 @@ export class IssuesComponent {
   readonly assignableUsers = signal<IssueAssignableUserDto[]>([]);
   readonly pendingWatchIssueIds = signal<string[]>([]);
   readonly pendingDeleteIssueIds = signal<string[]>([]);
-  readonly issueActionItems = signal<ListRowMenuItem[]>([]);
+  readonly issueActionItems = signal<MenuItem[]>([]);
+  private readonly issueActionsMenu = viewChild.required<Menu>('issueActionsMenu');
 
   readonly grid: GridResource<IssueDto>;
 
@@ -119,7 +99,7 @@ export class IssuesComponent {
       load: (query) => this.issuesService.getAllIssues(query),
       defaultSort: [{ field: 'LastActivityAt', desc: true }],
       defaultTake: 10,
-      persistState: { key: 'changeMe.issues-list', storage: 'session' }
+      persistState: { key: 'changeme.issues-list', storage: 'session' }
     });
 
     this.loadAssignableUsers();
@@ -129,36 +109,37 @@ export class IssuesComponent {
     this.grid.reload();
   }
 
-  setIssueActionItems(issue: IssueDto): void {
+  openIssueActionsMenu(event: Event, issue: IssueDto): void {
     this.issueActionItems.set([
       {
         label: 'Open details',
-        icon: 'lucideEye',
+        icon: 'pi pi-eye',
         routerLink: ['/issues', issue.id]
       },
-      { separator: true, label: '' },
+      { separator: true },
       {
         label: 'Edit issue',
-        icon: 'lucidePencil',
+        icon: 'pi pi-pencil',
         routerLink: ['/issues', issue.id, 'edit']
       },
       {
         label: 'Delete issue',
-        icon: 'lucideTrash',
-        variant: 'destructive',
+        icon: 'pi pi-trash',
+        ...issueDeleteMenuItemDangerClasses,
         disabled: this.isDeletePending(issue.id),
         command: () => this.confirmDeleteIssue(issue)
       }
     ]);
+    this.issueActionsMenu().toggle(event);
   }
 
   confirmDeleteIssue(issue: IssueDto): void {
-    this.confirmDialogService.confirm({
+    this.confirmationService.confirm({
       header: 'Delete issue',
       message: getDeleteIssueConfirmMessage(issue.title),
-      acceptLabel: 'Delete',
-      rejectLabel: 'Cancel',
-      acceptVariant: 'destructive',
+      icon: 'pi pi-exclamation-triangle',
+      acceptButtonProps: { label: 'Delete', severity: 'danger' },
+      rejectButtonProps: { label: 'Cancel', severity: 'secondary', outlined: true },
       accept: () => this.deleteIssue(issue)
     });
   }

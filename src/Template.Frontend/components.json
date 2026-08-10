@@ -1,5 +1,0 @@
-{
-  "componentsPath": "src/app/shared/ui",
-  "importAlias": "@spartan/ui",
-  "style": "nova"
-}

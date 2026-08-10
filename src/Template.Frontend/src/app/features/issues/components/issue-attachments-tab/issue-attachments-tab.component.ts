@@ -4,14 +4,11 @@ import {
   computed,
   DestroyRef,
   effect,
-  ElementRef,
   inject,
   input,
-  signal,
-  viewChild
+  signal
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { ConfirmDialogService } from '@core/confirm/services/confirm-dialog.service';
 import { ToastService } from '@core/toast/services/toast.service';
 import { IssueAttachmentDto } from '@features/issues/models/issue.model';
 import { IssuesService } from '@features/issues/services/issues.service';
@@ -24,37 +21,16 @@ import {
   createIssueTabGridQuery,
   hasMoreGridItems
 } from '@shared/data/utils/grid.utils';
-import { NgIcon, provideIcons } from '@ng-icons/core';
-import {
-  lucideCloudUpload,
-  lucideDownload,
-  lucideLoader2,
-  lucideTrash,
-  lucideUpload
-} from '@ng-icons/lucide';
-import { HlmAlertImports } from '@spartan/ui/alert';
-import { HlmButtonImports } from '@spartan/ui/button';
-import { HlmSpinnerImports } from '@spartan/ui/spinner';
+import { ConfirmationService } from 'primeng/api';
+import { ButtonDirective } from 'primeng/button';
+import { FileSelectEvent, FileUpload } from 'primeng/fileupload';
+import { Message } from 'primeng/message';
+import { ProgressSpinner } from 'primeng/progressspinner';
 import { IssueConstraints } from '../../utils/issue.utils';
 
 @Component({
   selector: 'app-issue-attachments-tab',
-  imports: [
-    DatePipe,
-    NgIcon,
-    ...HlmButtonImports,
-    ...HlmAlertImports,
-    ...HlmSpinnerImports
-  ],
-  providers: [
-    provideIcons({
-      lucideCloudUpload,
-      lucideDownload,
-      lucideLoader2,
-      lucideTrash,
-      lucideUpload
-    })
-  ],
+  imports: [DatePipe, ButtonDirective, FileUpload, Message, ProgressSpinner],
   templateUrl: './issue-attachments-tab.component.html',
   host: { class: 'block' }
 })
@@ -63,10 +39,8 @@ export class IssueAttachmentsTabComponent {
 
   private readonly issuesService = inject(IssuesService);
   private readonly toastService = inject(ToastService);
-  private readonly confirmDialogService = inject(ConfirmDialogService);
+  private readonly confirmationService = inject(ConfirmationService);
   private readonly destroyRef = inject(DestroyRef);
-
-  readonly fileInput = viewChild.required<ElementRef<HTMLInputElement>>('fileInput');
 
   readonly IssueConstraints = IssueConstraints;
   readonly issueAttachmentAccept = issueAttachmentAccept;
@@ -105,14 +79,9 @@ export class IssueAttachmentsTabComponent {
     });
   }
 
-  chooseFile(): void {
-    this.fileInput().nativeElement.click();
-  }
-
-  onFileSelected(event: Event): void {
+  onFileSelected(event: FileSelectEvent): void {
     this.uploadError.set(null);
-    const input = event.target as HTMLInputElement;
-    const files = input.files ? Array.from(input.files) : [];
+    const files = event.currentFiles ?? Array.from(event.files ?? []);
     this.selectedFile.set(files[0] ?? null);
   }
 
@@ -139,7 +108,6 @@ export class IssueAttachmentsTabComponent {
         next: () => {
           this.reloadAttachmentsFromStart(this.issueId());
           this.selectedFile.set(null);
-          this.fileInput().nativeElement.value = '';
           this.isUploading.set(false);
           this.toastService.success('Attachment uploaded');
         },
@@ -184,12 +152,12 @@ export class IssueAttachmentsTabComponent {
       return;
     }
 
-    this.confirmDialogService.confirm({
+    this.confirmationService.confirm({
       header: 'Delete attachment',
       message: getDeleteAttachmentConfirmMessage(attachment.originalFileName),
-      acceptLabel: 'Delete',
-      rejectLabel: 'Cancel',
-      acceptVariant: 'destructive',
+      icon: 'pi pi-exclamation-triangle',
+      acceptButtonProps: { label: 'Delete', severity: 'danger' },
+      rejectButtonProps: { label: 'Cancel', severity: 'secondary', outlined: true },
       accept: () => this.deleteAttachment(attachment.id)
     });
   }

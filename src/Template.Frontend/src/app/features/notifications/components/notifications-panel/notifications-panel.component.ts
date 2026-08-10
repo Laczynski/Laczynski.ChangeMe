@@ -3,30 +3,23 @@ import { Component, inject, output, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { NotificationDto } from '@features/notifications/models/notification.model';
 import { NotificationsService } from '@features/notifications/services/notifications.service';
-import { NgIcon, provideIcons } from '@ng-icons/core';
-import {
-  lucideCheck,
-  lucideCheckCircle,
-  lucideInbox,
-  lucideRefreshCw
-} from '@ng-icons/lucide';
-import { HlmAlertImports } from '@spartan/ui/alert';
-import { HlmButtonImports } from '@spartan/ui/button';
-import { HlmSpinnerImports } from '@spartan/ui/spinner';
-import { HlmTabsImports } from '@spartan/ui/tabs';
+import { ButtonDirective } from 'primeng/button';
+import { Message } from 'primeng/message';
+import { ProgressSpinner } from 'primeng/progressspinner';
+import { Tab, TabList, TabPanel, TabPanels, Tabs } from 'primeng/tabs';
 
 @Component({
   selector: 'app-notifications-panel',
   imports: [
     CommonModule,
-    ...HlmAlertImports,
-    ...HlmButtonImports,
-    ...HlmSpinnerImports,
-    ...HlmTabsImports,
-    NgIcon
-  ],
-  providers: [
-    provideIcons({ lucideCheck, lucideCheckCircle, lucideInbox, lucideRefreshCw })
+    ButtonDirective,
+    Message,
+    ProgressSpinner,
+    Tabs,
+    TabList,
+    Tab,
+    TabPanels,
+    TabPanel
   ],
   templateUrl: './notifications-panel.component.html'
 })
@@ -81,7 +74,7 @@ export class NotificationsPanelComponent {
     this.notificationsService.showMoreRead();
   }
 
-  onTabChange(tab: string): void {
+  onTabChange(tab: string | number | undefined): void {
     const value: 'unread' | 'read' = tab === 'read' ? 'read' : 'unread';
     if (value === this.activeTab()) {
       return;

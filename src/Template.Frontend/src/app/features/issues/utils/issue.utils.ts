@@ -112,64 +112,64 @@ const ISSUE_HISTORY_EVENT_VISUALS: Record<
   IssueHistoryEventVisual
 > = {
   ISSUE_CREATED: {
-    icon: 'lucidePlus',
+    icon: 'pi pi-plus',
     markerClass: 'bg-green-600 text-white dark:bg-green-500',
     tagSeverity: 'success'
   },
   STATUS_CHANGED: {
-    icon: 'lucideRefreshCw',
+    icon: 'pi pi-sync',
     markerClass: 'bg-sky-600 text-white dark:bg-sky-500',
     tagSeverity: 'info'
   },
   PRIORITY_CHANGED: {
-    icon: 'lucideFlag',
+    icon: 'pi pi-flag-fill',
     markerClass: 'bg-amber-500 text-white dark:bg-amber-400',
     tagSeverity: 'warn'
   },
   ASSIGNEE_CHANGED: {
-    icon: 'lucideUser',
+    icon: 'pi pi-user',
     markerClass: 'bg-violet-600 text-white dark:bg-violet-500',
     tagSeverity: 'info'
   },
   TITLE_CHANGED: {
-    icon: 'lucidePencil',
+    icon: 'pi pi-pencil',
     markerClass: 'bg-zinc-500 text-white dark:bg-zinc-400',
     tagSeverity: 'secondary'
   },
   DESCRIPTION_CHANGED: {
-    icon: 'lucideAlignLeft',
+    icon: 'pi pi-align-left',
     markerClass: 'bg-zinc-500 text-white dark:bg-zinc-400',
     tagSeverity: 'secondary'
   },
   ACCEPTANCE_CRITERION_ADDED: {
-    icon: 'lucideCircleCheck',
+    icon: 'pi pi-check-circle',
     markerClass: 'bg-teal-600 text-white dark:bg-teal-500',
     tagSeverity: 'success'
   },
   ACCEPTANCE_CRITERION_UPDATED: {
-    icon: 'lucideFilePen',
+    icon: 'pi pi-file-edit',
     markerClass: 'bg-sky-600 text-white dark:bg-sky-500',
     tagSeverity: 'info'
   },
   ACCEPTANCE_CRITERION_REMOVED: {
-    icon: 'lucideCircleX',
+    icon: 'pi pi-times-circle',
     markerClass: 'bg-red-600 text-white dark:bg-red-500',
     tagSeverity: 'danger'
   },
   ATTACHMENT_ADDED: {
-    icon: 'lucidePaperclip',
+    icon: 'pi pi-paperclip',
     markerClass: 'bg-indigo-600 text-white dark:bg-indigo-500',
     tagSeverity: 'info'
   },
   ATTACHMENT_REMOVED: {
-    icon: 'lucideTrash2',
+    icon: 'pi pi-trash',
     markerClass: 'bg-red-600 text-white dark:bg-red-500',
     tagSeverity: 'danger'
   }
 };
 
 const defaultIssueHistoryEventVisual: IssueHistoryEventVisual = {
-  icon: 'lucideHistory',
+  icon: 'pi pi-history',
   markerClass: 'bg-primary text-primary-contrast',
   tagSeverity: 'secondary'
 };

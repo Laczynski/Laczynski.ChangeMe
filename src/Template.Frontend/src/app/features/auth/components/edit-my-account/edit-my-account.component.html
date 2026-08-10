@@ -1,93 +1,98 @@
-<section hlmCard class="mb-4">
-  <div hlmCardHeader>
-    <h2 hlmCardTitle>Edit profile</h2>
-    <p hlmCardDescription>Update your name.</p>
+<p-card class="mb-4" header="Edit profile" subheader="Update your name.">
+  <div class="mb-4 flex flex-wrap items-center gap-2">
+    <app-back-button label="Back to my account" [route]="['/account']" />
   </div>
 
-  <div hlmCardContent>
-    <div class="mb-4 flex flex-wrap items-center gap-2">
-      <app-back-button label="Back to my account" [route]="['/account']" />
+  @if (isLoading()) {
+    <div class="flex flex-col items-center gap-2 py-8">
+      <p-progress-spinner ariaLabel="Loading profile" />
+      <p class="text-muted-color m-0 text-sm">Loading profile...</p>
     </div>
+  } @else if (loadError()) {
+    <div class="flex flex-col items-center gap-2">
+      <p-message severity="error">{{ loadError() }}</p-message>
+      <button
+        type="button"
+        pButton
+        size="small"
+        severity="secondary"
+        [outlined]="true"
+        [disabled]="isLoading()"
+        (click)="reload()"
+      >
+        @if (isLoading()) {
+          <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
+        } @else {
+          <i class="pi pi-refresh" aria-hidden="true"></i>
+        }
+        Try again
+      </button>
+    </div>
+  } @else {
+    <form
+      class="p-fluid flex flex-col gap-4"
+      [formGroup]="form"
+      (ngSubmit)="onSubmit()"
+    >
+      <p-panel header="Profile" [toggleable]="true">
+        <div class="grid gap-4 sm:grid-cols-2">
+          <div class="flex flex-col gap-1.5">
+            <label for="firstName">First name</label>
+            <input
+              id="firstName"
+              type="text"
+              pInputText
+              [formControl]="form.controls.firstName"
+              [invalid]="shouldShowError(form.controls.firstName)"
+            />
+            @if (
+              shouldShowError(form.controls.firstName) &&
+              form.controls.firstName.errors?.['required']
+            ) {
+              <p-message severity="error" variant="simple">
+                First name is required.
+              </p-message>
+            }
+          </div>
 
-    @if (isLoading()) {
-      <div class="flex flex-col items-center gap-2 py-8">
-        <hlm-spinner aria-label="Loading profile" />
-        <p class="text-muted-foreground m-0 text-sm">Loading profile...</p>
-      </div>
-    } @else if (loadError()) {
-      <div class="flex flex-col items-center gap-2">
-        <hlm-alert variant="destructive">
-          <p hlmAlertDescription>{{ loadError() }}</p>
-        </hlm-alert>
-        <button
-          type="button"
-          hlmBtn
-          variant="outline"
-          size="sm"
-          [disabled]="isLoading()"
-          (click)="reload()"
-        >
-          @if (isLoading()) {
-            <hlm-spinner aria-label="Retrying" />
+          <div class="flex flex-col gap-1.5">
+            <label for="lastName">Last name</label>
+            <input
+              id="lastName"
+              type="text"
+              pInputText
+              [formControl]="form.controls.lastName"
+              [invalid]="shouldShowError(form.controls.lastName)"
+            />
+            @if (
+              shouldShowError(form.controls.lastName) &&
+              form.controls.lastName.errors?.['required']
+            ) {
+              <p-message severity="error" variant="simple">
+                Last name is required.
+              </p-message>
+            }
+          </div>
+        </div>
+      </p-panel>
+
+      @if (submitError()) {
+        <p-message severity="error">{{ submitError() }}</p-message>
+      }
+
+      <div class="flex flex-wrap items-center justify-end gap-2">
+        <a pButton severity="secondary" [outlined]="true" [routerLink]="['/account']">
+          Cancel
+        </a>
+        <button type="submit" pButton [disabled]="isSubmitting()">
+          @if (isSubmitting()) {
+            <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
           } @else {
-            <ng-icon name="lucideRefreshCw" aria-hidden="true" />
+            <i class="pi pi-save" aria-hidden="true"></i>
           }
-          Try again
+          {{ isSubmitting() ? 'Saving...' : 'Save changes' }}
         </button>
       </div>
-    } @else {
-      <form class="flex flex-col gap-4" [formGroup]="form" (ngSubmit)="onSubmit()">
-        <details open class="border-border rounded-lg border">
-          <summary class="cursor-pointer px-4 py-3 font-medium">Profile</summary>
-          <div class="border-border border-t px-4 py-3">
-            <div class="grid gap-4 sm:grid-cols-2">
-              <div hlmField>
-                <label hlmFieldLabel for="firstName">First name</label>
-                <input
-                  id="firstName"
-                  type="text"
-                  hlmInput
-                  [formControl]="form.controls.firstName"
-                />
-                <hlm-field-error validator="required">
-                  First name is required.
-                </hlm-field-error>
-              </div>
-
-              <div hlmField>
-                <label hlmFieldLabel for="lastName">Last name</label>
-                <input
-                  id="lastName"
-                  type="text"
-                  hlmInput
-                  [formControl]="form.controls.lastName"
-                />
-                <hlm-field-error validator="required">
-                  Last name is required.
-                </hlm-field-error>
-              </div>
-            </div>
-          </div>
-        </details>
-
-        @if (submitError()) {
-          <hlm-alert variant="destructive">
-            <p hlmAlertDescription>{{ submitError() }}</p>
-          </hlm-alert>
-        }
-
-        <div class="flex flex-wrap items-center justify-end gap-2">
-          <a hlmBtn variant="outline" [routerLink]="['/account']">Cancel</a>
-          <button type="submit" hlmBtn [disabled]="isSubmitting()">
-            @if (isSubmitting()) {
-              <hlm-spinner aria-label="Saving" />
-            } @else {
-              <ng-icon name="lucideSave" aria-hidden="true" />
-            }
-            {{ isSubmitting() ? 'Saving...' : 'Save changes' }}
-          </button>
-        </div>
-      </form>
-    }
-  </div>
-</section>
+    </form>
+  }
+</p-card>

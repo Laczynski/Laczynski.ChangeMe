@@ -21,18 +21,16 @@ import { EffectivePermissionsComponent } from '@features/users/components/effect
 import { EffectivePermissionDto } from '@features/users/models/user.model';
 import { UsersService } from '@features/users/services/users.service';
 import { UserConstraints, UserMessages } from '@features/users/utils/users.utils';
-import { NgIcon, provideIcons } from '@ng-icons/core';
-import { lucideLoader2, lucideRefreshCw, lucideSave } from '@ng-icons/lucide';
 import { PermissionCodes } from '@shared/authorization/permission-codes';
 import { BackButtonComponent } from '@shared/components/back-button/back-button.component';
-import { HlmAlertImports } from '@spartan/ui/alert';
-import { HlmButtonImports } from '@spartan/ui/button';
-import { HlmCardImports } from '@spartan/ui/card';
-import { HlmCheckboxImports } from '@spartan/ui/checkbox';
-import { HlmFieldImports } from '@spartan/ui/field';
-import { HlmInputImports } from '@spartan/ui/input';
-import { HlmSelectImports } from '@spartan/ui/select';
-import { HlmSpinnerImports } from '@spartan/ui/spinner';
+import { ButtonDirective } from 'primeng/button';
+import { Card } from 'primeng/card';
+import { Checkbox } from 'primeng/checkbox';
+import { InputText } from 'primeng/inputtext';
+import { Message } from 'primeng/message';
+import { Panel } from 'primeng/panel';
+import { ProgressSpinner } from 'primeng/progressspinner';
+import { Select } from 'primeng/select';
 import { catchError, debounceTime, forkJoin, of, startWith, switchMap } from 'rxjs';
 
 @Component({
@@ -41,18 +39,16 @@ import { catchError, debounceTime, forkJoin, of, startWith, switchMap } from 'rx
     ReactiveFormsModule,
     RouterLink,
     BackButtonComponent,
-    ...HlmCardImports,
-    ...HlmButtonImports,
-    ...HlmFieldImports,
-    ...HlmInputImports,
-    ...HlmSelectImports,
-    ...HlmCheckboxImports,
-    ...HlmAlertImports,
-    ...HlmSpinnerImports,
-    NgIcon,
+    Card,
+    ButtonDirective,
+    InputText,
+    Select,
+    Checkbox,
+    Message,
+    Panel,
+    ProgressSpinner,
     EffectivePermissionsComponent
   ],
-  providers: [provideIcons({ lucideLoader2, lucideRefreshCw, lucideSave })],
   templateUrl: './edit-user.component.html'
 })
 export class EditUserComponent {
@@ -139,12 +135,6 @@ export class EditUserComponent {
     });
   }
 
-  roleItemToString = (item: unknown): string => {
-    const id = String(item);
-    const role = this.roleOptions().find((option) => option.id === id);
-    return role?.name ?? id;
-  };
-
   refresh(): void {
     this.loadUser();
   }
@@ -228,5 +218,9 @@ export class EditUserComponent {
           this.isSubmitting.set(false);
         }
       });
+  }
+
+  shouldShowError(control: FormControl<string | boolean | string[]>): boolean {
+    return control.touched && control.invalid;
   }
 }

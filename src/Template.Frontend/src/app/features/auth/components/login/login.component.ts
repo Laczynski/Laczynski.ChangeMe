@@ -9,13 +9,12 @@ import { ActivatedRoute } from '@angular/router';
 import { AuthPageComponent } from '@features/auth/components/auth-page/auth-page.component';
 import { AuthService } from '@features/auth/services/auth.service';
 import { AuthConstraints, AuthMessages } from '@features/auth/utils/auth.utils';
-import { NgIcon, provideIcons } from '@ng-icons/core';
-import { lucideEye, lucideEyeOff, lucideLogIn } from '@ng-icons/lucide';
-import { HlmAlertImports } from '@spartan/ui/alert';
-import { HlmButtonImports } from '@spartan/ui/button';
-import { HlmFieldImports } from '@spartan/ui/field';
-import { HlmInputImports } from '@spartan/ui/input';
-import { HlmSpinnerImports } from '@spartan/ui/spinner';
+import { ButtonDirective } from 'primeng/button';
+import { IconField } from 'primeng/iconfield';
+import { InputIcon } from 'primeng/inputicon';
+import { InputPassword } from 'primeng/inputpassword';
+import { InputText } from 'primeng/inputtext';
+import { Message } from 'primeng/message';
 
 @Component({
   selector: 'app-login',
@@ -23,14 +22,13 @@ import { HlmSpinnerImports } from '@spartan/ui/spinner';
   imports: [
     ReactiveFormsModule,
     AuthPageComponent,
-    ...HlmAlertImports,
-    ...HlmButtonImports,
-    ...HlmFieldImports,
-    ...HlmInputImports,
-    ...HlmSpinnerImports,
-    NgIcon
+    ButtonDirective,
+    IconField,
+    InputIcon,
+    InputPassword,
+    InputText,
+    Message
   ],
-  providers: [provideIcons({ lucideEye, lucideEyeOff, lucideLogIn })],
   templateUrl: './login.component.html'
 })
 export class LoginComponent {
