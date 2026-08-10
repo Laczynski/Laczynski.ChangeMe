@@ -190,7 +190,9 @@ function setupGlobalObserver(platformId: Object): void {
 
           // Only process elements we're managing
           if (manager && observedElements.has(element)) {
-            if (manager.isUpdating) {continue;} // Ignore changes we're making
+            if (manager.isUpdating) {
+              continue;
+            } // Ignore changes we're making
 
             // Update base classes to include any externally added classes
             const currentClasses = toClassList(element.className);
@@ -228,7 +230,9 @@ function setupGlobalObserver(platformId: Object): void {
 }
 
 function updateElement(manager: ElementClassManager): void {
-  if (manager.isUpdating) {return;} // Prevent recursive updates
+  if (manager.isUpdating) {
+    return;
+  } // Prevent recursive updates
 
   manager.isUpdating = true;
 
