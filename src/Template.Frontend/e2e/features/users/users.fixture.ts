@@ -17,7 +17,8 @@ export async function selectMultiselectOption(
   label: string,
   optionLabel: string
 ): Promise<void> {
-  await page.getByRole('combobox', { name: label, exact: true }).click();
+  const fieldId = label.toLowerCase();
+  await page.locator(`#${fieldId}`).click();
   await page.getByRole('option', { name: optionLabel, exact: true }).click();
   await page.keyboard.press('Escape');
 }
