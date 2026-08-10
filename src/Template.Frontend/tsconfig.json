@@ -1,0 +1,63 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "outDir": "./dist/out-tsc",
+    "strict": true,
+    "noImplicitOverride": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "skipLibCheck": true,
+    "isolatedModules": true,
+    "esModuleInterop": true,
+    "experimentalDecorators": true,
+    "moduleResolution": "bundler",
+    "importHelpers": true,
+    "target": "ES2022",
+    "module": "ES2022",
+    "paths": {
+      "@spartan/ui/*": ["./src/app/shared/ui/*"],
+      "@core/*": ["./src/app/core/*"],
+      "@features/*": ["./src/app/features/*"],
+      "@shared/*": ["./src/app/shared/*"],
+      "@styles/*": ["./src/styles/*"],
+      "@environments/*": ["./src/environments/*"],
+      "@spartan/ui/button": ["./src/app/shared/ui/button/src/index.ts"],
+      "@spartan/ui/utils": ["./src/app/shared/ui/utils/src/index.ts"],
+      "@spartan/ui/card": ["./src/app/shared/ui/card/src/index.ts"],
+      "@spartan/ui/input": ["./src/app/shared/ui/input/src/index.ts"],
+      "@spartan/ui/label": ["./src/app/shared/ui/label/src/index.ts"],
+      "@spartan/ui/textarea": ["./src/app/shared/ui/textarea/src/index.ts"],
+      "@spartan/ui/checkbox": ["./src/app/shared/ui/checkbox/src/index.ts"],
+      "@spartan/ui/select": ["./src/app/shared/ui/select/src/index.ts"],
+      "@spartan/ui/badge": ["./src/app/shared/ui/badge/src/index.ts"],
+      "@spartan/ui/alert": ["./src/app/shared/ui/alert/src/index.ts"],
+      "@spartan/ui/sonner": ["./src/app/shared/ui/sonner/src/index.ts"],
+      "@spartan/ui/dialog": ["./src/app/shared/ui/dialog/src/index.ts"],
+      "@spartan/ui/tabs": ["./src/app/shared/ui/tabs/src/index.ts"],
+      "@spartan/ui/spinner": ["./src/app/shared/ui/spinner/src/index.ts"],
+      "@spartan/ui/tooltip": ["./src/app/shared/ui/tooltip/src/index.ts"],
+      "@spartan/ui/sheet": ["./src/app/shared/ui/sheet/src/index.ts"],
+      "@spartan/ui/popover": ["./src/app/shared/ui/popover/src/index.ts"],
+      "@spartan/ui/separator": ["./src/app/shared/ui/separator/src/index.ts"],
+      "@spartan/ui/alert-dialog": ["./src/app/shared/ui/alert-dialog/src/index.ts"],
+      "@spartan/ui/dropdown-menu": ["./src/app/shared/ui/dropdown-menu/src/index.ts"],
+      "@spartan/ui/field": ["./src/app/shared/ui/field/src/index.ts"]
+    }
+  },
+  "angularCompilerOptions": {
+    "enableI18nLegacyMessageIdFormat": false,
+    "strictInjectionParameters": true,
+    "strictInputAccessModifiers": true,
+    "strictTemplates": true
+  },
+  "files": [],
+  "references": [
+    {
+      "path": "./tsconfig.app.json"
+    },
+    {
+      "path": "./tsconfig.spec.json"
+    }
+  ]
+}

@@ -1,0 +1,260 @@
+import { DatePipe } from '@angular/common';
+import { Component, computed, DestroyRef, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { RouterLink } from '@angular/router';
+import { ConfirmDialogService } from '@core/confirm/services/confirm-dialog.service';
+import { ToastService } from '@core/toast/services/toast.service';
+import { IssueAssignableUserDto, IssueDto } from '@features/issues/models/issue.model';
+import { IssuesService } from '@features/issues/services/issues.service';
+import {
+  getDeleteIssueConfirmMessage,
+  getIssuePriorityLabel,
+  getIssuePrioritySeverity,
+  getIssueStatusLabel,
+  getIssueStatusSeverity,
+  issuePriorities,
+  issueStatuses
+} from '@features/issues/utils/issue.utils';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import {
+  lucideBell,
+  lucideBellOff,
+  lucideEllipsisVertical,
+  lucideEye,
+  lucideLoader2,
+  lucidePencil,
+  lucidePlus,
+  lucideRefreshCw,
+  lucideTrash
+} from '@ng-icons/lucide';
+import {
+  GridResourceFactory,
+  DgColumnDirective,
+  DgEmptyDirective,
+  SpartanDataGridComponent,
+  type GridColumnFilter,
+  type GridResource
+} from '@laczynski/datagrid-spartan';
+import { getGridListEmptyMessage } from '@shared/data/utils/grid.utils';
+import { mapBadgeSeverity } from '@shared/ui/utils/badge.utils';
+import type { ListRowMenuItem } from '@shared/ui/utils/list-row-menu.utils';
+import { HlmAlertImports } from '@spartan/ui/alert';
+import { HlmBadgeImports } from '@spartan/ui/badge';
+import { HlmButtonImports } from '@spartan/ui/button';
+import { HlmCardImports } from '@spartan/ui/card';
+import { HlmDropdownMenuImports } from '@spartan/ui/dropdown-menu';
+import { HlmTooltipImports } from '@spartan/ui/tooltip';
+
+@Component({
+  selector: 'app-issues',
+  imports: [
+    DatePipe,
+    RouterLink,
+    NgIcon,
+    ...HlmCardImports,
+    ...HlmButtonImports,
+    ...HlmAlertImports,
+    ...HlmBadgeImports,
+    ...HlmDropdownMenuImports,
+    ...HlmTooltipImports,
+    SpartanDataGridComponent,
+    DgColumnDirective,
+    DgEmptyDirective
+  ],
+  providers: [
+    provideIcons({
+      lucideBell,
+      lucideBellOff,
+      lucideEllipsisVertical,
+      lucideEye,
+      lucideLoader2,
+      lucidePencil,
+      lucidePlus,
+      lucideRefreshCw,
+      lucideTrash
+    })
+  ],
+  templateUrl: './issues-list.component.html'
+})
+export class IssuesComponent {
+  private readonly issuesService = inject(IssuesService);
+  private readonly confirmDialogService = inject(ConfirmDialogService);
+  private readonly toastService = inject(ToastService);
+  private readonly gridFactory = inject(GridResourceFactory);
+  private readonly destroyRef = inject(DestroyRef);
+
+  readonly mapBadgeSeverity = mapBadgeSeverity;
+  readonly getIssueStatusLabel = getIssueStatusLabel;
+  readonly getIssueStatusSeverity = getIssueStatusSeverity;
+  readonly getIssuePriorityLabel = getIssuePriorityLabel;
+  readonly getIssuePrioritySeverity = getIssuePrioritySeverity;
+  readonly issueStatuses = issueStatuses;
+  readonly issuePriorities = issuePriorities;
+
+  readonly assignableUsers = signal<IssueAssignableUserDto[]>([]);
+  readonly pendingWatchIssueIds = signal<string[]>([]);
+  readonly pendingDeleteIssueIds = signal<string[]>([]);
+  readonly issueActionItems = signal<ListRowMenuItem[]>([]);
+
+  readonly grid: GridResource<IssueDto>;
+
+  readonly assignedToFilter = computed<GridColumnFilter>(() => ({
+    type: 'enum',
+    options: this.assignableUsers().map((user) => ({
+      label: user.displayLabel,
+      value: user.id
+    }))
+  }));
+
+  readonly errorMessage = computed(() => {
+    const error = this.grid.error();
+    return error instanceof Error ? error.message : error ? String(error) : null;
+  });
+
+  readonly emptyMessage = computed(() => getGridListEmptyMessage(this.grid.query()));
+
+  constructor() {
+    this.grid = this.gridFactory.create<IssueDto>({
+      destroyRef: this.destroyRef,
+      load: (query) => this.issuesService.getAllIssues(query),
+      defaultSort: [{ field: 'LastActivityAt', desc: true }],
+      defaultTake: 10,
+      persistState: { key: 'changeMe.issues-list', storage: 'session' }
+    });
+
+    this.loadAssignableUsers();
+  }
+
+  refresh(): void {
+    this.grid.reload();
+  }
+
+  setIssueActionItems(issue: IssueDto): void {
+    this.issueActionItems.set([
+      {
+        label: 'Open details',
+        icon: 'lucideEye',
+        routerLink: ['/issues', issue.id]
+      },
+      { separator: true, label: '' },
+      {
+        label: 'Edit issue',
+        icon: 'lucidePencil',
+        routerLink: ['/issues', issue.id, 'edit']
+      },
+      {
+        label: 'Delete issue',
+        icon: 'lucideTrash',
+        variant: 'destructive',
+        disabled: this.isDeletePending(issue.id),
+        command: () => this.confirmDeleteIssue(issue)
+      }
+    ]);
+  }
+
+  confirmDeleteIssue(issue: IssueDto): void {
+    this.confirmDialogService.confirm({
+      header: 'Delete issue',
+      message: getDeleteIssueConfirmMessage(issue.title),
+      acceptLabel: 'Delete',
+      rejectLabel: 'Cancel',
+      acceptVariant: 'destructive',
+      accept: () => this.deleteIssue(issue)
+    });
+  }
+
+  isDeletePending(issueId: string): boolean {
+    return this.pendingDeleteIssueIds().includes(issueId);
+  }
+
+  getWatchTooltip(issue: IssueDto): string {
+    const watchers = this.formatWatchersCount(issue.watchersCount);
+    return issue.isWatchedByCurrentUser
+      ? `Unwatch this issue (${watchers})`
+      : `Watch this issue (${watchers})`;
+  }
+
+  toggleWatch(issue: IssueDto): void {
+    if (this.isWatchPending(issue.id)) {
+      return;
+    }
+
+    this.setWatchPending(issue.id, true);
+
+    const request = issue.isWatchedByCurrentUser
+      ? this.issuesService.unwatchIssue(issue.id)
+      : this.issuesService.watchIssue(issue.id);
+
+    request.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: (watchState) => {
+        this.grid.items.update((items) =>
+          items.map((item) =>
+            item.id === watchState.issueId
+              ? {
+                  ...item,
+                  isWatchedByCurrentUser: watchState.isWatchedByCurrentUser,
+                  watchersCount: watchState.watchersCount
+                }
+              : item
+          )
+        );
+        this.setWatchPending(issue.id, false);
+      },
+      error: () => {
+        this.setWatchPending(issue.id, false);
+      }
+    });
+  }
+
+  isWatchPending(issueId: string): boolean {
+    return this.pendingWatchIssueIds().includes(issueId);
+  }
+
+  private deleteIssue(issue: IssueDto): void {
+    if (this.isDeletePending(issue.id)) {
+      return;
+    }
+
+    this.setDeletePending(issue.id, true);
+
+    this.issuesService
+      .deleteIssue(issue.id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.grid.reload();
+          this.setDeletePending(issue.id, false);
+          this.toastService.success('Issue deleted', issue.title);
+        },
+        error: (error: Error) => {
+          this.toastService.showApiError(error, 'Could not delete issue');
+          this.setDeletePending(issue.id, false);
+        }
+      });
+  }
+
+  private loadAssignableUsers(): void {
+    this.issuesService
+      .getAssignableUsers()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (users) => this.assignableUsers.set(users)
+      });
+  }
+
+  private setWatchPending(issueId: string, isPending: boolean): void {
+    this.pendingWatchIssueIds.update((issueIds) =>
+      isPending ? [...issueIds, issueId] : issueIds.filter((id) => id !== issueId)
+    );
+  }
+
+  private setDeletePending(issueId: string, isPending: boolean): void {
+    this.pendingDeleteIssueIds.update((issueIds) =>
+      isPending ? [...issueIds, issueId] : issueIds.filter((id) => id !== issueId)
+    );
+  }
+
+  private formatWatchersCount(count: number): string {
+    return count === 1 ? '1 watcher' : `${count} watchers`;
+  }
+}

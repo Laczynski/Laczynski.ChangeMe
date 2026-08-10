@@ -1,0 +1,192 @@
+<hlm-card class="mb-4">
+  <div hlmCardHeader>
+    <h3 hlmCardTitle>{{ pageTitle() }}</h3>
+    <p hlmCardDescription>Review issue data, comments, attachments, and history</p>
+  </div>
+  <div hlmCardContent>
+    <div class="mb-4 flex flex-wrap items-center gap-2">
+      <app-back-button label="Back to issues list" [route]="['/issues']" />
+      @if (issue(); as currentIssue) {
+        <a
+          hlmBtn
+          variant="outline"
+          size="sm"
+          [routerLink]="['/issues', currentIssue.id, 'edit']"
+        >
+          <ng-icon name="lucidePencil" />
+          Edit
+        </a>
+        <button
+          type="button"
+          hlmBtn
+          [variant]="currentIssue.isWatchedByCurrentUser ? 'default' : 'outline'"
+          size="sm"
+          [disabled]="isTogglingWatch()"
+          [hlmTooltip]="getWatchTooltip(currentIssue)"
+          position="top"
+          [attr.aria-label]="getWatchTooltip(currentIssue)"
+          (click)="toggleWatch()"
+        >
+          @if (isTogglingWatch()) {
+            <ng-icon name="lucideLoader2" class="animate-spin" />
+          } @else if (currentIssue.isWatchedByCurrentUser) {
+            <ng-icon name="lucideBellOff" />
+          } @else {
+            <ng-icon name="lucideBell" />
+          }
+          {{ currentIssue.watchersCount }}
+        </button>
+        <button
+          type="button"
+          hlmBtn
+          variant="destructive"
+          size="sm"
+          [disabled]="isDeleting()"
+          (click)="confirmDeleteIssue()"
+        >
+          @if (isDeleting()) {
+            <ng-icon name="lucideLoader2" class="animate-spin" />
+          } @else {
+            <ng-icon name="lucideTrash" />
+          }
+          Delete
+        </button>
+      }
+    </div>
+
+    @if (isLoading()) {
+      <div class="flex flex-col items-center gap-2 py-8">
+        <hlm-spinner aria-label="Loading issue details" />
+        <p class="text-muted-foreground m-0 text-sm">Loading issue details...</p>
+      </div>
+    } @else if (loadError()) {
+      <div class="flex flex-col items-center gap-2">
+        <hlm-alert variant="destructive">
+          <p hlmAlertDescription>{{ loadError() }}</p>
+        </hlm-alert>
+        <button
+          type="button"
+          hlmBtn
+          size="sm"
+          variant="outline"
+          [disabled]="isLoading()"
+          (click)="refresh()"
+        >
+          @if (isLoading()) {
+            <ng-icon name="lucideLoader2" class="animate-spin" />
+          } @else {
+            <ng-icon name="lucideRefreshCw" />
+          }
+          Try again
+        </button>
+      </div>
+    } @else if (issue(); as currentIssue) {
+      <dl
+        class="mb-6 grid gap-4 rounded-lg border border-border p-4 sm:grid-cols-2 lg:grid-cols-3"
+      >
+        <div class="flex flex-col gap-1">
+          <dt class="text-muted-foreground text-sm">Author</dt>
+          <dd class="m-0 font-medium">
+            {{ currentIssue.createdByName || currentIssue.createdBy }}
+          </dd>
+        </div>
+        <div class="flex flex-col gap-1">
+          <dt class="text-muted-foreground text-sm">Assigned to</dt>
+          <dd class="m-0 font-medium">
+            {{ currentIssue.assignedToUserName || 'Unassigned' }}
+          </dd>
+        </div>
+        <div class="flex flex-col gap-1">
+          <dt class="text-muted-foreground text-sm">Status</dt>
+          <dd class="m-0">
+            <span
+              hlmBadge
+              [variant]="mapBadgeSeverity(getIssueStatusSeverity(currentIssue.status))"
+            >
+              {{ getIssueStatusLabel(currentIssue.status) }}
+            </span>
+          </dd>
+        </div>
+        <div class="flex flex-col gap-1">
+          <dt class="text-muted-foreground text-sm">Priority</dt>
+          <dd class="m-0">
+            <span
+              hlmBadge
+              [variant]="
+                mapBadgeSeverity(getIssuePrioritySeverity(currentIssue.priority))
+              "
+            >
+              {{ getIssuePriorityLabel(currentIssue.priority) }}
+            </span>
+          </dd>
+        </div>
+        <div class="flex flex-col gap-1">
+          <dt class="text-muted-foreground text-sm">Created at</dt>
+          <dd class="m-0">
+            {{ currentIssue.createdAt | date: 'dd.MM.yyyy HH:mm' }}
+          </dd>
+        </div>
+        <div class="flex flex-col gap-1">
+          <dt class="text-muted-foreground text-sm">Last activity</dt>
+          <dd class="m-0">
+            {{ currentIssue.lastActivityAt | date: 'dd.MM.yyyy HH:mm' }}
+          </dd>
+        </div>
+      </dl>
+
+      <div class="flex flex-col gap-4">
+        <hlm-card>
+          <div hlmCardHeader>
+            <h4 hlmCardTitle>Description</h4>
+          </div>
+          <div hlmCardContent>
+            <p class="m-0 whitespace-pre-wrap">{{ currentIssue.description }}</p>
+          </div>
+        </hlm-card>
+
+        <hlm-card>
+          <div hlmCardHeader>
+            <h4 hlmCardTitle>Acceptance criteria</h4>
+          </div>
+          <div hlmCardContent>
+            @if (currentIssue.acceptanceCriteria.length > 0) {
+              <ul class="m-0 flex list-disc flex-col gap-2 pl-5">
+                @for (
+                  criterion of currentIssue.acceptanceCriteria;
+                  track criterion.id
+                ) {
+                  <li>{{ criterion.content }}</li>
+                }
+              </ul>
+            } @else {
+              <p class="text-muted-foreground m-0">No acceptance criteria defined</p>
+            }
+          </div>
+        </hlm-card>
+
+        <hlm-tabs [tab]="activeTab()" (tabActivated)="onTabChange($event)">
+          <div hlmTabsList>
+            <button type="button" hlmTabsTrigger="comments">Comments</button>
+            <button type="button" hlmTabsTrigger="attachments">Attachments</button>
+            <button type="button" hlmTabsTrigger="history">History</button>
+          </div>
+          <div hlmTabsContent="comments">
+            @if (activeTab() === 'comments') {
+              <app-issue-comments-tab [issueId]="currentIssue.id" />
+            }
+          </div>
+          <div hlmTabsContent="attachments">
+            @if (activeTab() === 'attachments') {
+              <app-issue-attachments-tab [issueId]="currentIssue.id" />
+            }
+          </div>
+          <div hlmTabsContent="history">
+            @if (activeTab() === 'history') {
+              <app-issue-history-tab [issueId]="currentIssue.id" />
+            }
+          </div>
+        </hlm-tabs>
+      </div>
+    }
+  </div>
+</hlm-card>

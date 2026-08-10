@@ -1,0 +1,52 @@
+import { booleanAttribute, Component, input } from '@angular/core';
+import { RouterLink } from '@angular/router';
+import { HlmButtonImports } from '@spartan/ui/button';
+
+@Component({
+  selector: 'app-auth-page',
+  host: { class: 'flex min-h-0 flex-1 flex-col' },
+  imports: [...HlmButtonImports, RouterLink],
+  template: `
+    <div class="flex flex-1 flex-col items-center justify-center px-4 py-8 md:py-12">
+      <div
+        class="border-border bg-background w-full rounded-2xl border p-6 shadow-sm md:p-8"
+        [class.max-w-lg]="wide()"
+        [class.max-w-md]="!wide()"
+      >
+        <header class="mb-6 text-center sm:text-left">
+          <h1 class="text-foreground m-0 text-2xl font-semibold tracking-tight">
+            {{ title() }}
+          </h1>
+          @if (subtitle()) {
+            <p class="text-muted-foreground m-0 mt-2 text-sm leading-relaxed">
+              {{ subtitle() }}
+            </p>
+          }
+        </header>
+
+        <ng-content />
+
+        @if (footerPrompt() && footerLinkLabel() && footerRoute()) {
+          <div class="border-border mt-8 border-t pt-6 text-center">
+            <p
+              class="text-muted-foreground m-0 flex flex-wrap items-center justify-center gap-x-1 gap-y-2 text-sm leading-normal"
+            >
+              <span>{{ footerPrompt() }}</span>
+              <a hlmBtn variant="link" [routerLink]="footerRoute()">
+                {{ footerLinkLabel() }}
+              </a>
+            </p>
+          </div>
+        }
+      </div>
+    </div>
+  `
+})
+export class AuthPageComponent {
+  readonly title = input.required<string>();
+  readonly subtitle = input('');
+  readonly wide = input(false, { transform: booleanAttribute });
+  readonly footerPrompt = input('');
+  readonly footerLinkLabel = input('');
+  readonly footerRoute = input<string | string[]>('');
+}

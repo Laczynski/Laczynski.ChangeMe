@@ -1,0 +1,82 @@
+<section hlmCard class="mb-4">
+  <div hlmCardHeader>
+    <h1 hlmCardTitle>Create Role</h1>
+    <p hlmCardDescription>Define a custom role and its permissions</p>
+  </div>
+  <div hlmCardContent>
+    <div class="mb-4 flex flex-wrap items-center gap-2">
+      <app-back-button label="Back to roles list" [route]="['/roles']" />
+    </div>
+
+    <form class="flex flex-col gap-4" [formGroup]="form" (ngSubmit)="onSubmit()">
+      <section hlmCard>
+        <div hlmCardHeader>
+          <h2 hlmCardTitle>Role details</h2>
+        </div>
+        <div hlmCardContent>
+          <div hlmField>
+            <label hlmFieldLabel for="name">Name</label>
+            <input id="name" type="text" hlmInput [formControl]="form.controls.name" />
+            <hlm-field-error validator="required">Name is required.</hlm-field-error>
+            <hlm-field-error validator="minlength">
+              Name must be at least {{ roleConstraints.NAME_MIN_LENGTH }} characters.
+            </hlm-field-error>
+            <hlm-field-error validator="maxlength">
+              Name cannot exceed {{ roleConstraints.NAME_MAX_LENGTH }} characters.
+            </hlm-field-error>
+          </div>
+
+          <div hlmField class="mt-4">
+            <label hlmFieldLabel for="description">Description</label>
+            <textarea
+              id="description"
+              hlmTextarea
+              rows="3"
+              [formControl]="form.controls.description"
+            ></textarea>
+            <hlm-field-error validator="maxlength">
+              {{ RoleMessages.descriptionTooLong }}
+            </hlm-field-error>
+          </div>
+        </div>
+      </section>
+
+      <section hlmCard>
+        <div hlmCardHeader>
+          <h2 hlmCardTitle>Permissions</h2>
+        </div>
+        <div hlmCardContent>
+          <app-permission-checklist
+            [catalog]="catalog()"
+            [control]="form.controls.permissionCodes"
+            [showFormError]="permissionsError()"
+          />
+        </div>
+      </section>
+
+      @if (submitError()) {
+        <div hlmAlert variant="destructive">
+          <p hlmAlertDescription>{{ submitError() }}</p>
+        </div>
+      }
+
+      <div class="flex flex-wrap items-center justify-end gap-2">
+        <button type="button" hlmBtn variant="outline" (click)="cancel()">
+          Cancel
+        </button>
+        <button type="submit" hlmBtn [disabled]="isSubmitting()">
+          @if (isSubmitting()) {
+            <ng-icon
+              name="lucideLoader2"
+              class="motion-safe:animate-spin"
+              aria-hidden="true"
+            />
+          } @else {
+            <ng-icon name="lucideCheck" aria-hidden="true" />
+          }
+          {{ isSubmitting() ? 'Creating role...' : 'Create role' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</section>

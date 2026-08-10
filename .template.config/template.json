@@ -2,10 +2,10 @@
   "$schema": "https://json.schemastore.org/template",
   "author": "Damian Łączyński",
   "classifications": ["Web", "API", "SPA"],
-  "identity": "ChangeMe.FullStack",
-  "name": "ChangeMe full-stack",
-  "shortName": "changeme",
-  "sourceName": "ChangeMe",
+  "identity": "Laczynski.Template.FullStack",
+  "name": "Laczynski full-stack",
+  "shortName": "laczynski-fullstack",
+  "sourceName": "Template",
   "preferNameDirectory": true,
   "tags": {
     "language": "C#",
@@ -42,7 +42,7 @@
       "identifier": "upperCaseInvariant"
     }
   },
-  "primaryOutputs": [{ "path": "src/ChangeMe.Backend/ChangeMe.Backend.slnx" }],
+  "primaryOutputs": [{ "path": "src/Template.Backend/Template.Backend.slnx" }],
   "sources": [
     {
       "source": "./",

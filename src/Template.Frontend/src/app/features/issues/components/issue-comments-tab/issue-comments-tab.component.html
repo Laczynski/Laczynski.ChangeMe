@@ -1,0 +1,80 @@
+<div class="flex flex-col gap-4 pt-2">
+  <form [formGroup]="commentForm" (ngSubmit)="addComment()">
+    <div hlmField>
+      <label hlmFieldLabel for="comment-content">Add a comment</label>
+      <textarea
+        id="comment-content"
+        hlmTextarea
+        [formControl]="commentForm.controls.content"
+        rows="4"
+      ></textarea>
+      <hlm-field-error validator="required">
+        Comment content is required
+      </hlm-field-error>
+      <hlm-field-error validator="maxlength">
+        Comment must be at most
+        {{ issueCommentConstraints.CONTENT_MAX_LENGTH }} characters
+      </hlm-field-error>
+    </div>
+
+    @if (commentError()) {
+      <hlm-alert variant="destructive" class="mt-2">
+        <p hlmAlertDescription>{{ commentError() }}</p>
+      </hlm-alert>
+    }
+
+    <div class="mt-3 flex justify-end">
+      <button type="submit" hlmBtn [disabled]="isSubmittingComment()">
+        @if (isSubmittingComment()) {
+          <ng-icon name="lucideLoader2" class="animate-spin" />
+        } @else {
+          <ng-icon name="lucideSend" />
+        }
+        {{ isSubmittingComment() ? 'Adding comment...' : 'Add comment' }}
+      </button>
+    </div>
+  </form>
+
+  @if (loadError()) {
+    <hlm-alert variant="destructive">
+      <p hlmAlertDescription>{{ loadError() }}</p>
+    </hlm-alert>
+  } @else if (isLoadingComments()) {
+    <hlm-spinner aria-label="Loading comments" class="size-8" />
+  } @else if (comments().length > 0) {
+    <div class="flex flex-col gap-3">
+      @for (comment of comments(); track comment.id) {
+        <article class="rounded-lg border border-border p-4">
+          <header class="mb-2 flex flex-wrap items-baseline justify-between gap-2">
+            <span class="font-medium">
+              {{ comment.authorName || comment.authorUserId }}
+            </span>
+            <time class="text-muted-foreground text-sm">
+              {{ comment.createdAt | date: 'dd.MM.yyyy HH:mm' }}
+            </time>
+          </header>
+          <p class="m-0 whitespace-pre-wrap">{{ comment.content }}</p>
+        </article>
+      }
+    </div>
+  } @else if (hasLoadedComments()) {
+    <p class="text-muted-foreground m-0">No comments yet</p>
+  }
+
+  @if (canShowMoreComments()) {
+    <div class="flex justify-center">
+      <button
+        type="button"
+        hlmBtn
+        variant="ghost"
+        [disabled]="isLoadingMoreComments()"
+        (click)="showMoreComments()"
+      >
+        @if (isLoadingMoreComments()) {
+          <ng-icon name="lucideLoader2" class="animate-spin" />
+        }
+        Show more
+      </button>
+    </div>
+  }
+</div>

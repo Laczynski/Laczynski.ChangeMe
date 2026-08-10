@@ -1,0 +1,27 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Folder Name="/Solution Items/">
+    <File Path=".dockerignore" />
+    <File Path=".editorconfig" />
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Packages.props" />
+    <File Path="Dockerfile" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/Template.Backend.Domain/Template.Backend.Domain.csproj" />
+    <Project Path="src/Template.Backend.Infrastructure/Template.Backend.Infrastructure.csproj" />
+    <Project Path="src/Template.Backend.UseCases/Template.Backend.UseCases.csproj" />
+    <Project Path="src/Template.Backend.Web/Template.Backend.Web.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Template.Backend.IntegrationTests/Template.Backend.IntegrationTests.csproj" />
+    <Project Path="tests/Template.Backend.UnitTests/Template.Backend.UnitTests.csproj" />
+  </Folder>
+  <Folder Name="/tools/">
+    <Project Path="tools/Template.Backend.DataGenerator/Template.Backend.DataGenerator.csproj" />
+  </Folder>
+</Solution>

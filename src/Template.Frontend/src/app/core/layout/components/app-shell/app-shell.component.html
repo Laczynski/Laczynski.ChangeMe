@@ -1,0 +1,173 @@
+<div class="bg-background flex min-h-screen w-full">
+  @if (showAuthenticatedChrome()) {
+    <aside
+      class="bg-background sticky top-0 hidden h-screen shrink-0 flex-col border-r border-border transition-[width] duration-200 ease-in-out md:flex"
+      [class.w-16]="layoutService.$sidebarCollapsed()"
+      [class.w-60]="!layoutService.$sidebarCollapsed()"
+      [attr.aria-expanded]="!layoutService.$sidebarCollapsed()"
+    >
+      <div
+        class="flex h-14 shrink-0 items-center border-b border-border px-3"
+        [class.justify-center]="layoutService.$sidebarCollapsed()"
+        [class.gap-2]="!layoutService.$sidebarCollapsed()"
+      >
+        <ng-icon name="lucideZap" class="text-primary text-xl" aria-hidden="true" />
+        @if (!layoutService.$sidebarCollapsed()) {
+          <span class="text-foreground truncate text-lg font-semibold">Template</span>
+        }
+      </div>
+
+      <div class="flex min-h-0 flex-1 flex-col overflow-y-auto">
+        <app-sidebar-nav
+          [items]="authenticatedNavItems()"
+          [collapsed]="layoutService.$sidebarCollapsed()"
+        />
+      </div>
+    </aside>
+
+    <hlm-sheet
+      class="md:hidden"
+      side="left"
+      [state]="mobileNavState()"
+      (stateChanged)="onMobileNavStateChanged($event)"
+    >
+      <hlm-sheet-content
+        *hlmSheetPortal
+        class="w-[min(100vw,18rem)]"
+        [showCloseButton]="false"
+      >
+        <div hlmSheetHeader>
+          <h2 hlmSheetTitle>Template</h2>
+        </div>
+        <app-sidebar-nav
+          [items]="authenticatedNavItems()"
+          [collapsed]="false"
+          (navigate)="layoutService.closeMobileNav()"
+        />
+      </hlm-sheet-content>
+    </hlm-sheet>
+  }
+
+  <div class="flex min-w-0 flex-1 flex-col">
+    @if (showAuthenticatedChrome()) {
+      <header
+        class="bg-background sticky top-0 z-20 flex h-14 shrink-0 items-center gap-2 border-b border-border px-3 md:px-4"
+      >
+        <button
+          type="button"
+          hlmBtn
+          variant="ghost"
+          size="icon"
+          [attr.aria-label]="
+            isDesktop()
+              ? layoutService.$sidebarCollapsed()
+                ? 'Expand sidebar'
+                : 'Collapse sidebar'
+              : 'Open navigation menu'
+          "
+          (click)="onMenuToggle()"
+        >
+          <ng-icon
+            [name]="
+              isDesktop() && layoutService.$sidebarCollapsed()
+                ? 'lucideChevronRight'
+                : 'lucideMenu'
+            "
+            aria-hidden="true"
+          />
+        </button>
+
+        <span class="text-foreground truncate text-lg font-semibold md:hidden">
+          Template
+        </span>
+
+        <div class="flex-1"></div>
+
+        <div class="flex flex-wrap items-center gap-1 sm:gap-2">
+          <app-notifications-bell />
+          <button
+            type="button"
+            hlmBtn
+            variant="ghost"
+            size="icon"
+            [attr.aria-label]="
+              layoutService.$themeMode() === 'dark'
+                ? 'Switch to light mode'
+                : 'Switch to dark mode'
+            "
+            (click)="layoutService.toggleTheme()"
+          >
+            <ng-icon
+              [name]="
+                layoutService.$themeMode() === 'dark' ? 'lucideSun' : 'lucideMoon'
+              "
+              aria-hidden="true"
+            />
+          </button>
+          <span
+            class="text-muted-foreground hidden max-w-[12rem] truncate text-sm lg:inline"
+          >
+            {{ formatUserReference(currentUser()!) }}
+          </span>
+          <button
+            type="button"
+            hlmBtn
+            variant="outline"
+            size="sm"
+            class="hidden sm:inline-flex"
+            (click)="logout()"
+          >
+            <ng-icon name="lucideLogOut" aria-hidden="true" />
+            Logout
+          </button>
+          <button
+            type="button"
+            hlmBtn
+            variant="ghost"
+            size="icon"
+            class="sm:hidden"
+            aria-label="Logout"
+            (click)="logout()"
+          >
+            <ng-icon name="lucideLogOut" aria-hidden="true" />
+          </button>
+        </div>
+      </header>
+    } @else {
+      <header
+        class="bg-background flex h-14 shrink-0 items-center justify-between gap-4 border-b border-border px-4"
+      >
+        <span class="text-foreground flex items-center gap-2 text-lg font-semibold">
+          <ng-icon name="lucideZap" class="text-primary" aria-hidden="true" />
+          Template
+        </span>
+        <nav class="flex items-center gap-2" aria-label="Account navigation">
+          <button
+            type="button"
+            hlmBtn
+            variant="ghost"
+            size="icon"
+            [attr.aria-label]="
+              layoutService.$themeMode() === 'dark'
+                ? 'Switch to light mode'
+                : 'Switch to dark mode'
+            "
+            (click)="layoutService.toggleTheme()"
+          >
+            <ng-icon
+              [name]="
+                layoutService.$themeMode() === 'dark' ? 'lucideSun' : 'lucideMoon'
+              "
+              aria-hidden="true"
+            />
+          </button>
+          <a hlmBtn variant="ghost" [routerLink]="['/login']">Login</a>
+        </nav>
+      </header>
+    }
+
+    <main class="mx-auto flex w-full max-w-6xl min-h-0 flex-1 flex-col p-4 md:p-6">
+      <router-outlet />
+    </main>
+  </div>
+</div>

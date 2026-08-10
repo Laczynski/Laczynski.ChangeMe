@@ -1,0 +1,68 @@
+<div class="pt-2">
+  @if (loadError()) {
+    <hlm-alert variant="destructive">
+      <p hlmAlertDescription>{{ loadError() }}</p>
+    </hlm-alert>
+  } @else if (isLoadingHistory()) {
+    <hlm-spinner aria-label="Loading history" class="size-8" />
+  } @else if (historyEntries().length > 0) {
+    <ol class="relative m-0 flex list-none flex-col border-s-2 border-border ps-0">
+      @for (event of historyEntries(); track event.id) {
+        @let visual = getIssueHistoryEventVisual(event.eventType);
+        <li class="relative pb-6 ps-8 last:pb-0">
+          <span
+            class="absolute -start-4 flex size-8 items-center justify-center rounded-full"
+            [class]="visual.markerClass"
+          >
+            <ng-icon [name]="visual.icon" class="text-sm" />
+          </span>
+          <div class="flex flex-col gap-2">
+            <span hlmBadge [variant]="mapBadgeSeverity(visual.tagSeverity)">
+              {{ event.summary }}
+            </span>
+            <div class="flex items-center gap-2">
+              <time class="text-muted-foreground shrink-0 text-sm whitespace-nowrap">
+                {{ event.createdAt | date: 'dd.MM.yyyy HH:mm' }}
+              </time>
+              <span class="mx-1">·</span>
+              <p class="text-muted-foreground m-0 min-w-0 text-sm">
+                {{ event.actorName || event.actorUserId }}
+              </p>
+            </div>
+            @if (
+              (event.previousValue || event.currentValue) &&
+              event.eventType !== 'DESCRIPTION_CHANGED'
+            ) {
+              <p class="text-muted-foreground m-0 text-sm">
+                <span class="font-medium">Before:</span>
+                {{ event.previousValue || '-' }}
+                <span class="mx-1">·</span>
+                <span class="font-medium">After:</span>
+                {{ event.currentValue || '-' }}
+              </p>
+            }
+          </div>
+        </li>
+      }
+    </ol>
+  } @else if (hasLoadedHistory()) {
+    <p class="text-muted-foreground m-0">No history entries found</p>
+  }
+
+  @if (canShowMoreHistory()) {
+    <div class="mt-4 flex justify-center">
+      <button
+        type="button"
+        hlmBtn
+        variant="ghost"
+        [disabled]="isLoadingMoreHistory()"
+        (click)="showMoreHistory()"
+      >
+        @if (isLoadingMoreHistory()) {
+          <ng-icon name="lucideLoader2" class="animate-spin" />
+        }
+        Show more
+      </button>
+    </div>
+  }
+</div>

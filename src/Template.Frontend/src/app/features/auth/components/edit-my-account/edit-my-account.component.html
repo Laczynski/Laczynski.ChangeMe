@@ -1,0 +1,93 @@
+<section hlmCard class="mb-4">
+  <div hlmCardHeader>
+    <h2 hlmCardTitle>Edit profile</h2>
+    <p hlmCardDescription>Update your name.</p>
+  </div>
+
+  <div hlmCardContent>
+    <div class="mb-4 flex flex-wrap items-center gap-2">
+      <app-back-button label="Back to my account" [route]="['/account']" />
+    </div>
+
+    @if (isLoading()) {
+      <div class="flex flex-col items-center gap-2 py-8">
+        <hlm-spinner aria-label="Loading profile" />
+        <p class="text-muted-foreground m-0 text-sm">Loading profile...</p>
+      </div>
+    } @else if (loadError()) {
+      <div class="flex flex-col items-center gap-2">
+        <hlm-alert variant="destructive">
+          <p hlmAlertDescription>{{ loadError() }}</p>
+        </hlm-alert>
+        <button
+          type="button"
+          hlmBtn
+          variant="outline"
+          size="sm"
+          [disabled]="isLoading()"
+          (click)="reload()"
+        >
+          @if (isLoading()) {
+            <hlm-spinner aria-label="Retrying" />
+          } @else {
+            <ng-icon name="lucideRefreshCw" aria-hidden="true" />
+          }
+          Try again
+        </button>
+      </div>
+    } @else {
+      <form class="flex flex-col gap-4" [formGroup]="form" (ngSubmit)="onSubmit()">
+        <details open class="border-border rounded-lg border">
+          <summary class="cursor-pointer px-4 py-3 font-medium">Profile</summary>
+          <div class="border-border border-t px-4 py-3">
+            <div class="grid gap-4 sm:grid-cols-2">
+              <div hlmField>
+                <label hlmFieldLabel for="firstName">First name</label>
+                <input
+                  id="firstName"
+                  type="text"
+                  hlmInput
+                  [formControl]="form.controls.firstName"
+                />
+                <hlm-field-error validator="required">
+                  First name is required.
+                </hlm-field-error>
+              </div>
+
+              <div hlmField>
+                <label hlmFieldLabel for="lastName">Last name</label>
+                <input
+                  id="lastName"
+                  type="text"
+                  hlmInput
+                  [formControl]="form.controls.lastName"
+                />
+                <hlm-field-error validator="required">
+                  Last name is required.
+                </hlm-field-error>
+              </div>
+            </div>
+          </div>
+        </details>
+
+        @if (submitError()) {
+          <hlm-alert variant="destructive">
+            <p hlmAlertDescription>{{ submitError() }}</p>
+          </hlm-alert>
+        }
+
+        <div class="flex flex-wrap items-center justify-end gap-2">
+          <a hlmBtn variant="outline" [routerLink]="['/account']">Cancel</a>
+          <button type="submit" hlmBtn [disabled]="isSubmitting()">
+            @if (isSubmitting()) {
+              <hlm-spinner aria-label="Saving" />
+            } @else {
+              <ng-icon name="lucideSave" aria-hidden="true" />
+            }
+            {{ isSubmitting() ? 'Saving...' : 'Save changes' }}
+          </button>
+        </div>
+      </form>
+    }
+  </div>
+</section>

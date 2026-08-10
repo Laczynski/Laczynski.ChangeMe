@@ -1,0 +1,71 @@
+<app-auth-page
+  title="Welcome back"
+  subtitle="Sign in to create, edit and delete issues."
+>
+  <form class="flex flex-col gap-4" [formGroup]="form" (ngSubmit)="onSubmit()">
+    <div hlmField>
+      <label hlmFieldLabel for="email">Email</label>
+      <input
+        id="email"
+        type="email"
+        hlmInput
+        autocomplete="email"
+        [formControl]="form.controls.email"
+      />
+      <hlm-field-error validator="required">Email is required.</hlm-field-error>
+      <hlm-field-error validator="email">Enter a valid email address.</hlm-field-error>
+      <hlm-field-error validator="maxlength">
+        Email must be less than {{ authConstraints.EMAIL_MAX_LENGTH }} characters long.
+      </hlm-field-error>
+    </div>
+
+    <div hlmField>
+      <label hlmFieldLabel for="password">Password</label>
+      <div class="relative">
+        <input
+          id="password"
+          hlmInput
+          [type]="passwordMasked ? 'password' : 'text'"
+          autocomplete="current-password"
+          class="pe-9"
+          [formControl]="form.controls.password"
+        />
+        <button
+          type="button"
+          class="text-muted-foreground hover:text-foreground absolute inset-y-0 end-0 flex items-center border-0 bg-transparent px-2.5"
+          [attr.aria-label]="passwordMasked ? 'Show password' : 'Hide password'"
+          (click)="passwordMasked = !passwordMasked"
+        >
+          <ng-icon
+            [name]="passwordMasked ? 'lucideEye' : 'lucideEyeOff'"
+            aria-hidden="true"
+          />
+        </button>
+      </div>
+      <hlm-field-error validator="required">Password is required.</hlm-field-error>
+      <hlm-field-error validator="minlength">
+        Password must be at least {{ authConstraints.PASSWORD_MIN_LENGTH }} characters
+        long.
+      </hlm-field-error>
+      <hlm-field-error validator="maxlength">
+        Password must be less than {{ authConstraints.PASSWORD_MAX_LENGTH }} characters
+        long.
+      </hlm-field-error>
+    </div>
+
+    @if (errorMessage()) {
+      <hlm-alert variant="destructive">
+        <p hlmAlertDescription>{{ errorMessage() }}</p>
+      </hlm-alert>
+    }
+
+    <button type="submit" hlmBtn class="w-full" [disabled]="isSubmitting()">
+      @if (isSubmitting()) {
+        <hlm-spinner aria-label="Signing in" />
+      } @else {
+        <ng-icon name="lucideLogIn" aria-hidden="true" />
+      }
+      {{ isSubmitting() ? 'Signing in...' : 'Sign in' }}
+    </button>
+  </form>
+</app-auth-page>

@@ -1,0 +1,284 @@
+<section hlmCard class="mb-4">
+  <div hlmCardHeader>
+    <h1 hlmCardTitle>{{ pageTitle() }}</h1>
+    <p hlmCardDescription>Review account profile, roles, and active sessions.</p>
+  </div>
+  <div hlmCardContent>
+    <div class="mb-4 flex flex-wrap items-center gap-2">
+      <app-back-button label="Back to users list" [route]="['/users']" />
+      @if (user(); as profile) {
+        @if (canManageUsers()) {
+          <a
+            hlmBtn
+            variant="outline"
+            size="sm"
+            [routerLink]="['/users', profile.id, 'edit']"
+          >
+            <ng-icon name="lucidePencil" aria-hidden="true" />
+            Edit
+          </a>
+        }
+        @if (canDeactivateUsers()) {
+          @if (!profile.deactivated) {
+            <button
+              type="button"
+              hlmBtn
+              variant="destructive"
+              size="sm"
+              (click)="confirmDeactivate()"
+            >
+              <ng-icon name="lucideBan" aria-hidden="true" />
+              Deactivate
+            </button>
+          } @else {
+            <button
+              type="button"
+              hlmBtn
+              variant="outline"
+              size="sm"
+              (click)="confirmActivate()"
+            >
+              <ng-icon name="lucideCheck" aria-hidden="true" />
+              Activate
+            </button>
+          }
+        }
+        @if (canManageSessions() && !profile.deactivated) {
+          <button
+            type="button"
+            hlmBtn
+            variant="destructive"
+            size="sm"
+            (click)="confirmRevokeAllSessions()"
+          >
+            <ng-icon name="lucideXCircle" aria-hidden="true" />
+            Revoke all sessions
+          </button>
+        }
+      }
+    </div>
+
+    @if (isLoading()) {
+      <div class="flex flex-col items-center gap-2 py-8">
+        <hlm-spinner aria-label="Loading user details" />
+        <p class="text-muted-foreground m-0 text-sm">Loading user details...</p>
+      </div>
+    } @else if (errorMessage()) {
+      <div class="flex flex-col items-center gap-2">
+        <div hlmAlert variant="destructive">
+          <p hlmAlertDescription>{{ errorMessage() }}</p>
+        </div>
+        <button
+          type="button"
+          hlmBtn
+          size="sm"
+          variant="outline"
+          [disabled]="isLoading()"
+          (click)="refresh()"
+        >
+          @if (isLoading()) {
+            <ng-icon
+              name="lucideLoader2"
+              class="motion-safe:animate-spin"
+              aria-hidden="true"
+            />
+          } @else {
+            <ng-icon name="lucideRefreshCw" aria-hidden="true" />
+          }
+          Try again
+        </button>
+      </div>
+    } @else if (user(); as profile) {
+      <dl
+        class="border-border mb-6 grid gap-4 rounded-lg border p-4 sm:grid-cols-2 lg:grid-cols-3"
+      >
+        <div class="flex flex-col gap-1">
+          <dt class="text-muted-foreground text-sm">First name</dt>
+          <dd class="m-0 font-medium">{{ profile.firstName }}</dd>
+        </div>
+        <div class="flex flex-col gap-1">
+          <dt class="text-muted-foreground text-sm">Last name</dt>
+          <dd class="m-0 font-medium">{{ profile.lastName }}</dd>
+        </div>
+        <div class="flex flex-col gap-1">
+          <dt class="text-muted-foreground text-sm">Email</dt>
+          <dd class="m-0 font-medium">{{ profile.email }}</dd>
+        </div>
+        <div class="flex flex-col gap-1">
+          <dt class="text-muted-foreground text-sm">Status</dt>
+          <dd class="m-0">
+            <span
+              hlmBadge
+              [variant]="mapBadgeSeverity(getUserStatusSeverity(profile.status))"
+            >
+              {{ getUserStatusLabel(profile.status) }}
+            </span>
+          </dd>
+        </div>
+        <div class="flex flex-col gap-1">
+          <dt class="text-muted-foreground text-sm">Member since</dt>
+          <dd class="m-0">{{ profile.memberSince | date: 'dd.MM.yyyy HH:mm' }}</dd>
+        </div>
+        <div class="flex flex-col gap-1">
+          <dt class="text-muted-foreground text-sm">Last sign-in</dt>
+          <dd class="m-0">
+            @if (profile.lastSignInAt) {
+              {{ profile.lastSignInAt | date: 'dd.MM.yyyy HH:mm' }}
+            } @else {
+              {{ UserMessages.neverSignedIn }}
+            }
+          </dd>
+        </div>
+        @if (profile.deactivated && profile.deactivatedAt) {
+          <div class="flex flex-col gap-1">
+            <dt class="text-muted-foreground text-sm">Deactivated at</dt>
+            <dd class="m-0">{{ profile.deactivatedAt | date: 'dd.MM.yyyy HH:mm' }}</dd>
+          </div>
+        }
+      </dl>
+
+      <section hlmCard class="mb-4">
+        <div hlmCardHeader>
+          <h2 hlmCardTitle>Roles</h2>
+        </div>
+        <div hlmCardContent>
+          @if (profile.roles.length === 0) {
+            <p class="text-muted-foreground m-0 text-sm">
+              {{ UserMessages.noRolesAssigned }}
+            </p>
+          } @else {
+            <div class="flex flex-wrap gap-2">
+              @for (role of profile.roles; track role.id) {
+                <a [routerLink]="['/roles', role.id]">
+                  <span hlmBadge variant="secondary">
+                    {{ role.isSystem ? role.name + ' (System)' : role.name }}
+                  </span>
+                </a>
+              }
+            </div>
+          }
+        </div>
+      </section>
+
+      <app-effective-permissions [permissions]="profile.effectivePermissions" />
+
+      @if (canViewSessions() && !profile.deactivated) {
+        <section hlmCard class="mt-4">
+          <div hlmCardHeader>
+            <h2 hlmCardTitle>Active sessions</h2>
+          </div>
+          <div hlmCardContent>
+            @if (isLoadingSessions()) {
+              <div class="flex justify-center py-4">
+                <hlm-spinner aria-label="Loading sessions" />
+              </div>
+            } @else if (sessions().length === 0) {
+              <p class="text-muted-foreground m-0 text-sm">
+                {{ UserMessages.noActiveSessions }}
+              </p>
+            } @else {
+              <div class="overflow-x-auto rounded-md border">
+                <table class="w-full caption-bottom text-sm">
+                  <thead class="[&_tr]:border-b">
+                    <tr class="border-b">
+                      <th
+                        scope="col"
+                        class="text-muted-foreground h-10 px-4 text-left align-middle font-medium"
+                      >
+                        Device / browser
+                      </th>
+                      <th
+                        scope="col"
+                        class="text-muted-foreground h-10 px-4 text-left align-middle font-medium"
+                      >
+                        Sign-in method
+                      </th>
+                      <th
+                        scope="col"
+                        class="text-muted-foreground h-10 px-4 text-left align-middle font-medium"
+                      >
+                        IP address
+                      </th>
+                      <th
+                        scope="col"
+                        class="text-muted-foreground h-10 px-4 text-left align-middle font-medium"
+                      >
+                        Signed in
+                      </th>
+                      <th
+                        scope="col"
+                        class="text-muted-foreground h-10 px-4 text-left align-middle font-medium"
+                      >
+                        Last activity
+                      </th>
+                      @if (canManageSessions()) {
+                        <th
+                          scope="col"
+                          class="text-muted-foreground h-10 px-4 text-left align-middle font-medium"
+                        >
+                          Actions
+                        </th>
+                      }
+                    </tr>
+                  </thead>
+                  <tbody class="[&_tr:last-child]:border-0">
+                    @for (session of sessions(); track session.id) {
+                      <tr class="hover:bg-muted/50 border-b transition-colors">
+                        <td class="p-4 align-middle">
+                          {{ session.deviceBrowserLabel }}
+                        </td>
+                        <td class="p-4 align-middle">{{ session.signInMethod }}</td>
+                        <td class="p-4 align-middle">
+                          {{ formatIpAddress(session.ipAddress) }}
+                        </td>
+                        <td class="p-4 align-middle">
+                          {{ session.signedInAt | date: 'dd.MM.yyyy HH:mm' }}
+                        </td>
+                        <td class="p-4 align-middle">
+                          {{ session.lastActivityAt | date: 'dd.MM.yyyy HH:mm' }}
+                        </td>
+                        @if (canManageSessions()) {
+                          <td class="p-4 align-middle">
+                            <button
+                              type="button"
+                              hlmBtn
+                              variant="outline"
+                              size="sm"
+                              class="text-destructive hover:text-destructive"
+                              [disabled]="isRevokePending(session.id)"
+                              (click)="confirmRevokeSession(session)"
+                            >
+                              @if (isRevokePending(session.id)) {
+                                <ng-icon
+                                  name="lucideLoader2"
+                                  class="motion-safe:animate-spin"
+                                  aria-hidden="true"
+                                />
+                              } @else {
+                                <ng-icon name="lucideX" aria-hidden="true" />
+                              }
+                              Revoke
+                            </button>
+                          </td>
+                        }
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+
+              @if (hasLoadedSessions()) {
+                <app-grid-paginator
+                  [totalCount]="sessionsTotalCount()"
+                  [skip]="sessionsGrid().skip ?? 0"
+                  [take]="sessionsGrid().take ?? DEFAULT_GRID_PAGE_SIZE"
+                  (pageChange)="onSessionsPageChange($event)"
+                />
+              }
+            }
+          </div>
+        </section>
+      }
+    }
+  </div>
+</section>

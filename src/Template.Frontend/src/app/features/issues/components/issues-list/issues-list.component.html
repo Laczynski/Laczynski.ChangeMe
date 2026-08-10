@@ -1,0 +1,190 @@
+<section hlmCard>
+  <div hlmCardHeader>
+    <h1 hlmCardTitle>Issues list</h1>
+    <p hlmCardDescription>Browse, filter and monitor issues.</p>
+  </div>
+  <div hlmCardContent>
+    <div class="mb-4 flex justify-end">
+      <a hlmBtn [routerLink]="['/issues', 'create']">
+        <ng-icon name="lucidePlus" aria-hidden="true" />
+        Add issue
+      </a>
+    </div>
+
+    @if (errorMessage()) {
+      <hlm-alert variant="destructive" class="mb-4">
+        <p hlmAlertDescription>{{ errorMessage() }}</p>
+      </hlm-alert>
+    }
+
+    <dg-spartan-data-grid [grid]="grid" dataKey="id" searchPlaceholder="Search issues…">
+      <ng-template
+        dgColumn="Title"
+        header="Title"
+        [filter]="{ type: 'text', placeholder: 'Title contains…' }"
+        let-issue
+      >
+        <a
+          class="text-primary font-medium hover:underline"
+          [routerLink]="['/issues', issue.id]"
+        >
+          {{ issue.title }}
+        </a>
+      </ng-template>
+
+      <ng-template
+        dgColumn="Status"
+        header="Status"
+        [filter]="{ type: 'enum', options: issueStatuses() }"
+        let-issue
+      >
+        <span
+          hlmBadge
+          [variant]="mapBadgeSeverity(getIssueStatusSeverity(issue.status))"
+        >
+          {{ getIssueStatusLabel(issue.status) }}
+        </span>
+      </ng-template>
+
+      <ng-template
+        dgColumn="Priority"
+        header="Priority"
+        [filter]="{ type: 'enum', options: issuePriorities() }"
+        let-issue
+      >
+        <span
+          hlmBadge
+          [variant]="mapBadgeSeverity(getIssuePrioritySeverity(issue.priority))"
+        >
+          {{ getIssuePriorityLabel(issue.priority) }}
+        </span>
+      </ng-template>
+
+      <ng-template
+        dgColumn="AssignedToUserId"
+        header="Assigned to"
+        [sortable]="false"
+        [filter]="assignedToFilter()"
+        let-issue
+      >
+        {{ issue.assignedToUserName || 'Unassigned' }}
+      </ng-template>
+
+      <ng-template
+        dgColumn="CreatedAt"
+        header="Created at"
+        [filter]="{ type: 'date' }"
+        let-issue
+      >
+        {{ issue.createdAt | date: 'dd.MM.yyyy HH:mm' }}
+      </ng-template>
+
+      <ng-template
+        dgColumn="LastActivityAt"
+        header="Last activity"
+        [filter]="{ type: 'date' }"
+        let-issue
+      >
+        {{ issue.lastActivityAt | date: 'dd.MM.yyyy HH:mm' }}
+      </ng-template>
+
+      <ng-template dgColumn="actions" header="" [sortable]="false" let-issue>
+        <div class="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            hlmBtn
+            [variant]="issue.isWatchedByCurrentUser ? 'default' : 'outline'"
+            size="sm"
+            [disabled]="isWatchPending(issue.id)"
+            [hlmTooltip]="getWatchTooltip(issue)"
+            position="top"
+            [attr.aria-label]="getWatchTooltip(issue)"
+            (click)="toggleWatch(issue)"
+          >
+            @if (isWatchPending(issue.id)) {
+              <ng-icon
+                name="lucideLoader2"
+                class="motion-safe:animate-spin"
+                aria-hidden="true"
+              />
+            } @else if (issue.isWatchedByCurrentUser) {
+              <ng-icon name="lucideBellOff" aria-hidden="true" />
+            } @else {
+              <ng-icon name="lucideBell" aria-hidden="true" />
+            }
+            {{ issue.watchersCount }}
+          </button>
+          <button
+            type="button"
+            hlmBtn
+            variant="ghost"
+            size="icon-sm"
+            [hlmDropdownMenuTrigger]="issueActionsMenu"
+            [hlmTooltip]="'Issue actions'"
+            position="top"
+            [attr.aria-label]="'Actions for ' + issue.title"
+            (click)="setIssueActionItems(issue)"
+          >
+            <ng-icon name="lucideEllipsisVertical" aria-hidden="true" />
+          </button>
+        </div>
+      </ng-template>
+
+      <ng-template dgEmpty>
+        <div class="flex flex-col items-center gap-2 py-4">
+          <p class="text-muted-foreground m-0 text-center">{{ emptyMessage() }}</p>
+          <div class="flex flex-wrap items-center gap-2">
+            <a hlmBtn size="sm" [routerLink]="['/issues', 'create']">
+              <ng-icon name="lucidePlus" aria-hidden="true" />
+              Add issue
+            </a>
+            <button
+              type="button"
+              hlmBtn
+              size="sm"
+              variant="outline"
+              (click)="refresh()"
+            >
+              <ng-icon name="lucideRefreshCw" aria-hidden="true" />
+              Refresh
+            </button>
+          </div>
+        </div>
+      </ng-template>
+    </dg-spartan-data-grid>
+  </div>
+</section>
+
+<ng-template #issueActionsMenu>
+  <hlm-dropdown-menu class="w-52">
+    @for (item of issueActionItems(); track $index) {
+      @if (item.separator) {
+        <hlm-dropdown-menu-separator />
+      } @else if (item.routerLink) {
+        <a
+          hlmDropdownMenuItem
+          [routerLink]="item.routerLink"
+          [variant]="item.variant ?? 'default'"
+        >
+          @if (item.icon) {
+            <ng-icon [name]="item.icon" aria-hidden="true" />
+          }
+          {{ item.label }}
+        </a>
+      } @else {
+        <button
+          hlmDropdownMenuItem
+          type="button"
+          [variant]="item.variant ?? 'default'"
+          [disabled]="item.disabled"
+          (click)="item.command?.()"
+        >
+          @if (item.icon) {
+            <ng-icon [name]="item.icon" aria-hidden="true" />
+          }
+          {{ item.label }}
+        </button>
+      }
+    }
+  </hlm-dropdown-menu>
+</ng-template>

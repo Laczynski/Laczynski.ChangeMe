@@ -8,7 +8,7 @@
 
 ASP.NET Core on .NET 10 with FastEndpoints, Mediator source generator request handling, EF Core for persistence, FluentValidation validators declared near endpoints, and xUnit v3 tests. The backend is split into `Web`, `UseCases`, `Domain`, and `Infrastructure`.
 
-For build, run, and test commands from `src/ChangeMe.Backend` or from the repository root (`npm run build:backend`, `npm run test:backend`, and scoped scripts), see `AGENTS.md`.
+For build, run, and test commands from `src/Template.Backend` or from the repository root (`npm run build:backend`, `npm run test:backend`, and scoped scripts), see `AGENTS.md`.
 
 ## Layer ownership
 
@@ -71,7 +71,7 @@ Web/Endpoints/<Feature>/              UseCases/<Feature>/
     └── Utils/                            └── Utils/
 ```
 
-Use a sub-slice when the route nests under a parent resource — for example `/issues/{issueId}/attachments/{attachmentId}` maps to `Issues/Attachments/`. Root CRUD for the aggregate stays at the feature root. Namespace follows the folder path (for example `ChangeMe.Backend.Web.Endpoints.Issues.Attachments`, `ChangeMe.Backend.UseCases.Issues.Attachments.Dtos`).
+Use a sub-slice when the route nests under a parent resource — for example `/issues/{issueId}/attachments/{attachmentId}` maps to `Issues/Attachments/`. Root CRUD for the aggregate stays at the feature root. Namespace follows the folder path (for example `Template.Backend.Web.Endpoints.Issues.Attachments`, `Template.Backend.UseCases.Issues.Attachments.Dtos`).
 
 Keep `Dtos/`, `Utils/`, and `Services/` at the feature root only when they are shared by the root resource and sub-slices. When a type or helper belongs to a single child resource, colocate it under that sub-slice folder.
 
@@ -105,7 +105,7 @@ REST routes are versioned in the URL (`/api/v1/...`). Version and prefix live in
 
 - Handlers live in the same file as their request contract in `UseCases/<Feature>/`.
 - Return `Result<T>` consistently.
-- **Grid list endpoints** (Issues, Users, Roles, and embedded lists such as comments, history, attachments, notifications, sessions, assigned users) accept a `GridQuery` on the request (query parameter `grid`, JSON) and return `GridResult<T>` from `QueryGrid.Abstractions`. Project to a list DTO, then call `ToGridResultAsync` from `QueryGrid.EntityFrameworkCore`. Invalid grid input is handled by the global exception handler — do not catch `GridValidationException` in handlers. Mark searchable DTO properties with `[GridSearchable]`; use `[GridIgnore]` for display-only or non-queryable fields. See `UseCases/Issues/GetAllIssuesQuery.cs` as the reference handler.
+- **Grid list endpoints** (Issues, Users, Roles, and embedded lists such as comments, history, attachments, notifications, sessions, assigned users) accept a `GridQuery` on the request (query parameter `grid`, JSON) and return `GridResult<T>` from `Laczynski.DataGrid.Abstractions`. Project to a list DTO, then call `ToGridResultAsync` from `Laczynski.DataGrid.EntityFrameworkCore`. Invalid grid input is handled by the global exception handler — do not catch `GridValidationException` in handlers. Mark searchable DTO properties with `[GridSearchable]`; use `[GridIgnore]` for display-only or non-queryable fields. See `UseCases/Issues/GetAllIssuesQuery.cs` as the reference handler.
 - Use `ApplicationDbContext` for persistence from the handler layer.
 - After `SaveChangesAsync`, return API DTOs through an existing query via `mediator.Send` — do not instantiate query handlers with `new`.
 - For create commands that return a resource body, wrap the query result in `Result.Created(dto, "/resource/{id}")` so `BaseEndpoint` responds with `201 Created`.
@@ -141,7 +141,7 @@ Infrastructure services (e.g. `UserAuthTokenService`) **stage** EF changes only 
 
 ## Tests
 
-Layer ownership, anti-patterns, and when to skip: [testing-guidelines.md](testing-guidelines.md). Integration tests: `src/ChangeMe.Backend/tests/ChangeMe.Backend.IntegrationTests/Endpoints/<Feature>/` (sub-slices for nested routes).
+Layer ownership, anti-patterns, and when to skip: [testing-guidelines.md](testing-guidelines.md). Integration tests: `src/Template.Backend/tests/Template.Backend.IntegrationTests/Endpoints/<Feature>/` (sub-slices for nested routes).
 
 ## Guardrails for AI agents
 

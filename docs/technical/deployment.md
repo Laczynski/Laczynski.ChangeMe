@@ -1,6 +1,6 @@
 # Deployment
 
-> Scope: how to run ChangeMe outside local `dotnet run` / `ng serve` — runtime API URL, Docker Compose, and production checklist.
+> Scope: how to run Template outside local `dotnet run` / `ng serve` — runtime API URL, Docker Compose, and production checklist.
 >
 > Database, Compose services, and migrations: [database-and-docker.md](database-and-docker.md).
 

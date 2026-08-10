@@ -1,0 +1,257 @@
+<hlm-card class="mb-4">
+  <div hlmCardHeader>
+    <h3 hlmCardTitle>Edit Issue</h3>
+    <p hlmCardDescription>Update issue data, acceptance criteria and assignee</p>
+  </div>
+  <div hlmCardContent>
+    <div class="mb-4 flex flex-wrap items-center gap-2">
+      @if (id(); as issueId) {
+        <app-back-button label="Back to issue details" [route]="['/issues', issueId]" />
+      }
+    </div>
+
+    @if (isLoadingIssue()) {
+      <div class="flex flex-col items-center gap-2 py-8">
+        <hlm-spinner aria-label="Loading issue form" />
+        <p class="text-muted-foreground m-0 text-sm">Loading issue data...</p>
+      </div>
+    } @else if (loadError()) {
+      <div class="flex flex-col items-center gap-2">
+        <hlm-alert variant="destructive">
+          <p hlmAlertDescription>{{ loadError() }}</p>
+        </hlm-alert>
+        <button
+          type="button"
+          hlmBtn
+          size="sm"
+          variant="outline"
+          [disabled]="isLoadingIssue()"
+          (click)="refresh()"
+        >
+          @if (isLoadingIssue()) {
+            <ng-icon name="lucideLoader2" class="animate-spin" />
+          } @else {
+            <ng-icon name="lucideRefreshCw" />
+          }
+          Try again
+        </button>
+      </div>
+    } @else if (issue(); as currentIssue) {
+      <dl
+        class="mb-6 grid gap-4 rounded-lg border border-border p-4 sm:grid-cols-2 lg:grid-cols-3"
+      >
+        <div class="flex flex-col gap-1">
+          <dt class="text-muted-foreground text-sm">Author</dt>
+          <dd class="m-0 font-medium">
+            {{ currentIssue.createdByName || currentIssue.createdBy }}
+          </dd>
+        </div>
+        <div class="flex flex-col gap-1">
+          <dt class="text-muted-foreground text-sm">Created at</dt>
+          <dd class="m-0">
+            {{ currentIssue.createdAt | date: 'dd.MM.yyyy HH:mm' }}
+          </dd>
+        </div>
+        <div class="flex flex-col gap-1">
+          <dt class="text-muted-foreground text-sm">Last activity</dt>
+          <dd class="m-0">
+            {{ currentIssue.lastActivityAt | date: 'dd.MM.yyyy HH:mm' }}
+          </dd>
+        </div>
+      </dl>
+
+      <form class="flex flex-col gap-4" [formGroup]="form" (ngSubmit)="onSubmit()">
+        <hlm-card>
+          <div hlmCardHeader>
+            <h4 hlmCardTitle>Issue details</h4>
+          </div>
+          <div hlmCardContent class="flex flex-col gap-4">
+            <div hlmField>
+              <label hlmFieldLabel for="title">Title</label>
+              <input
+                id="title"
+                type="text"
+                hlmInput
+                [formControl]="form.controls.title"
+                placeholder="e.g. Login button disabled on mobile"
+              />
+              <hlm-field-error validator="required">Title is required</hlm-field-error>
+              <hlm-field-error validator="minlength">
+                Title must be at least
+                {{ issueConstraints.TITLE_MIN_LENGTH }} characters
+              </hlm-field-error>
+              <hlm-field-error validator="maxlength">
+                Title must be at most {{ issueConstraints.TITLE_MAX_LENGTH }} characters
+              </hlm-field-error>
+            </div>
+
+            <div hlmField>
+              <label hlmFieldLabel for="description">Description</label>
+              <textarea
+                id="description"
+                hlmTextarea
+                [formControl]="form.controls.description"
+                rows="5"
+                placeholder="What is wrong, who is affected, and what should happen instead..."
+              ></textarea>
+              <hlm-field-error validator="required">
+                Description is required
+              </hlm-field-error>
+              <hlm-field-error validator="maxlength">
+                Description must be at most
+                {{ issueConstraints.DESCRIPTION_MAX_LENGTH }} characters
+              </hlm-field-error>
+            </div>
+
+            <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+              <div hlmField>
+                <label hlmFieldLabel for="status">Status</label>
+                <hlm-select
+                  [value]="form.controls.status.value"
+                  (valueChange)="onStatusChange($event)"
+                >
+                  <hlm-select-trigger id="status">
+                    <hlm-select-value placeholder="Select status" />
+                  </hlm-select-trigger>
+                  <hlm-select-content *hlmSelectPortal>
+                    @for (option of issueStatuses(); track option.value) {
+                      <hlm-select-item [value]="option.value">
+                        {{ option.label }}
+                      </hlm-select-item>
+                    }
+                  </hlm-select-content>
+                </hlm-select>
+              </div>
+
+              <div hlmField>
+                <label hlmFieldLabel for="priority">Priority</label>
+                <hlm-select
+                  [value]="form.controls.priority.value"
+                  (valueChange)="onPriorityChange($event)"
+                >
+                  <hlm-select-trigger id="priority">
+                    <hlm-select-value placeholder="Select priority" />
+                  </hlm-select-trigger>
+                  <hlm-select-content *hlmSelectPortal>
+                    @for (option of issuePriorities(); track option.value) {
+                      <hlm-select-item [value]="option.value">
+                        {{ option.label }}
+                      </hlm-select-item>
+                    }
+                  </hlm-select-content>
+                </hlm-select>
+              </div>
+
+              <div hlmField>
+                <label hlmFieldLabel for="assignedToUserId">Assigned to</label>
+                <hlm-select
+                  [disabled]="isLoadingAssignableUsers()"
+                  [value]="form.controls.assignedToUserId.value"
+                  (valueChange)="onAssignedToChange($event)"
+                >
+                  <hlm-select-trigger id="assignedToUserId">
+                    <hlm-select-value placeholder="Unassigned" />
+                  </hlm-select-trigger>
+                  <hlm-select-content *hlmSelectPortal>
+                    <hlm-select-item [value]="null">Unassigned</hlm-select-item>
+                    @for (user of assignableUsers(); track user.id) {
+                      <hlm-select-item [value]="user.id">
+                        {{ user.displayLabel }}
+                      </hlm-select-item>
+                    }
+                  </hlm-select-content>
+                </hlm-select>
+              </div>
+            </div>
+          </div>
+        </hlm-card>
+
+        <hlm-card>
+          <div hlmCardHeader>
+            <h4 hlmCardTitle>Acceptance criteria</h4>
+          </div>
+          <div hlmCardContent>
+            <div class="flex flex-col gap-3">
+              @for (
+                criterion of form.controls.acceptanceCriteria.controls;
+                track $index
+              ) {
+                <div class="rounded-lg border border-border p-4">
+                  <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
+                    <span class="font-medium">Criterion {{ $index + 1 }}</span>
+                    <button
+                      type="button"
+                      hlmBtn
+                      variant="destructive"
+                      size="sm"
+                      (click)="removeAcceptanceCriterion($index)"
+                    >
+                      <ng-icon name="lucideTrash" />
+                      Remove
+                    </button>
+                  </div>
+                  <div hlmField>
+                    <label
+                      class="sr-only"
+                      hlmFieldLabel
+                      [for]="'acceptance-criterion-' + $index"
+                    >
+                      Acceptance criterion {{ $index + 1 }}
+                    </label>
+                    <textarea
+                      [id]="'acceptance-criterion-' + $index"
+                      hlmTextarea
+                      [formControl]="criterion.controls.content"
+                      rows="3"
+                      placeholder="e.g. User can sign in with valid credentials on mobile"
+                    ></textarea>
+                    <hlm-field-error validator="required">
+                      Acceptance criterion is required
+                    </hlm-field-error>
+                    <hlm-field-error validator="maxlength">
+                      Acceptance criterion must be at most
+                      {{ issueAcceptanceCriteriaConstraints.CONTENT_MAX_LENGTH }}
+                      characters
+                    </hlm-field-error>
+                  </div>
+                </div>
+              }
+            </div>
+
+            <div class="mt-4">
+              <button
+                type="button"
+                hlmBtn
+                variant="outline"
+                (click)="addAcceptanceCriterion()"
+              >
+                <ng-icon name="lucidePlus" />
+                Add acceptance criterion
+              </button>
+            </div>
+          </div>
+        </hlm-card>
+
+        @if (submitError()) {
+          <hlm-alert variant="destructive">
+            <p hlmAlertDescription>{{ submitError() }}</p>
+          </hlm-alert>
+        }
+
+        <div class="flex flex-wrap items-center justify-end gap-2">
+          <button type="button" hlmBtn variant="outline" (click)="cancel()">
+            Cancel
+          </button>
+          <button type="submit" hlmBtn [disabled]="isSubmitting()">
+            @if (isSubmitting()) {
+              <ng-icon name="lucideLoader2" class="animate-spin" />
+            } @else {
+              <ng-icon name="lucideCheck" />
+            }
+            {{ isSubmitting() ? 'Saving changes...' : 'Save changes' }}
+          </button>
+        </div>
+      </form>
+    }
+  </div>
+</hlm-card>

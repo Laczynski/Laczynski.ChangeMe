@@ -2,7 +2,7 @@ services:
   frontend:
     build:
       context: .
-      dockerfile: src/ChangeMe.Frontend/Dockerfile
+      dockerfile: src/Template.Frontend/Dockerfile
     ports:
       - "4200:80"
     depends_on:
@@ -16,7 +16,7 @@ services:
   backend:
     build:
       context: .
-      dockerfile: src/ChangeMe.Backend/Dockerfile
+      dockerfile: src/Template.Backend/Dockerfile
     ports:
       - "5000:8080"
     depends_on:
@@ -24,7 +24,7 @@ services:
       - mailhog
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ConnectionStrings__DefaultConnection=Host=postgres;Database=ChangeMe;Username=postgres;Password=postgres
+      - ConnectionStrings__DefaultConnection=Host=postgres;Database=Template;Username=postgres;Password=postgres
       - FileStorageOptions__RootPath=/app/storage
     volumes:
       - file-storage-data:/app/storage
@@ -39,7 +39,7 @@ services:
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=ChangeMe
+      - POSTGRES_DB=Template
     volumes:
       - postgres-data:/var/lib/postgresql
     networks:
@@ -60,7 +60,7 @@ services:
     profiles:
       - test
     image: mcr.microsoft.com/dotnet/sdk:10.0
-    working_dir: /repo/src/ChangeMe.Backend
+    working_dir: /repo/src/Template.Backend
     extra_hosts:
       - "host.docker.internal:host-gateway"
     volumes:
@@ -69,7 +69,7 @@ services:
     environment:
       DOCKER_HOST: unix:///var/run/docker.sock
       TESTCONTAINERS_HOST_OVERRIDE: host.docker.internal
-    command: dotnet test ChangeMe.Backend.slnx -c Release
+    command: dotnet test Template.Backend.slnx -c Release
 
 networks:
   app-network:

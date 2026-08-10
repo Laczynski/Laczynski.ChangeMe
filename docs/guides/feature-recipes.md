@@ -6,15 +6,15 @@
 
 ## Add a backend endpoint
 
-1. Create or update the endpoint in `src/ChangeMe.Backend.Web/Endpoints/<Feature>/` (use `<Feature>/<ChildResource>/` for nested routes — see **Feature and sub-slice layout** in [backend-guidelines.md](backend-guidelines.md)).
+1. Create or update the endpoint in `src/Template.Backend.Web/Endpoints/<Feature>/` (use `<Feature>/<ChildResource>/` for nested routes — see **Feature and sub-slice layout** in [backend-guidelines.md](backend-guidelines.md)).
 2. Pick the endpoint base type (see **Endpoint conventions** in [backend-guidelines.md](backend-guidelines.md)):
    - `BaseEndpoint<TRequest, TResponse>` when FastEndpoints should bind body, query, or route into `TRequest`
    - `BaseEndpointWithoutRequest<TRequest, TResponse>` when there is no HTTP payload (use a parameterless `record` for `TRequest`)
    - a custom `Endpoint` / `EndpointWithoutRequest` only for multipart upload, binary download, or other non-standard responses
 3. Add or update the validator in the same file when the request DTO needs validation.
-4. Add the request contract and handler in the matching `src/ChangeMe.Backend.UseCases/<Feature>/` folder (sub-slice when nested).
+4. Add the request contract and handler in the matching `src/Template.Backend.UseCases/<Feature>/` folder (sub-slice when nested).
 5. Reuse domain behavior or add it in `Domain` if new invariants are introduced.
-6. Add integration tests under `tests/ChangeMe.Backend.IntegrationTests/Endpoints/<Feature>/`.
+6. Add integration tests under `tests/Template.Backend.IntegrationTests/Endpoints/<Feature>/`.
 
 ## Add a persisted field
 
@@ -32,7 +32,7 @@
 4. Register the route in `src/app/app.routes.ts` if it is navigable directly.
 5. Run lint and add frontend unit tests when client logic changes ([testing-guidelines.md](testing-guidelines.md)); colocate `*.spec.ts` next to the component or service (see `features/issues/components/`).
 
-## Add or migrate a list screen (QueryGrid)
+## Add or migrate a list screen (DataGrid)
 
 Use any existing **list screen** as the template (for example **Issues**, **Users**, or **Roles**).
 
@@ -47,7 +47,7 @@ Use any existing **list screen** as the template (for example **Issues**, **User
 
 1. Service method: `getAllX(grid: GridQuery): Observable<GridResult<TDto>>` via `apiService.get(..., { grid })`.
 2. Component: inject `GridResourceFactory`, create `grid` in constructor with `load`, `defaultSort`, `defaultTake`, optional `persistState`.
-3. Template: `<qg-prime-data-grid [grid]="grid">` with `qgColumn` templates per column; `qgEmpty` for empty state.
+3. Template: `<dg-prime-data-grid [grid]="grid">` with `dgColumn` templates per column; `dgEmpty` for empty state.
 4. Add component unit tests with a mocked `GridResourceFactory` (see `issues-list.component.spec.ts`).
 
 ## Change auth-sensitive behavior
@@ -90,4 +90,4 @@ Use the **Issues attachments** slice as the template for new file features. Shar
 1. Extend feature models and `features/<feature>/utils` with size/extension limits.
 2. Add `ApiService.postFormData()` and `getBlob()` helpers; keep endpoint strings in the feature service.
 3. Add a tab or panel component with upload control, paginated list, download, and uploader-only delete.
-4. Reuse PrimeNG `p-fileupload` (basic mode) or equivalent; show inline validation errors and toasts for mutations.
+4. Reuse native file input + upload button pattern (see issue attachments tab) or equivalent; show inline validation errors and toasts for mutations.

@@ -1,0 +1,38 @@
+<div class="flex flex-col gap-4">
+  @if (showFormError()) {
+    <div hlmAlert variant="destructive">
+      <p hlmAlertDescription>{{ RoleMessages.atLeastOnePermission }}</p>
+    </div>
+  }
+
+  @for (group of groupedPermissions(); track group.group) {
+    <div class="flex flex-col gap-2">
+      <h4
+        class="text-muted-foreground m-0 text-sm font-semibold tracking-wide uppercase"
+      >
+        {{ group.group }}
+      </h4>
+      <div class="flex flex-col gap-3">
+        @for (permission of group.items; track permission.code) {
+          <div class="border-border flex gap-3 rounded-lg border p-3">
+            <hlm-checkbox
+              [inputId]="permission.code"
+              [checked]="isPermissionSelected(permission.code)"
+              (checkedChange)="togglePermission(permission.code, $event)"
+            />
+            <label
+              hlmLabel
+              [for]="permission.code"
+              class="flex flex-1 cursor-pointer flex-col gap-1"
+            >
+              <span class="text-foreground font-medium">{{ permission.label }}</span>
+              <span class="text-muted-foreground text-sm">
+                {{ permission.description }}
+              </span>
+            </label>
+          </div>
+        }
+      </div>
+    </div>
+  }
+</div>

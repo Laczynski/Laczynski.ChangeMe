@@ -1,0 +1,133 @@
+<div class="flex flex-col gap-4 pt-2">
+  <div class="flex flex-col gap-2 rounded-lg border border-border p-4">
+    <p class="m-0 font-medium">Upload file</p>
+    <div class="flex flex-wrap items-center gap-3">
+      <input
+        #fileInput
+        type="file"
+        class="hidden"
+        [accept]="issueAttachmentAccept"
+        [disabled]="isUploading()"
+        (change)="onFileSelected($event)"
+      />
+      <button
+        type="button"
+        hlmBtn
+        variant="outline"
+        size="sm"
+        [disabled]="isUploading()"
+        (click)="chooseFile()"
+      >
+        <ng-icon name="lucideUpload" />
+        Choose file
+      </button>
+      @if (selectedFile(); as file) {
+        <span class="text-muted-foreground text-sm">{{ file.name }}</span>
+      }
+      <button
+        type="button"
+        hlmBtn
+        size="sm"
+        [disabled]="!selectedFile() || isUploading()"
+        (click)="uploadAttachment()"
+      >
+        @if (isUploading()) {
+          <ng-icon name="lucideLoader2" class="animate-spin" />
+        } @else {
+          <ng-icon name="lucideCloudUpload" />
+        }
+        Upload
+      </button>
+    </div>
+    <p class="text-muted-foreground m-0 text-sm">
+      Max {{ formatFileSize(IssueConstraints.ATTACHMENT_MAX_FILE_SIZE_BYTES) }} per
+      file, up to
+      {{ IssueConstraints.ATTACHMENT_MAX_ATTACHMENTS_PER_ISSUE }} attachments per issue.
+    </p>
+    @if (uploadError()) {
+      <hlm-alert variant="destructive">
+        <p hlmAlertDescription>{{ uploadError() }}</p>
+      </hlm-alert>
+    }
+  </div>
+
+  @if (loadError()) {
+    <hlm-alert variant="destructive">
+      <p hlmAlertDescription>{{ loadError() }}</p>
+    </hlm-alert>
+  } @else if (isLoadingAttachments()) {
+    <hlm-spinner aria-label="Loading attachments" class="size-8" />
+  } @else if (attachments().length > 0) {
+    <ul class="m-0 flex list-none flex-col gap-3 p-0">
+      @for (attachment of attachments(); track attachment.id) {
+        <li
+          class="flex flex-col gap-3 rounded-lg border border-border p-4 sm:flex-row sm:items-center sm:justify-between"
+        >
+          <div class="min-w-0 flex-1">
+            <p class="m-0 truncate font-medium">{{ attachment.originalFileName }}</p>
+            <p class="text-muted-foreground m-0 mt-1 text-sm">
+              {{ formatFileSize(attachment.sizeBytes) }}
+              ·
+              {{ attachment.uploadedByName || attachment.uploadedByUserId }}
+              ·
+              {{ attachment.createdAt | date: 'dd.MM.yyyy HH:mm' }}
+            </p>
+          </div>
+          <div class="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              hlmBtn
+              size="sm"
+              variant="outline"
+              [disabled]="downloadingAttachmentId() === attachment.id"
+              (click)="downloadAttachment(attachment)"
+            >
+              @if (downloadingAttachmentId() === attachment.id) {
+                <ng-icon name="lucideLoader2" class="animate-spin" />
+              } @else {
+                <ng-icon name="lucideDownload" />
+              }
+              Download
+            </button>
+            @if (attachment.canDelete) {
+              <button
+                type="button"
+                hlmBtn
+                size="sm"
+                variant="destructive"
+                [disabled]="deletingAttachmentId() === attachment.id"
+                (click)="confirmDeleteAttachment(attachment)"
+              >
+                @if (deletingAttachmentId() === attachment.id) {
+                  <ng-icon name="lucideLoader2" class="animate-spin" />
+                } @else {
+                  <ng-icon name="lucideTrash" />
+                }
+                Delete
+              </button>
+            }
+          </div>
+        </li>
+      }
+    </ul>
+  } @else if (hasLoadedAttachments()) {
+    <p class="text-muted-foreground m-0">No attachments yet</p>
+  }
+
+  @if (canShowMoreAttachments()) {
+    <div class="flex justify-center">
+      <button
+        type="button"
+        hlmBtn
+        variant="ghost"
+        [disabled]="isLoadingMoreAttachments()"
+        (click)="showMoreAttachments()"
+      >
+        @if (isLoadingMoreAttachments()) {
+          <ng-icon name="lucideLoader2" class="animate-spin" />
+        }
+        Show more
+      </button>
+    </div>
+  }
+</div>

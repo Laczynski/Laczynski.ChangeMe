@@ -25,7 +25,7 @@ Unless a REQ states otherwise, all screens must meet these minimum expectations:
 
 ### Visual and motion
 
-- The application supports **light** and **dark** themes; contrast follows the PrimeNG **Aura** preset — specification authors do not specify hex colors.
+- The application supports **light** and **dark** themes; contrast follows the Spartan UI **Nova** theme tokens — specification authors do not specify hex colors.
 - Respect **prefers-reduced-motion** for non-essential animations when the UI kit provides a hook; compliance-gate sticky toasts and required policy dialogs are never suppressed.
 
 ### specification author checklist

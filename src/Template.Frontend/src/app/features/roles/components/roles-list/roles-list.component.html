@@ -1,0 +1,145 @@
+<section hlmCard class="mb-4">
+  <div hlmCardHeader>
+    <h1 hlmCardTitle>Roles list</h1>
+    <p hlmCardDescription>Browse, search and manage roles and permissions.</p>
+  </div>
+  <div hlmCardContent>
+    <div class="mb-4 flex justify-end">
+      @if (canManageRoles()) {
+        <a hlmBtn [routerLink]="['/roles/create']">
+          <ng-icon name="lucidePlus" aria-hidden="true" />
+          Add role
+        </a>
+      }
+    </div>
+
+    @if (errorMessage()) {
+      <hlm-alert variant="destructive" class="mb-4">
+        <p hlmAlertDescription>{{ errorMessage() }}</p>
+      </hlm-alert>
+    }
+
+    <dg-spartan-data-grid [grid]="grid" dataKey="id" searchPlaceholder="Search roles…">
+      <ng-template
+        dgColumn="Name"
+        header="Name"
+        [filter]="{ type: 'text', placeholder: 'Name contains…' }"
+        let-role
+      >
+        <a
+          class="text-primary font-medium hover:underline"
+          [routerLink]="['/roles', role.id]"
+        >
+          {{ role.name }}
+        </a>
+      </ng-template>
+
+      <ng-template
+        dgColumn="Description"
+        header="Description"
+        [filter]="{ type: 'text', placeholder: 'Description contains…' }"
+        let-role
+      >
+        {{ formatDescription(role.description) }}
+      </ng-template>
+
+      <ng-template
+        dgColumn="PermissionCount"
+        header="Permissions"
+        [filter]="{ type: 'number' }"
+        let-role
+      >
+        {{ RoleMessages.permissionsCount(role.permissionCount) }}
+      </ng-template>
+
+      <ng-template
+        dgColumn="UserCount"
+        header="Users"
+        [filter]="{ type: 'number' }"
+        let-role
+      >
+        {{ RoleMessages.usersCount(role.userCount) }}
+      </ng-template>
+
+      <ng-template dgColumn="IsSystem" header="System" [sortable]="false" let-role>
+        @if (role.isSystem) {
+          <span hlmBadge>System</span>
+        }
+      </ng-template>
+
+      <ng-template dgColumn="actions" header="" [sortable]="false" let-role>
+        <button
+          type="button"
+          hlmBtn
+          variant="ghost"
+          size="icon-sm"
+          [hlmDropdownMenuTrigger]="roleActionsMenu"
+          [hlmTooltip]="'Role actions'"
+          position="top"
+          [attr.aria-label]="'Actions for ' + role.name"
+          (click)="setRoleActionItems(role)"
+        >
+          <ng-icon name="lucideEllipsisVertical" aria-hidden="true" />
+        </button>
+      </ng-template>
+
+      <ng-template dgEmpty>
+        <div class="flex flex-col items-center gap-2 py-4">
+          <p class="text-muted-foreground m-0 text-center">{{ emptyMessage() }}</p>
+          <div class="flex flex-wrap items-center justify-center gap-2">
+            @if (canManageRoles()) {
+              <a hlmBtn size="sm" [routerLink]="['/roles/create']">
+                <ng-icon name="lucidePlus" aria-hidden="true" />
+                Add role
+              </a>
+            }
+            <button
+              type="button"
+              hlmBtn
+              size="sm"
+              variant="outline"
+              (click)="refresh()"
+            >
+              <ng-icon name="lucideRefreshCw" aria-hidden="true" />
+              Refresh
+            </button>
+          </div>
+        </div>
+      </ng-template>
+    </dg-spartan-data-grid>
+  </div>
+</section>
+
+<ng-template #roleActionsMenu>
+  <hlm-dropdown-menu class="w-52">
+    @for (item of roleActionItems(); track $index) {
+      @if (item.separator) {
+        <hlm-dropdown-menu-separator />
+      } @else if (item.routerLink) {
+        <a
+          hlmDropdownMenuItem
+          [routerLink]="item.routerLink"
+          [variant]="item.variant ?? 'default'"
+        >
+          @if (item.icon) {
+            <ng-icon [name]="item.icon" aria-hidden="true" />
+          }
+          {{ item.label }}
+        </a>
+      } @else {
+        <button
+          hlmDropdownMenuItem
+          type="button"
+          [variant]="item.variant ?? 'default'"
+          [disabled]="item.disabled"
+          (click)="item.command?.()"
+        >
+          @if (item.icon) {
+            <ng-icon [name]="item.icon" aria-hidden="true" />
+          }
+          {{ item.label }}
+        </button>
+      }
+    }
+  </hlm-dropdown-menu>
+</ng-template>

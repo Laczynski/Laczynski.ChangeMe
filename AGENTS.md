@@ -4,8 +4,8 @@
 
 ## Repository shape
 
-- `src/ChangeMe.Frontend` - Angular 22 frontend.
-- `src/ChangeMe.Backend` - .NET backend solution.
+- `src/Template.Frontend` - Angular 22 frontend.
+- `src/Template.Backend` - .NET backend solution.
 - `docker-compose.yml` - local full-stack environment with frontend, backend, PostgreSQL, and MailHog.
 - `docs/` - guides, technical, and requirements (`docs/README.md` for the full index).
 - `docs/guides/README.md`, `docs/technical/README.md`, `docs/requirements/requirements-change-process.md` - entry points per area.
@@ -24,7 +24,7 @@
 
 ### Repository root (npm)
 
-From the repository root, run `npm run setup` once after clone (installs npm packages, Playwright Chromium, restores .NET, and installs Lefthook pre-commit hooks). Frontend packages still live under `src/ChangeMe.Frontend`; use `npm run install:frontend` when only frontend dependencies change.
+From the repository root, run `npm run setup` once after clone (installs npm packages, Playwright Chromium, restores .NET, and installs Lefthook pre-commit hooks). Frontend packages still live under `src/Template.Frontend`; use `npm run install:frontend` when only frontend dependencies change.
 
 - First-time setup: `npm run setup`
 - Install frontend dependencies and Playwright Chromium: `npm run install:frontend`
@@ -39,7 +39,7 @@ From the repository root, run `npm run setup` once after clone (installs npm pac
 - Demo data (after migrations; Development only): `npm run data:generate`, or `npm run data:generate -- --reset` — see `docs/technical/data-generator.md`
 - Requirements structure: `npm run requirements:validate` — checks `FR-*` / `NFR-*` specs, cross-references, and regenerates `docs/requirements/README.md`
 
-### Frontend (in `src/ChangeMe.Frontend`)
+### Frontend (in `src/Template.Frontend`)
 
 - Install dependencies: prefer `npm run install:frontend` from the repository root (includes Playwright Chromium); `npm install` here installs npm packages only
 - Run dev server: `npm start`
@@ -48,14 +48,14 @@ From the repository root, run `npm run setup` once after clone (installs npm pac
 - Tests: `npm test`
 - E2E: `npm run e2e` (from repo root: `npm run test:e2e`, or `npm run test:e2e:ui` for Playwright UI)
 
-### Backend (in `src/ChangeMe.Backend`)
+### Backend (in `src/Template.Backend`)
 
 - Includes `InitialCreate` — in Development, migrations apply on API startup (`DatabaseOptions:ApplyMigrationsOnStartup` is `true` in `appsettings.Development.json`; see `docs/technical/database-and-docker.md`).
-- Restore/build solution: `dotnet build ChangeMe.Backend.slnx`
-- Run web app: `dotnet run --project src/ChangeMe.Backend.Web`
-- All tests in the solution: `dotnet test ChangeMe.Backend.slnx`
-- Unit tests only: `dotnet test tests/ChangeMe.Backend.UnitTests`
-- Integration tests only: `dotnet test tests/ChangeMe.Backend.IntegrationTests`
+- Restore/build solution: `dotnet build Template.Backend.slnx`
+- Run web app: `dotnet run --project src/Template.Backend.Web`
+- All tests in the solution: `dotnet test Template.Backend.slnx`
+- Unit tests only: `dotnet test tests/Template.Backend.UnitTests`
+- Integration tests only: `dotnet test tests/Template.Backend.IntegrationTests`
 
 ### Full stack (Docker Compose)
 
@@ -82,17 +82,17 @@ Configuration in containers: `appsettings.json` + `appsettings.Development.json`
 
 ### Backend
 
-- HTTP endpoints live in `src/ChangeMe.Backend.Web/Endpoints/<Feature>/` (nested routes in sub-slices, for example `Endpoints/Issues/Attachments/`).
-- Query and command contracts live in `src/ChangeMe.Backend.UseCases/<Feature>/` (nested routes in sub-slices, for example `UseCases/Issues/Attachments/`).
+- HTTP endpoints live in `src/Template.Backend.Web/Endpoints/<Feature>/` (nested routes in sub-slices, for example `Endpoints/Issues/Attachments/`).
+- Query and command contracts live in `src/Template.Backend.UseCases/<Feature>/` (nested routes in sub-slices, for example `UseCases/Issues/Attachments/`).
 - Keep only `*Query.cs` and `*Command.cs` files at the top level of each `UseCases` feature folder (root resource operations).
-- Place shared DTOs in `src/ChangeMe.Backend.UseCases/<Feature>/Dtos/`; sub-slice-only DTOs in `UseCases/<Feature>/<ChildResource>/Dtos/`.
-- Place shared handler helpers in `src/ChangeMe.Backend.UseCases/<Feature>/Utils/`; sub-slice-only helpers in `UseCases/<Feature>/<ChildResource>/Utils/`.
-- Place shared feature services in `src/ChangeMe.Backend.UseCases/<Feature>/Services/`; sub-slice-only services in `UseCases/<Feature>/<ChildResource>/Services/`.
+- Place shared DTOs in `src/Template.Backend.UseCases/<Feature>/Dtos/`; sub-slice-only DTOs in `UseCases/<Feature>/<ChildResource>/Dtos/`.
+- Place shared handler helpers in `src/Template.Backend.UseCases/<Feature>/Utils/`; sub-slice-only helpers in `UseCases/<Feature>/<ChildResource>/Utils/`.
+- Place shared feature services in `src/Template.Backend.UseCases/<Feature>/Services/`; sub-slice-only services in `UseCases/<Feature>/<ChildResource>/Services/`.
 - Handlers still live with their matching command or query file.
-- Domain rules and aggregates live in `src/ChangeMe.Backend.Domain`.
-- EF Core, persistence, auth, and adapters live in `src/ChangeMe.Backend.Infrastructure`.
-- Integration tests mirror API behavior under `tests/ChangeMe.Backend.IntegrationTests`.
-- Unit tests cover domain/infrastructure helpers under `tests/ChangeMe.Backend.UnitTests`.
+- Domain rules and aggregates live in `src/Template.Backend.Domain`.
+- EF Core, persistence, auth, and adapters live in `src/Template.Backend.Infrastructure`.
+- Integration tests mirror API behavior under `tests/Template.Backend.IntegrationTests`.
+- Unit tests cover domain/infrastructure helpers under `tests/Template.Backend.UnitTests`.
 
 ## Change coupling checklist
 
