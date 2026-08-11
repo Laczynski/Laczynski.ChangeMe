@@ -1,6 +1,6 @@
 # E2E testing guidelines
 
-> Scope: Playwright smoke suite in `src/ChangeMe.Frontend/e2e/`.
+> Scope: Playwright smoke suite in `src/Template.Frontend/e2e/`.
 >
 > When to add E2E: [testing-guidelines.md](testing-guidelines.md). Commands: [`AGENTS.md`](../../AGENTS.md). CI: [ci.md](../technical/ci.md).
 
@@ -50,21 +50,19 @@ Prefer, in order:
 2. `getByLabel` (inputs, multiselects linked with `for` / `inputId`)
 3. `getByPlaceholder` (search fields)
 
-Avoid PrimeNG class selectors and Tailwind layout classes except where noted below.
+Avoid Tailwind layout classes as locators except where noted below.
 
 ```typescript
 await page.getByRole("button", { name: "Create user" }).click();
 await page.getByRole("textbox", { name: "Name" }).fill(title);
-await page
-  .getByRole("main")
-  .getByRole("region", { name: "Roles" })
-  .locator(".p-multiselect")
-  .click();
+await page.getByRole("combobox", { name: "Roles" }).click();
+await page.getByRole("option", { name: "User" }).click();
+await page.keyboard.press("Escape");
 await page.getByRole("checkbox", { name: "View users" }).click();
 await expect(page.getByRole("main")).toContainText(title);
 ```
 
-**PrimeNG:** collapsible panel headers and permission checkboxes can make `getByLabel` ambiguous — prefer `getByRole("textbox", …)` for inputs. Multiselect: scope to `getByRole("main").getByRole("region", { name: "…" })`, click `.p-multiselect`, pick `getByRole("option")`, press `Escape`. Use `expectDetailsTitle` in `*.fixture.ts` when the page title includes extra context (e.g. user name + email).
+**PrimeNG selects (`p-select`):** scope with `getByRole('main').getByRole('region', { name: '…' })` and `.p-select`, or `getByRole('combobox', { name: '…' })` when the control exposes it. Pick `getByRole('option')`, press `Escape` to close. Permission checkboxes can make `getByLabel` ambiguous — prefer `getByRole('textbox', …)` for inputs. Use `expectDetailsTitle` in `*.fixture.ts` when the page title includes extra context (e.g. user name + email).
 
 ## Test data
 

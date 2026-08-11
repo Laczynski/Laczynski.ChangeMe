@@ -1,6 +1,6 @@
-# ChangeMe Full Stack Templates
+# Laczynski Full-Stack Template
 
-`ChangeMe` is a full-stack **starter template** for `dotnet new` — architecture, tooling, docs workflow, and tests you reuse; a small issue-tracking **sample app** shows the patterns in context.
+`Laczynski.Template` is a full-stack **starter template** for `dotnet new` — architecture, tooling, docs workflow, and tests you reuse; a small issue-tracking **sample app** shows the patterns in context.
 
 It generates:
 
@@ -18,13 +18,13 @@ Production Docker stack uses **same-origin** `/api/v1` through nginx; see `docs/
 ## Install
 
 ```powershell
-dotnet new install ChangeMe
+dotnet new install Laczynski.Template
 ```
 
 ## Create a project
 
 ```powershell
-dotnet new changeme -n IssuesDemo -o IssuesDemo
+dotnet new laczynski-fullstack -n IssuesDemo -o IssuesDemo
 ```
 
 ## After generation
@@ -34,21 +34,21 @@ dotnet new changeme -n IssuesDemo -o IssuesDemo
 ## Verify the install
 
 ```powershell
-dotnet new list changeme
+dotnet new list laczynski-fullstack
 ```
 
 ## Update
 
 ```powershell
-dotnet new install ChangeMe --force
+dotnet new install Laczynski.Template --force
 ```
 
 ## Uninstall
 
 ```powershell
-dotnet new uninstall ChangeMe
+dotnet new uninstall Laczynski.Template
 ```
 
 ## Source repository
 
-https://github.com/damianlaczynski/ChangeMe
+https://github.com/Laczynski/Template

@@ -2,12 +2,12 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "changeme-frontend: serve",
+      "label": "template-frontend: serve",
       "type": "process",
       "command": "npm",
       "args": ["run", "start", "--", "--host", "0.0.0.0", "--port", "4200"],
       "options": {
-        "cwd": "${workspaceFolder}/src/ChangeMe.Frontend"
+        "cwd": "${workspaceFolder}/src/Template.Frontend"
       },
       "isBackground": true,
       "presentation": {
@@ -28,12 +28,12 @@
       }
     },
     {
-      "label": "changeme-frontend: build",
+      "label": "template-frontend: build",
       "type": "process",
       "command": "npm",
       "args": ["run", "build"],
       "options": {
-        "cwd": "${workspaceFolder}/src/ChangeMe.Frontend"
+        "cwd": "${workspaceFolder}/src/Template.Frontend"
       },
       "group": "build",
       "presentation": {
@@ -42,12 +42,12 @@
       }
     },
     {
-      "label": "changeme-frontend: lint",
+      "label": "template-frontend: lint",
       "type": "process",
       "command": "npm",
       "args": ["run", "lint"],
       "options": {
-        "cwd": "${workspaceFolder}/src/ChangeMe.Frontend"
+        "cwd": "${workspaceFolder}/src/Template.Frontend"
       },
       "presentation": {
         "reveal": "silent",
@@ -55,12 +55,12 @@
       }
     },
     {
-      "label": "changeme-frontend: format",
+      "label": "template-frontend: format",
       "type": "process",
       "command": "npm",
       "args": ["run", "format"],
       "options": {
-        "cwd": "${workspaceFolder}/src/ChangeMe.Frontend"
+        "cwd": "${workspaceFolder}/src/Template.Frontend"
       },
       "presentation": {
         "reveal": "silent",
@@ -68,12 +68,12 @@
       }
     },
     {
-      "label": "changeme-frontend: format check",
+      "label": "template-frontend: format check",
       "type": "process",
       "command": "npm",
       "args": ["run", "format:check"],
       "options": {
-        "cwd": "${workspaceFolder}/src/ChangeMe.Frontend"
+        "cwd": "${workspaceFolder}/src/Template.Frontend"
       },
       "presentation": {
         "reveal": "silent",
@@ -81,17 +81,17 @@
       }
     },
     {
-      "label": "changeme-backend: build",
+      "label": "template-backend: build",
       "command": "dotnet",
       "type": "process",
       "args": [
         "build",
-        "${workspaceFolder}/src/ChangeMe.Backend/src/ChangeMe.Backend.Web/ChangeMe.Backend.Web.csproj",
+        "${workspaceFolder}/src/Template.Backend/src/Template.Backend.Web/Template.Backend.Web.csproj",
         "/property:GenerateFullPaths=true",
         "/consoleloggerparameters:NoSummary;ForceNoAlign"
       ],
       "options": {
-        "cwd": "${workspaceFolder}/src/ChangeMe.Backend/src/ChangeMe.Backend.Web"
+        "cwd": "${workspaceFolder}/src/Template.Backend/src/Template.Backend.Web"
       },
       "group": "build",
       "presentation": {
@@ -101,17 +101,17 @@
       "problemMatcher": "$msCompile"
     },
     {
-      "label": "changeme-backend: build solution",
+      "label": "template-backend: build solution",
       "command": "dotnet",
       "type": "process",
       "args": [
         "build",
-        "${workspaceFolder}/src/ChangeMe.Backend/ChangeMe.Backend.slnx",
+        "${workspaceFolder}/src/Template.Backend/Template.Backend.slnx",
         "/property:GenerateFullPaths=true",
         "/consoleloggerparameters:NoSummary;ForceNoAlign"
       ],
       "options": {
-        "cwd": "${workspaceFolder}/src/ChangeMe.Backend"
+        "cwd": "${workspaceFolder}/src/Template.Backend"
       },
       "group": "build",
       "presentation": {
@@ -121,15 +121,15 @@
       "problemMatcher": "$msCompile"
     },
     {
-      "label": "changeme-backend: format",
+      "label": "template-backend: format",
       "type": "process",
       "command": "dotnet",
       "args": [
         "format",
-        "${workspaceFolder}/src/ChangeMe.Backend/ChangeMe.Backend.slnx"
+        "${workspaceFolder}/src/Template.Backend/Template.Backend.slnx"
       ],
       "options": {
-        "cwd": "${workspaceFolder}/src/ChangeMe.Backend"
+        "cwd": "${workspaceFolder}/src/Template.Backend"
       },
       "presentation": {
         "reveal": "silent",
@@ -137,16 +137,16 @@
       }
     },
     {
-      "label": "changeme-backend: format check",
+      "label": "template-backend: format check",
       "type": "process",
       "command": "dotnet",
       "args": [
         "format",
-        "${workspaceFolder}/src/ChangeMe.Backend/ChangeMe.Backend.slnx",
+        "${workspaceFolder}/src/Template.Backend/Template.Backend.slnx",
         "--verify-no-changes"
       ],
       "options": {
-        "cwd": "${workspaceFolder}/src/ChangeMe.Backend"
+        "cwd": "${workspaceFolder}/src/Template.Backend"
       },
       "presentation": {
         "reveal": "silent",
@@ -154,16 +154,16 @@
       }
     },
     {
-      "label": "changeme: lint all",
+      "label": "template: lint all",
       "dependsOrder": "sequence",
-      "dependsOn": ["changeme-frontend: lint"]
+      "dependsOn": ["template-frontend: lint"]
     },
     {
-      "label": "changeme: build all",
+      "label": "template: build all",
       "dependsOrder": "sequence",
       "dependsOn": [
-        "changeme-frontend: build",
-        "changeme-backend: build solution"
+        "template-frontend: build",
+        "template-backend: build solution"
       ],
       "group": {
         "kind": "build",
@@ -171,18 +171,18 @@
       }
     },
     {
-      "label": "changeme: format all",
+      "label": "template: format all",
       "dependsOrder": "sequence",
-      "dependsOn": ["changeme-frontend: format", "changeme-backend: format"]
+      "dependsOn": ["template-frontend: format", "template-backend: format"]
     },
     {
-      "label": "changeme: verify all",
+      "label": "template: verify all",
       "dependsOrder": "sequence",
       "dependsOn": [
-        "changeme-frontend: format check",
-        "changeme-frontend: lint",
-        "changeme-backend: format check",
-        "changeme-backend: build solution"
+        "template-frontend: format check",
+        "template-frontend: lint",
+        "template-backend: format check",
+        "template-backend: build solution"
       ],
       "group": "test"
     }

@@ -1,12 +1,12 @@
 # Publishing
 
-> Scope: releasing the **ChangeMe** `dotnet new` template NuGet package.
+> Scope: releasing the **Template** `dotnet new` template NuGet package.
 
 ## Registry
 
 | Package    | Primary registry                   | Secondary      |
 | ---------- | ---------------------------------- | -------------- |
-| `ChangeMe` | [nuget.org](https://www.nuget.org) | GitHub Packages |
+| `Template` | [nuget.org](https://www.nuget.org) | GitHub Packages |
 
 Publish on tag push `v*` via [publish.yml](../../.github/workflows/publish.yml) (trusted publishing / OIDC).
 
@@ -14,11 +14,11 @@ Publish on tag push `v*` via [publish.yml](../../.github/workflows/publish.yml) 
 
 | Location | Field |
 | -------- | ----- |
-| `template-pack/ChangeMe.Templates.csproj` | `<Version>` |
+| `template-pack/Laczynski.Template.csproj` | `<Version>` |
 
 ## Release checklist
 
-1. Bump `<Version>` in `template-pack/ChangeMe.Templates.csproj`.
+1. Bump `<Version>` in `template-pack/Laczynski.Template.csproj`.
 2. Update `CHANGELOG.md` (`## [x.y.z]` section).
 3. Verify locally:
 
@@ -55,8 +55,8 @@ Settings → Secrets and variables → Actions:
    | Field            | Value              |
    | ---------------- | ------------------ |
    | Package Owner    | your nuget.org account |
-   | Repository Owner | `damianlaczynski`  |
-   | Repository       | `ChangeMe`         |
+   | Repository Owner | `Laczynski`  |
+   | Repository       | `Template`         |
    | Workflow File    | `publish.yml`      |
    | Environment      | *(leave empty)*    |
 
@@ -67,7 +67,7 @@ Actions enabled; workflow permissions allow `packages: write` and OIDC (`id-toke
 ## Publish workflow (tag `v*`)
 
 1. Test (requirements, frontend, backend)
-2. `dotnet pack template-pack/ChangeMe.Templates.csproj`
+2. `dotnet pack template-pack/Laczynski.Template.csproj`
 3. Publish NuGet to **nuget.org** and **GitHub Packages**
 4. GitHub Release from `CHANGELOG.md`
 
@@ -76,14 +76,14 @@ Actions enabled; workflow permissions allow `packages: write` and OIDC (`id-toke
 ### nuget.org
 
 ```powershell
-dotnet new install ChangeMe
+dotnet new install Laczynski.Template
 ```
 
 ### GitHub Packages
 
 ```powershell
-dotnet nuget add source --username YOUR_GITHUB_USERNAME --password YOUR_PAT --store-password-in-clear-text --name github "https://nuget.pkg.github.com/damianlaczynski/index.json"
-dotnet new install ChangeMe --nuget-source github
+dotnet nuget add source --username YOUR_GITHUB_USERNAME --password YOUR_PAT --store-password-in-clear-text --name github "https://nuget.pkg.github.com/Laczynski/index.json"
+dotnet new install Laczynski.Template --nuget-source github
 ```
 
 ## Optional: local push (API key)
@@ -91,6 +91,6 @@ dotnet new install ChangeMe --nuget-source github
 Trusted publishing works in CI only:
 
 ```powershell
-dotnet pack template-pack/ChangeMe.Templates.csproj -c Release
-dotnet nuget push template-pack/bin/Release/ChangeMe.*.nupkg --api-key <nuget.org-api-key> --source https://api.nuget.org/v3/index.json
+dotnet pack template-pack/Laczynski.Template.csproj -c Release
+dotnet nuget push template-pack/bin/Release/Template.*.nupkg --api-key <nuget.org-api-key> --source https://api.nuget.org/v3/index.json
 ```

@@ -16,13 +16,13 @@ The following terms describe observable account state, not implementation detail
 
 | Term               | Meaning                                                                                      |
 | ------------------ | -------------------------------------------------------------------------------------------- |
-| **Local password** | A password stored in ChangeMe for email/password sign-in. Set at user creation (FR-USR-003). |
+| **Local password** | A password stored in Template for email/password sign-in. Set at user creation (FR-USR-003). |
 
 ## Email and profile
 
 | Term              | Meaning                                                                                                                              |
 | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| **Profile email** | The **current email** on the ChangeMe account; used for sign-in and display. Shown as **Email** on **My account** and admin screens. |
+| **Profile email** | The **current email** on the Template account; used for sign-in and display. Shown as **Email** on **My account** and admin screens. |
 
 ## Cross-references
 

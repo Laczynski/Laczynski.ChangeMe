@@ -113,4 +113,4 @@ artifacts/
 .template-test-output/
 
 # File storage
-src/ChangeMe.Backend/storage/
+src/Template.Backend/storage/

@@ -20,13 +20,13 @@ Out of scope here: email templates, push notification payloads, and API error sh
 
 Use the correct channel so behavior stays consistent across modules.
 
-| Channel                                 | When to use                                                                                  | Persistence                              |
-| --------------------------------------- | -------------------------------------------------------------------------------------------- | ---------------------------------------- |
-| **Inline field validation**             | Field-level rule failures on forms                                                           | Until the field becomes valid            |
-| **Inline screen message** (`p-message`) | Load failures, form-level errors not tied to one field                                       | Until the user retries or navigates away |
-| **Toast**                               | Successful mutations; action failures not tied to a single field; background policy warnings | Auto-dismiss; see below                  |
-| **Confirmation dialog**                 | Destructive or irreversible actions before execution                                         | Until confirm or cancel                  |
-| **Modal dialog**                        | Short secondary flows that need input (for example reject reason)                            | Until submit, cancel, or close           |
+| Channel                                             | When to use                                                                                  | Persistence                              |
+| --------------------------------------------------- | -------------------------------------------------------------------------------------------- | ---------------------------------------- |
+| **Inline field validation**                         | Field-level rule failures on forms                                                           | Until the field becomes valid            |
+| **Inline screen message** (destructive `p-message`) | Load failures, form-level errors not tied to one field                                       | Until the user retries or navigates away |
+| **Toast**                                           | Successful mutations; action failures not tied to a single field; background policy warnings | Auto-dismiss; see below                  |
+| **Confirmation dialog**                             | Destructive or irreversible actions before execution                                         | Until confirm or cancel                  |
+| **Modal dialog**                                    | Short secondary flows that need input (for example reject reason)                            | Until submit, cancel, or close           |
 
 ### Toast conventions
 
