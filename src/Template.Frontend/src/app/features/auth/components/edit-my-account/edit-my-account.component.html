@@ -29,50 +29,28 @@
       </button>
     </div>
   } @else {
-    <form
-      class="p-fluid flex flex-col gap-4"
-      [formGroup]="form"
-      (ngSubmit)="onSubmit()"
-    >
+    <form class="p-fluid flex flex-col gap-4" [formRoot]="profileForm">
       <p-panel header="Profile" [toggleable]="true">
         <div class="grid gap-4 sm:grid-cols-2">
-          <div class="flex flex-col gap-1.5">
+          <app-form-field [field]="profileForm.firstName">
             <label for="firstName">First name</label>
             <input
               id="firstName"
               type="text"
               pInputText
-              [formControl]="form.controls.firstName"
-              [invalid]="shouldShowError(form.controls.firstName)"
+              [formField]="profileForm.firstName"
             />
-            @if (
-              shouldShowError(form.controls.firstName) &&
-              form.controls.firstName.errors?.['required']
-            ) {
-              <p-message severity="error" variant="simple">
-                First name is required.
-              </p-message>
-            }
-          </div>
+          </app-form-field>
 
-          <div class="flex flex-col gap-1.5">
+          <app-form-field [field]="profileForm.lastName">
             <label for="lastName">Last name</label>
             <input
               id="lastName"
               type="text"
               pInputText
-              [formControl]="form.controls.lastName"
-              [invalid]="shouldShowError(form.controls.lastName)"
+              [formField]="profileForm.lastName"
             />
-            @if (
-              shouldShowError(form.controls.lastName) &&
-              form.controls.lastName.errors?.['required']
-            ) {
-              <p-message severity="error" variant="simple">
-                Last name is required.
-              </p-message>
-            }
-          </div>
+          </app-form-field>
         </div>
       </p-panel>
 

@@ -2,34 +2,19 @@
   title="Welcome back"
   subtitle="Sign in to create, edit and delete issues."
 >
-  <form class="p-fluid flex flex-col gap-4" [formGroup]="form" (ngSubmit)="onSubmit()">
-    <div class="flex flex-col gap-1.5">
+  <form class="p-fluid flex flex-col gap-4" [formRoot]="loginForm">
+    <app-form-field [field]="loginForm.email">
       <label class="text-color text-sm font-medium" for="email">Email</label>
       <input
         id="email"
         type="email"
         pInputText
-        autocomplete="email"
-        [formControl]="form.controls.email"
-        [invalid]="form.controls.email.touched && form.controls.email.errors"
+        autocomplete="username"
+        [formField]="loginForm.email"
       />
-      @if (form.controls.email.touched && form.controls.email.errors?.['required']) {
-        <p-message severity="error" variant="simple">Email is required.</p-message>
-      }
-      @if (form.controls.email.touched && form.controls.email.errors?.['email']) {
-        <p-message severity="error" variant="simple">
-          Enter a valid email address.
-        </p-message>
-      }
-      @if (form.controls.email.touched && form.controls.email.errors?.['maxlength']) {
-        <p-message severity="error" variant="simple">
-          Email must be less than {{ authConstraints.EMAIL_MAX_LENGTH }} characters
-          long.
-        </p-message>
-      }
-    </div>
+    </app-form-field>
 
-    <div class="flex flex-col gap-1.5">
+    <app-form-field [field]="loginForm.password">
       <label class="text-color text-sm font-medium" for="password">Password</label>
       <p-iconfield iconPosition="right">
         <input
@@ -38,9 +23,8 @@
           pInputPassword
           [(mask)]="passwordMasked"
           autocomplete="current-password"
-          [formControl]="form.controls.password"
+          [formField]="loginForm.password"
           [fluid]="true"
-          [invalid]="form.controls.password.touched && form.controls.password.errors"
         />
         <p-inputicon>
           <button
@@ -56,28 +40,7 @@
           </button>
         </p-inputicon>
       </p-iconfield>
-      @if (
-        form.controls.password.touched && form.controls.password.errors?.['required']
-      ) {
-        <p-message severity="error" variant="simple">Password is required.</p-message>
-      }
-      @if (
-        form.controls.password.touched && form.controls.password.errors?.['minlength']
-      ) {
-        <p-message severity="error" variant="simple">
-          Password must be at least
-          {{ authConstraints.PASSWORD_MIN_LENGTH }} characters long.
-        </p-message>
-      }
-      @if (
-        form.controls.password.touched && form.controls.password.errors?.['maxlength']
-      ) {
-        <p-message severity="error" variant="simple">
-          Password must be less than
-          {{ authConstraints.PASSWORD_MAX_LENGTH }} characters long.
-        </p-message>
-      }
-    </div>
+    </app-form-field>
 
     @if (errorMessage()) {
       <p-message severity="error">{{ errorMessage() }}</p-message>

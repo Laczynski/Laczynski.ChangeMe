@@ -58,99 +58,66 @@
       </div>
     </dl>
 
-    <form
-      class="p-fluid flex flex-col gap-4"
-      [formGroup]="form"
-      (ngSubmit)="onSubmit()"
-    >
+    <form class="p-fluid flex flex-col gap-4" [formRoot]="issueForm">
       <p-panel header="Issue details" [toggleable]="true">
-        <div class="flex flex-col gap-1.5">
+        <app-form-field [field]="issueForm.title">
           <label for="title">Title</label>
           <input
             id="title"
             type="text"
             pInputText
-            [formControl]="form.controls.title"
+            [formField]="issueForm.title"
             placeholder="e.g. Login button disabled on mobile"
-            [invalid]="form.controls.title.touched && form.controls.title.errors"
           />
-          @if (shouldShowError(form.controls.title)) {
-            @if (form.controls.title.errors?.['required']) {
-              <p-message severity="error" variant="simple">Title is required</p-message>
-            }
-            @if (form.controls.title.errors?.['minlength']) {
-              <p-message severity="error" variant="simple">
-                Title must be at least
-                {{ issueConstraints.TITLE_MIN_LENGTH }} characters
-              </p-message>
-            }
-            @if (form.controls.title.errors?.['maxlength']) {
-              <p-message severity="error" variant="simple">
-                Title must be at most {{ issueConstraints.TITLE_MAX_LENGTH }} characters
-              </p-message>
-            }
-          }
-        </div>
+        </app-form-field>
 
-        <div class="mt-4 flex flex-col gap-1.5">
+        <app-form-field class="mt-4" [field]="issueForm.description">
           <label for="description">Description</label>
           <textarea
             id="description"
             pTextarea
-            [formControl]="form.controls.description"
+            [formField]="issueForm.description"
             rows="5"
             placeholder="What is wrong, who is affected, and what should happen instead..."
-            [invalid]="
-              form.controls.description.touched && form.controls.description.errors
-            "
           ></textarea>
-          @if (shouldShowError(form.controls.description)) {
-            @if (form.controls.description.errors?.['required']) {
-              <p-message severity="error" variant="simple">
-                Description is required
-              </p-message>
-            }
-            @if (form.controls.description.errors?.['maxlength']) {
-              <p-message severity="error" variant="simple">
-                Description must be at most
-                {{ issueConstraints.DESCRIPTION_MAX_LENGTH }} characters
-              </p-message>
-            }
-          }
-        </div>
+        </app-form-field>
 
         <div class="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          <div class="flex flex-col gap-1.5">
+          <app-form-field #statusField [field]="issueForm.status">
             <label for="status">Status</label>
             <p-select
               inputId="status"
-              [formControl]="form.controls.status"
+              [ngModel]="issueModel().status"
+              (ngModelChange)="setStatus($event)"
+              [ngModelOptions]="{ standalone: true }"
               [options]="issueStatuses()"
               optionLabel="label"
               optionValue="value"
-              [invalid]="form.controls.status.touched && form.controls.status.errors"
+              [invalid]="statusField.showErrors()"
             />
-          </div>
+          </app-form-field>
 
-          <div class="flex flex-col gap-1.5">
+          <app-form-field #priorityField [field]="issueForm.priority">
             <label for="priority">Priority</label>
             <p-select
               inputId="priority"
-              [formControl]="form.controls.priority"
+              [ngModel]="issueModel().priority"
+              (ngModelChange)="setPriority($event)"
+              [ngModelOptions]="{ standalone: true }"
               [options]="issuePriorities()"
               optionLabel="label"
               optionValue="value"
-              [invalid]="
-                form.controls.priority.touched && form.controls.priority.errors
-              "
+              [invalid]="priorityField.showErrors()"
             />
-          </div>
+          </app-form-field>
 
-          <div class="flex flex-col gap-1.5">
+          <app-form-field [field]="issueForm.assignedToUserId">
             <label for="assignedToUserId">Assigned to</label>
             <p-select
               inputId="assignedToUserId"
-              [formControl]="form.controls.assignedToUserId"
+              [ngModel]="issueModel().assignedToUserId"
+              (ngModelChange)="setAssignedToUserId($event)"
+              [ngModelOptions]="{ standalone: true }"
               [options]="assignableUsers()"
               optionLabel="displayLabel"
               optionValue="id"
@@ -158,13 +125,13 @@
               [showClear]="true"
               [loading]="isLoadingAssignableUsers()"
             />
-          </div>
+          </app-form-field>
         </div>
       </p-panel>
 
       <p-panel header="Acceptance criteria" [toggleable]="true">
         <div class="flex flex-col gap-3">
-          @for (criterion of form.controls.acceptanceCriteria.controls; track $index) {
+          @for (criterion of issueForm.acceptanceCriteria; track $index) {
             <div class="p-4">
               <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
                 <span class="font-medium">Criterion {{ $index + 1 }}</span>
@@ -180,39 +147,18 @@
                   Remove
                 </button>
               </div>
-              <div class="flex flex-col gap-1.5">
+              <app-form-field [field]="criterion.content">
                 <label class="sr-only" [for]="'acceptance-criterion-' + $index">
                   Acceptance criterion {{ $index + 1 }}
                 </label>
                 <textarea
                   [id]="'acceptance-criterion-' + $index"
                   pTextarea
-                  [formControl]="criterion.controls.content"
+                  [formField]="criterion.content"
                   rows="3"
                   placeholder="e.g. User can sign in with valid credentials on mobile"
-                  [invalid]="
-                    criterion.controls.content.touched &&
-                    criterion.controls.content.errors
-                  "
                 ></textarea>
-                @if (
-                  criterion.controls.content.errors &&
-                  (criterion.controls.content.touched || isSubmitted())
-                ) {
-                  @if (criterion.controls.content.errors['required']) {
-                    <p-message severity="error" variant="simple">
-                      Acceptance criterion is required
-                    </p-message>
-                  }
-                  @if (criterion.controls.content.errors['maxlength']) {
-                    <p-message severity="error" variant="simple">
-                      Acceptance criterion must be at most
-                      {{ issueAcceptanceCriteriaConstraints.CONTENT_MAX_LENGTH }}
-                      characters
-                    </p-message>
-                  }
-                }
-              </div>
+              </app-form-field>
             </div>
           }
         </div>

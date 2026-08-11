@@ -9,34 +9,30 @@ import {
   signal
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import {
-  FormControl,
-  FormGroup,
-  ReactiveFormsModule,
-  Validators
-} from '@angular/forms';
+import { form, FormField, FormRoot, maxLength, required } from '@angular/forms/signals';
 import { ToastService } from '@core/toast/services/toast.service';
 import { IssueCommentDto } from '@features/issues/models/issue.model';
 import { IssuesService } from '@features/issues/services/issues.service';
 import { IssueCommentConstraints } from '@features/issues/utils/issue.utils';
+import { FormFieldComponent } from '@shared/components/form-field/form-field.component';
 import {
   createIssueTabGridQuery,
   hasMoreGridItems
 } from '@shared/data/utils/grid.utils';
+import { whenTouched } from '@shared/forms/signal-forms.utils';
 import { ButtonDirective } from 'primeng/button';
 import { Message } from 'primeng/message';
 import { ProgressSpinner } from 'primeng/progressspinner';
 import { Textarea } from 'primeng/textarea';
-
-type CommentForm = {
-  content: FormControl<string>;
-};
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-issue-comments-tab',
   imports: [
     DatePipe,
-    ReactiveFormsModule,
+    FormField,
+    FormFieldComponent,
+    FormRoot,
     ButtonDirective,
     Textarea,
     Message,
@@ -58,7 +54,6 @@ export class IssueCommentsTabComponent {
   readonly commentsTotalCount = signal(0);
   readonly loadError = signal<string | null>(null);
   readonly commentError = signal<string | null>(null);
-  readonly isSubmitted = signal(false);
   readonly isSubmittingComment = signal(false);
   readonly isLoadingComments = signal(false);
   readonly isLoadingMoreComments = signal(false);
@@ -68,15 +63,46 @@ export class IssueCommentsTabComponent {
     hasMoreGridItems(this.comments().length, this.commentsTotalCount())
   );
 
-  readonly commentForm = new FormGroup<CommentForm>({
-    content: new FormControl('', {
-      nonNullable: true,
-      validators: [
-        Validators.required,
-        Validators.maxLength(IssueCommentConstraints.CONTENT_MAX_LENGTH)
-      ]
-    })
-  });
+  readonly commentModel = signal({ content: '' });
+
+  readonly commentForm = form(
+    this.commentModel,
+    (path) => {
+      required(path.content, {
+        when: whenTouched,
+        message: 'Comment content is required'
+      });
+      maxLength(path.content, IssueCommentConstraints.CONTENT_MAX_LENGTH, {
+        message: `Comment must be at most ${IssueCommentConstraints.CONTENT_MAX_LENGTH} characters`
+      });
+    },
+    {
+      submission: {
+        action: async () => {
+          this.commentError.set(null);
+          this.isSubmittingComment.set(true);
+
+          try {
+            await firstValueFrom(
+              this.issuesService.addComment(this.issueId(), {
+                content: this.commentModel().content.trim()
+              })
+            );
+            this.reloadCommentsFromStart(this.issueId());
+            this.commentModel.set({ content: '' });
+            this.commentForm().reset();
+            this.toastService.success('Comment added');
+          } catch (error) {
+            this.commentError.set(
+              error instanceof Error ? error.message : 'Add comment failed.'
+            );
+          } finally {
+            this.isSubmittingComment.set(false);
+          }
+        }
+      }
+    }
+  );
 
   private lastLoadedIssueId: string | null = null;
   private commentsRequestId = 0;
@@ -92,46 +118,6 @@ export class IssueCommentsTabComponent {
       this.commentError.set(null);
       this.reloadCommentsFromStart(issueId);
     });
-  }
-
-  shouldShowCommentError(): boolean {
-    return (
-      !!this.commentForm.controls.content.errors &&
-      (this.commentForm.controls.content.touched || this.isSubmitted())
-    );
-  }
-
-  addComment(): void {
-    this.isSubmitted.set(true);
-    this.commentError.set(null);
-
-    if (this.commentForm.invalid) {
-      this.commentForm.markAllAsTouched();
-      return;
-    }
-
-    this.isSubmittingComment.set(true);
-
-    this.issuesService
-      .addComment(this.issueId(), {
-        content: this.commentForm.controls.content.value.trim()
-      })
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: () => {
-          this.reloadCommentsFromStart(this.issueId());
-          this.commentForm.reset({ content: '' });
-          this.commentForm.markAsPristine();
-          this.commentForm.markAsUntouched();
-          this.isSubmitted.set(false);
-          this.isSubmittingComment.set(false);
-          this.toastService.success('Comment added');
-        },
-        error: (error: Error) => {
-          this.commentError.set(error.message);
-          this.isSubmittingComment.set(false);
-        }
-      });
   }
 
   showMoreComments(): void {

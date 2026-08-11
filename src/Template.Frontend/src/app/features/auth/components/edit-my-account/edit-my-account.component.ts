@@ -1,28 +1,28 @@
 import { Component, DestroyRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import {
-  FormControl,
-  FormGroup,
-  ReactiveFormsModule,
-  Validators
-} from '@angular/forms';
+import { form, FormField, FormRoot, maxLength, required } from '@angular/forms/signals';
 import { Router, RouterLink } from '@angular/router';
 import { ToastService } from '@core/toast/services/toast.service';
 import { MyAccountDto } from '@features/auth/models/auth.model';
 import { AuthService } from '@features/auth/services/auth.service';
 import { AuthConstraints, AuthMessages } from '@features/auth/utils/auth.utils';
 import { BackButtonComponent } from '@shared/components/back-button/back-button.component';
+import { FormFieldComponent } from '@shared/components/form-field/form-field.component';
+import { whenTouched } from '@shared/forms/signal-forms.utils';
 import { ButtonDirective } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { InputText } from 'primeng/inputtext';
 import { Message } from 'primeng/message';
 import { Panel } from 'primeng/panel';
 import { ProgressSpinner } from 'primeng/progressspinner';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-edit-my-account',
   imports: [
-    ReactiveFormsModule,
+    FormField,
+    FormFieldComponent,
+    FormRoot,
     RouterLink,
     BackButtonComponent,
     Card,
@@ -46,22 +46,64 @@ export class EditMyAccountComponent {
   readonly isLoading = signal(true);
   readonly isSubmitting = signal(false);
 
-  readonly form = new FormGroup({
-    firstName: new FormControl('', {
-      nonNullable: true,
-      validators: [
-        Validators.required,
-        Validators.maxLength(AuthConstraints.NAME_MAX_LENGTH)
-      ]
-    }),
-    lastName: new FormControl('', {
-      nonNullable: true,
-      validators: [
-        Validators.required,
-        Validators.maxLength(AuthConstraints.NAME_MAX_LENGTH)
-      ]
-    })
+  readonly profileModel = signal({
+    firstName: '',
+    lastName: ''
   });
+
+  readonly profileForm = form(
+    this.profileModel,
+    (path) => {
+      required(path.firstName, {
+        when: whenTouched,
+        message: 'First name is required.'
+      });
+      maxLength(path.firstName, AuthConstraints.NAME_MAX_LENGTH, {
+        message: `First name must be at most ${AuthConstraints.NAME_MAX_LENGTH} characters.`
+      });
+      required(path.lastName, { when: whenTouched, message: 'Last name is required.' });
+      maxLength(path.lastName, AuthConstraints.NAME_MAX_LENGTH, {
+        message: `Last name must be at most ${AuthConstraints.NAME_MAX_LENGTH} characters.`
+      });
+    },
+    {
+      submission: {
+        action: async () => {
+          const account = this.account();
+          if (!account) {
+            return;
+          }
+
+          this.isSubmitting.set(true);
+          this.submitError.set(null);
+
+          const { firstName, lastName } = this.profileModel();
+
+          try {
+            const updatedAccount = await firstValueFrom(
+              this.authService.updateMyAccount({
+                version: account.version,
+                firstName,
+                lastName
+              })
+            );
+            this.authService.syncProfileToSession(
+              updatedAccount.firstName,
+              updatedAccount.lastName
+            );
+            this.toastService.success(AuthMessages.profileUpdated);
+            void this.router.navigate(['/account']);
+          } catch (error) {
+            this.submitError.set(
+              error instanceof Error ? error.message : 'Save failed.'
+            );
+          } finally {
+            this.isSubmitting.set(false);
+          }
+        }
+      }
+    }
+  );
 
   constructor() {
     this.reload();
@@ -78,7 +120,7 @@ export class EditMyAccountComponent {
       .subscribe({
         next: (account) => {
           this.account.set(account);
-          this.form.patchValue({
+          this.profileModel.set({
             firstName: account.firstName,
             lastName: account.lastName
           });
@@ -89,42 +131,5 @@ export class EditMyAccountComponent {
           this.isLoading.set(false);
         }
       });
-  }
-
-  onSubmit(): void {
-    if (this.form.invalid || this.isSubmitting()) {
-      this.form.markAllAsTouched();
-      return;
-    }
-
-    this.isSubmitting.set(true);
-    this.submitError.set(null);
-
-    const account = this.account();
-    if (!account) {
-      this.isSubmitting.set(false);
-      return;
-    }
-
-    const { firstName, lastName } = this.form.getRawValue();
-
-    this.authService
-      .updateMyAccount({ version: account.version, firstName, lastName })
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: (account) => {
-          this.authService.syncProfileToSession(account.firstName, account.lastName);
-          this.toastService.success(AuthMessages.profileUpdated);
-          void this.router.navigate(['/account']);
-        },
-        error: (error: Error) => {
-          this.submitError.set(error.message);
-          this.isSubmitting.set(false);
-        }
-      });
-  }
-
-  shouldShowError(control: FormControl<string>): boolean {
-    return control.touched && control.invalid;
   }
 }

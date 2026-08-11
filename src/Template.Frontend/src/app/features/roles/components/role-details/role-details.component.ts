@@ -7,8 +7,7 @@ import {
   input,
   signal
 } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ToastService } from '@core/toast/services/toast.service';
 import {
@@ -48,7 +47,6 @@ import { debounceTime, distinctUntilChanged } from 'rxjs';
 @Component({
   selector: 'app-role-details',
   imports: [
-    ReactiveFormsModule,
     RouterLink,
     BackButtonComponent,
     Card,
@@ -96,7 +94,7 @@ export class RoleDetailsComponent {
   readonly hasLoadedUsers = signal(false);
   readonly errorMessage = signal<string | null>(null);
   readonly showSystemRoleEditBlockedMessage = signal(false);
-  readonly usersSearchControl = new FormControl('', { nonNullable: true });
+  readonly usersSearchQuery = signal('');
 
   readonly canManageRoles = computed(() =>
     this.authService.hasPermission(PermissionCodes.rolesManage)
@@ -124,14 +122,16 @@ export class RoleDetailsComponent {
       this.loadRole();
     });
 
-    this.usersSearchControl.valueChanges
+    this.usersSearchQuery.set('');
+
+    toObservable(this.usersSearchQuery)
       .pipe(
         debounceTime(300),
         distinctUntilChanged(),
         takeUntilDestroyed(this.destroyRef)
       )
-      .subscribe(() => {
-        const search = this.usersSearchControl.value.trim() || undefined;
+      .subscribe((query) => {
+        const search = query.trim() || undefined;
         this.assignedUsersGrid.set(
           createGridQuery({
             skip: 0,

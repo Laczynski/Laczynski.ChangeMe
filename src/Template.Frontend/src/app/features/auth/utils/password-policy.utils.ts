@@ -4,7 +4,15 @@ import {
   ValidatorFn,
   Validators
 } from '@angular/forms';
+import {
+  maxLength,
+  minLength,
+  required,
+  validate,
+  type SchemaPath
+} from '@angular/forms/signals';
 import { AuthConstraints } from '@features/auth/utils/auth.utils';
+import { whenTouched } from '@shared/forms/signal-forms.utils';
 
 export interface PasswordPolicySettings {
   minimumLength: number;
@@ -64,4 +72,50 @@ export function passwordPolicyValidator(policy: PasswordPolicySettings): Validat
 
     return null;
   };
+}
+
+export function getPasswordPolicyValidationError(
+  password: string,
+  policy: PasswordPolicySettings
+): string | undefined {
+  if (policy.requireUppercase && !/[A-Z]/.test(password)) {
+    return 'Password must contain at least one uppercase letter.';
+  }
+
+  if (policy.requireLowercase && !/[a-z]/.test(password)) {
+    return 'Password must contain at least one lowercase letter.';
+  }
+
+  if (policy.requireDigit && !/\d/.test(password)) {
+    return 'Password must contain at least one digit.';
+  }
+
+  if (policy.requireSpecialCharacter && !/[^A-Za-z0-9]/.test(password)) {
+    return 'Password must contain at least one special character.';
+  }
+
+  return undefined;
+}
+
+export function applyPasswordPolicyRules(
+  passwordPath: SchemaPath<string>,
+  policy: PasswordPolicySettings
+): void {
+  required(passwordPath, { when: whenTouched, message: 'Password is required.' });
+  minLength(passwordPath, policy.minimumLength, {
+    when: whenTouched,
+    message: `Password must be at least ${policy.minimumLength} characters long.`
+  });
+  maxLength(passwordPath, policy.maximumLength, {
+    when: whenTouched,
+    message: `Password must be less than ${policy.maximumLength} characters long.`
+  });
+  validate(passwordPath, ({ value, state }) => {
+    if (!state.touched()) {
+      return undefined;
+    }
+
+    const message = getPasswordPolicyValidationError(value(), policy);
+    return message ? { kind: 'passwordPolicy', message } : undefined;
+  });
 }

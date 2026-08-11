@@ -1,26 +1,34 @@
 import { Component, inject, signal } from '@angular/core';
 import {
-  FormControl,
-  FormGroup,
-  ReactiveFormsModule,
-  Validators
-} from '@angular/forms';
+  email,
+  form,
+  FormField,
+  FormRoot,
+  maxLength,
+  minLength,
+  required
+} from '@angular/forms/signals';
 import { ActivatedRoute } from '@angular/router';
 import { AuthPageComponent } from '@features/auth/components/auth-page/auth-page.component';
 import { AuthService } from '@features/auth/services/auth.service';
 import { AuthConstraints, AuthMessages } from '@features/auth/utils/auth.utils';
+import { FormFieldComponent } from '@shared/components/form-field/form-field.component';
+import { whenTouched } from '@shared/forms/signal-forms.utils';
 import { ButtonDirective } from 'primeng/button';
 import { IconField } from 'primeng/iconfield';
 import { InputIcon } from 'primeng/inputicon';
 import { InputPassword } from 'primeng/inputpassword';
 import { InputText } from 'primeng/inputtext';
 import { Message } from 'primeng/message';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-login',
   host: { class: 'flex min-h-0 flex-1 flex-col' },
   imports: [
-    ReactiveFormsModule,
+    FormField,
+    FormFieldComponent,
+    FormRoot,
     AuthPageComponent,
     ButtonDirective,
     IconField,
@@ -40,53 +48,53 @@ export class LoginComponent {
   readonly authConstraints = AuthConstraints;
   passwordMasked = true;
 
-  readonly form = new FormGroup({
-    email: new FormControl('', {
-      nonNullable: true,
-      validators: [
-        Validators.required,
-        Validators.email,
-        Validators.maxLength(AuthConstraints.EMAIL_MAX_LENGTH)
-      ]
-    }),
-    password: new FormControl('', {
-      nonNullable: true,
-      validators: [
-        Validators.required,
-        Validators.minLength(AuthConstraints.PASSWORD_MIN_LENGTH),
-        Validators.maxLength(AuthConstraints.PASSWORD_MAX_LENGTH)
-      ]
-    })
+  readonly loginModel = signal({
+    email: '',
+    password: ''
   });
 
-  onSubmit(): void {
-    if (this.form.invalid || this.isSubmitting()) {
-      this.form.markAllAsTouched();
-      return;
-    }
+  readonly loginForm = form(
+    this.loginModel,
+    (path) => {
+      required(path.email, { when: whenTouched, message: 'Email is required.' });
+      email(path.email, { message: 'Enter a valid email address.' });
+      maxLength(path.email, AuthConstraints.EMAIL_MAX_LENGTH, {
+        message: `Email must be less than ${AuthConstraints.EMAIL_MAX_LENGTH} characters long.`
+      });
 
-    this.isSubmitting.set(true);
-    this.errorMessage.set('');
+      required(path.password, { when: whenTouched, message: 'Password is required.' });
+      minLength(path.password, AuthConstraints.PASSWORD_MIN_LENGTH, {
+        when: whenTouched,
+        message: `Password must be at least ${AuthConstraints.PASSWORD_MIN_LENGTH} characters long.`
+      });
+      maxLength(path.password, AuthConstraints.PASSWORD_MAX_LENGTH, {
+        message: `Password must be less than ${AuthConstraints.PASSWORD_MAX_LENGTH} characters long.`
+      });
+    },
+    {
+      submission: {
+        action: async () => {
+          this.errorMessage.set('');
+          this.isSubmitting.set(true);
 
-    this.authService.login(this.form.getRawValue()).subscribe({
-      next: () => {
-        const returnUrl =
-          this.route.snapshot.queryParamMap.get('returnUrl') ?? '/issues';
-        this.authService.continueAfterLogin(returnUrl);
-      },
-      error: (error) => {
-        const message =
-          error instanceof Error ? error.message : AuthMessages.invalidCredentials;
-        this.errorMessage.set(
-          message === AuthMessages.deactivatedAccount
-            ? message
-            : AuthMessages.invalidCredentials
-        );
-        this.isSubmitting.set(false);
-      },
-      complete: () => {
-        this.isSubmitting.set(false);
+          try {
+            await firstValueFrom(this.authService.login(this.loginModel()));
+            const returnUrl =
+              this.route.snapshot.queryParamMap.get('returnUrl') ?? '/issues';
+            this.authService.continueAfterLogin(returnUrl);
+          } catch (error) {
+            const message =
+              error instanceof Error ? error.message : AuthMessages.invalidCredentials;
+            this.errorMessage.set(
+              message === AuthMessages.deactivatedAccount
+                ? message
+                : AuthMessages.invalidCredentials
+            );
+          } finally {
+            this.isSubmitting.set(false);
+          }
+        }
       }
-    });
-  }
+    }
+  );
 }

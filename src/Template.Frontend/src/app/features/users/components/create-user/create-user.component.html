@@ -7,68 +7,34 @@
     <app-back-button label="Back to users list" [route]="['/users']" />
   </div>
 
-  <form class="p-fluid flex flex-col gap-4" [formGroup]="form" (ngSubmit)="onSubmit()">
+  <form class="p-fluid flex flex-col gap-4" [formRoot]="userForm">
     <p-panel header="Profile" [toggleable]="true">
       <div class="grid gap-4 sm:grid-cols-2">
-        <div class="flex flex-col gap-1.5">
+        <app-form-field [field]="userForm.firstName">
           <label for="firstName">First name</label>
           <input
             id="firstName"
             type="text"
             pInputText
-            [formControl]="form.controls.firstName"
-            [invalid]="shouldShowError(form.controls.firstName)"
+            [formField]="userForm.firstName"
           />
-          @if (
-            shouldShowError(form.controls.firstName) &&
-            form.controls.firstName.errors?.['required']
-          ) {
-            <p-message severity="error" variant="simple">
-              First name is required.
-            </p-message>
-          }
-        </div>
-        <div class="flex flex-col gap-1.5">
+        </app-form-field>
+
+        <app-form-field [field]="userForm.lastName">
           <label for="lastName">Last name</label>
-          <input
-            id="lastName"
-            type="text"
-            pInputText
-            [formControl]="form.controls.lastName"
-            [invalid]="shouldShowError(form.controls.lastName)"
-          />
-          @if (
-            shouldShowError(form.controls.lastName) &&
-            form.controls.lastName.errors?.['required']
-          ) {
-            <p-message severity="error" variant="simple">
-              Last name is required.
-            </p-message>
-          }
-        </div>
+          <input id="lastName" type="text" pInputText [formField]="userForm.lastName" />
+        </app-form-field>
       </div>
 
-      <div class="mt-4 flex flex-col gap-1.5">
+      <app-form-field class="mt-4" [field]="userForm.email">
         <label for="email">Email</label>
-        <input
-          id="email"
-          type="email"
-          pInputText
-          [formControl]="form.controls.email"
-          [invalid]="shouldShowError(form.controls.email)"
-        />
-        @if (
-          shouldShowError(form.controls.email) &&
-          form.controls.email.errors?.['required']
-        ) {
-          <p-message severity="error" variant="simple">Email is required.</p-message>
-        }
-      </div>
+        <input id="email" type="email" pInputText [formField]="userForm.email" />
+      </app-form-field>
     </p-panel>
 
     <p-panel header="Password" [toggleable]="true">
       <div class="grid gap-4 sm:grid-cols-2">
-        <div class="flex flex-col gap-1.5">
+        <app-form-field [field]="userForm.password">
           <label for="password">Password</label>
           <p-iconfield iconPosition="right">
             <input
@@ -77,9 +43,8 @@
               pInputPassword
               [(mask)]="passwordMasked"
               autocomplete="new-password"
-              [formControl]="form.controls.password"
+              [formField]="userForm.password"
               [fluid]="true"
-              [invalid]="shouldShowError(form.controls.password)"
             />
             <p-inputicon>
               <button
@@ -95,16 +60,9 @@
               </button>
             </p-inputicon>
           </p-iconfield>
-          @if (
-            shouldShowError(form.controls.password) &&
-            form.controls.password.errors?.['passwordPolicy']
-          ) {
-            <p-message severity="error" variant="simple">
-              {{ form.controls.password.errors['passwordPolicy'] }}
-            </p-message>
-          }
-        </div>
-        <div class="flex flex-col gap-1.5">
+        </app-form-field>
+
+        <app-form-field [field]="userForm.confirmPassword">
           <label for="confirmPassword">Confirm password</label>
           <p-iconfield iconPosition="right">
             <input
@@ -113,9 +71,8 @@
               pInputPassword
               [(mask)]="confirmPasswordMasked"
               autocomplete="new-password"
-              [formControl]="form.controls.confirmPassword"
+              [formField]="userForm.confirmPassword"
               [fluid]="true"
-              [invalid]="shouldShowError(form.controls.confirmPassword)"
             />
             <p-inputicon>
               <button
@@ -133,33 +90,32 @@
               </button>
             </p-inputicon>
           </p-iconfield>
-        </div>
+        </app-form-field>
       </div>
-      @if (form.touched && form.errors?.['passwordMismatch']) {
-        <p-message severity="error" variant="simple">Passwords do not match.</p-message>
-      }
     </p-panel>
 
     <p-panel header="Roles" [toggleable]="true">
-      <div class="flex flex-col gap-1.5">
+      <app-form-field #roleIdsField [field]="userForm.roleIds">
         <label for="roles">Roles</label>
         <p-select
           inputId="roles"
           [multiple]="true"
-          [formControl]="form.controls.roleIds"
+          [ngModel]="userModel().roleIds"
+          (ngModelChange)="setRoleIds($event)"
+          [ngModelOptions]="{ standalone: true }"
           [options]="roleOptions()"
           optionLabel="name"
           optionValue="id"
           placeholder="Select roles"
           [loading]="isLoadingRoles()"
-          [invalid]="shouldShowError(form.controls.roleIds)"
+          [invalid]="roleIdsField.showErrors()"
         />
-      </div>
+      </app-form-field>
     </p-panel>
 
     <app-effective-permissions
       [permissions]="effectivePermissions()"
-      [roleIdsSelected]="form.controls.roleIds.value.length > 0"
+      [roleIdsSelected]="roleIdsSelected()"
     />
 
     @if (submitError()) {

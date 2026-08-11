@@ -61,10 +61,22 @@ For dev server, lint, format, and test commands from `src/Template.Frontend` or 
 
 ## Forms and templates
 
-- Follow the existing Angular standalone template style already used in the repo.
-- Use typed reactive forms with explicit control binding in templates: `[formControl]="form.controls.field"` (or `filtersForm.controls.field`, `criterion.controls.content`, and so on). Do not use `formControlName`, `formGroupName`, or `formArrayName`.
-- Keep `[formGroup]="form"` on the `<form>` element for submit handling and group-level validators.
-- For `FormArray` rows, iterate `form.controls.arrayName.controls` and bind nested fields with `[formControl]="row.controls.field"` from the loop variable.
+- Use **Signal Forms** from `@angular/forms/signals` for all user-facing forms. Import `form`, `FormField`, validators (`required`, `minLength`, `maxLength`, `email`, `validate`, `applyEach`, and so on), and `submit` from that entry point.
+- Define a **writable signal model** (plain object) as the single source of truth; pass it to `form(model, schemaFn)` to get a typed `FieldTree`.
+- Bind inputs with `[formField]="form.field"` on native inputs, textareas, and PrimeNG controls that support it (for example `p-checkbox` with `[binary]="true"`).
+- Read field state with `form.field().touched()`, `form.field().invalid()`, and `form.field().errors()`. Read whole-form state with `form().valid()` / `form().invalid()`.
+- Use `submit(form, …)` only for programmatic submission (tests, wizards, auto-save). For user-facing forms, prefer declarative submission via `FormRoot`.
+- Bind `<form [formRoot]="form">` and define `submission: { action, onInvalid? }` in the third argument to `form()`. `FormRoot` sets `novalidate`, prevents default navigation, marks fields touched, and runs `action` when valid.
+- In `submission.action`, `await` HTTP calls (for example with `firstValueFrom`) so concurrent submits are blocked by Signal Forms.
+- Wrap each labeled control in `<app-form-field [field]="form.field">` from `shared/components/form-field/`. Project the label and input inside; the wrapper renders inline validation after touch (`touched() && invalid()`) with `p-message`.
+- For bridged `p-select`, use a template ref and bind `[invalid]="fieldRef.showErrors()"` on the select.
+- `[formField]` forwards field state (including `invalid`) to PrimeNG inputs such as `pInputText` and `pTextarea`, which apply the `p-invalid` class when the field is invalid. Validators that fail on empty initial values (`required`, `minLength`, and similar) must use `{ when: whenTouched }` so fields stay valid until the user interacts — matching PrimeNG’s Signal Forms examples and keeping red borders aligned with `app-form-field` error messages. Import `whenTouched` from `shared/forms/signal-forms.utils`. For custom `validate()` rules without a `when` option, return no error until `state.touched()` is true.
+- Do not bind `[invalid]` on the same element as `[formField]`; Signal Forms already forward invalid state to PrimeNG. Use `[invalid]="fieldRef.showErrors()"` only on bridged `p-select` controls.
+- **PrimeNG `p-select` (single/multi) and permission checkbox groups** do not yet bind via `[formField]`; bridge them with `FormsModule` `ngModel` (`[ngModelOptions]="{ standalone: true }"`) reading/writing the model signal or `field().value.set(...)`. Keep the Signal Form schema as the validation source of truth.
+- **Reactive forms** (`FormGroup`, `FormControl`, `ReactiveFormsModule`) are allowed only when Signal Forms cannot express the control (same PrimeNG exceptions above, or third-party controls without signal support). Document the reason in the component if non-obvious.
+- Do not use `formControlName`, `formGroupName`, or `formArrayName`.
+- For dynamic arrays, mutate the model signal (push/filter items) and use `applyEach` in the schema; iterate `form.arrayField` in templates with `@for`.
+- Filter/search inputs that are not submit forms (for example list search boxes) may use a plain `signal` instead of a form model.
 - Keep user-facing text consistent within a feature. If a feature is already English-only in UI text, do not partially localize one screen.
 - Prefer moving formatting or mapping logic out of templates when it starts to obscure the markup.
 
@@ -99,8 +111,8 @@ Do not commit license keys to the repository. For local development, use a perso
 ### Component usage
 
 - Import PrimeNG modules in the standalone `imports` array of the component that uses them. Do not create a global `SharedModule`.
-- Prefer PrimeNG form controls (`pInputText`, `pTextarea`, `p-select`, `p-multiselect`, `p-checkbox`, `p-password`) with reactive forms and `[formControl]` binding instead of native HTML inputs.
-- For validated fields, bind invalid state to PrimeNG: `[invalid]="form.controls.field.touched && form.controls.field.errors"`.
+- Prefer PrimeNG form controls (`pInputText`, `pTextarea`, `p-select`, `p-multiselect`, `p-checkbox`, `p-password`) with Signal Forms (`[formField]`) or the documented `ngModel` bridge for `p-select` and permission checkbox groups.
+- For validated bridged fields, bind invalid state to PrimeNG: `[invalid]="fieldRef.showErrors()"` where `fieldRef` is a template ref on the surrounding `<app-form-field>`.
 - Wrap page content in `p-card` when a screen needs a clear content frame; use `p-fluid` on forms that should stretch inputs to the container width.
 - Use `p-message` for inline validation and request errors. Put the message copy inside the tag (`<p-message>â€¦</p-message>`); do not use the deprecated `text` input.
 - PrimeNG exposes toast through `MessageService` (`add` / `clear`) plus `<p-toast>` in the root template. Use the app `ToastService` facade in features so `key`, `life`, and severity helpers stay consistent; do not inject `MessageService` in feature code.

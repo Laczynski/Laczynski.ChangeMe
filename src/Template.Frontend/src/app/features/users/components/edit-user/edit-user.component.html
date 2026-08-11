@@ -33,67 +33,58 @@
       </button>
     </div>
   } @else {
-    <form
-      class="p-fluid flex flex-col gap-4"
-      [formGroup]="form"
-      (ngSubmit)="onSubmit()"
-    >
+    <form class="p-fluid flex flex-col gap-4" [formRoot]="userForm">
       <p-panel header="Profile" [toggleable]="true">
         <div class="grid gap-4 sm:grid-cols-2">
-          <div class="flex flex-col gap-1.5">
+          <app-form-field [field]="userForm.firstName">
             <label for="firstName">First name</label>
             <input
               id="firstName"
               type="text"
               pInputText
-              [formControl]="form.controls.firstName"
-              [invalid]="shouldShowError(form.controls.firstName)"
+              [formField]="userForm.firstName"
             />
-          </div>
-          <div class="flex flex-col gap-1.5">
+          </app-form-field>
+
+          <app-form-field [field]="userForm.lastName">
             <label for="lastName">Last name</label>
             <input
               id="lastName"
               type="text"
               pInputText
-              [formControl]="form.controls.lastName"
-              [invalid]="shouldShowError(form.controls.lastName)"
+              [formField]="userForm.lastName"
             />
-          </div>
+          </app-form-field>
         </div>
 
-        <div class="mt-4 flex flex-col gap-1.5">
+        <app-form-field class="mt-4" [field]="userForm.email">
           <label for="email">Email</label>
-          <input
-            id="email"
-            type="email"
-            pInputText
-            [formControl]="form.controls.email"
-            [invalid]="shouldShowError(form.controls.email)"
-          />
-        </div>
+          <input id="email" type="email" pInputText [formField]="userForm.email" />
+        </app-form-field>
       </p-panel>
 
       @if (showRolesField()) {
         <p-panel header="Roles" [toggleable]="true">
-          <div class="flex flex-col gap-1.5">
+          <app-form-field #roleIdsField [field]="userForm.roleIds">
             <label for="roles">Roles</label>
             <p-select
               inputId="roles"
               [multiple]="true"
-              [formControl]="form.controls.roleIds"
+              [ngModel]="userModel().roleIds"
+              (ngModelChange)="setRoleIds($event)"
+              [ngModelOptions]="{ standalone: true }"
               [options]="roleOptions()"
               optionLabel="name"
               optionValue="id"
               placeholder="Select roles"
-              [invalid]="shouldShowError(form.controls.roleIds)"
+              [invalid]="roleIdsField.showErrors()"
             />
-          </div>
+          </app-form-field>
         </p-panel>
 
         <app-effective-permissions
           [permissions]="effectivePermissions()"
-          [roleIdsSelected]="form.controls.roleIds.value.length > 0"
+          [roleIdsSelected]="roleIdsSelected()"
         />
       }
 
@@ -102,7 +93,7 @@
           <div class="flex items-center gap-2">
             <p-checkbox
               inputId="deactivated"
-              [formControl]="form.controls.deactivated"
+              [formField]="userForm.deactivated"
               [binary]="true"
             />
             <label for="deactivated">Deactivated</label>

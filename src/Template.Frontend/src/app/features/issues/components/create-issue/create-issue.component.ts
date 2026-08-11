@@ -1,12 +1,15 @@
 import { Component, DestroyRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { FormsModule } from '@angular/forms';
 import {
-  FormArray,
-  FormControl,
-  FormGroup,
-  ReactiveFormsModule,
-  Validators
-} from '@angular/forms';
+  applyEach,
+  form,
+  FormField,
+  FormRoot,
+  maxLength,
+  minLength,
+  required
+} from '@angular/forms/signals';
 import { Router } from '@angular/router';
 import { ToastService } from '@core/toast/services/toast.service';
 import {
@@ -23,6 +26,8 @@ import {
   issueStatuses
 } from '@features/issues/utils/issue.utils';
 import { BackButtonComponent } from '@shared/components/back-button/back-button.component';
+import { FormFieldComponent } from '@shared/components/form-field/form-field.component';
+import { whenTouched } from '@shared/forms/signal-forms.utils';
 import { ButtonDirective } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { Checkbox } from 'primeng/checkbox';
@@ -31,25 +36,25 @@ import { Message } from 'primeng/message';
 import { Panel } from 'primeng/panel';
 import { Select } from 'primeng/select';
 import { Textarea } from 'primeng/textarea';
+import { firstValueFrom } from 'rxjs';
 
-type CreateIssueForm = {
-  title: FormControl<string>;
-  description: FormControl<string>;
-  status: FormControl<IssueStatus>;
-  priority: FormControl<IssuePriority>;
-  assignedToUserId: FormControl<string | null>;
-  watchAfterCreate: FormControl<boolean>;
-  acceptanceCriteria: FormArray<FormGroup<AcceptanceCriterionForm>>;
-};
-
-type AcceptanceCriterionForm = {
-  content: FormControl<string>;
+type CreateIssueFormModel = {
+  title: string;
+  description: string;
+  status: IssueStatus;
+  priority: IssuePriority;
+  assignedToUserId: string | null;
+  watchAfterCreate: boolean;
+  acceptanceCriteria: { content: string }[];
 };
 
 @Component({
   selector: 'app-create-issue',
   imports: [
-    ReactiveFormsModule,
+    FormField,
+    FormFieldComponent,
+    FormRoot,
+    FormsModule,
     Card,
     BackButtonComponent,
     ButtonDirective,
@@ -76,36 +81,84 @@ export class CreateIssueComponent {
   readonly isLoadingAssignableUsers = signal(true);
   readonly isSubmitting = signal(false);
   readonly submitError = signal<string | null>(null);
-  readonly isSubmitted = signal(false);
 
-  readonly form = new FormGroup<CreateIssueForm>({
-    title: new FormControl('', {
-      nonNullable: true,
-      validators: [
-        Validators.required,
-        Validators.minLength(IssueConstraints.TITLE_MIN_LENGTH),
-        Validators.maxLength(IssueConstraints.TITLE_MAX_LENGTH)
-      ]
-    }),
-    description: new FormControl('', {
-      nonNullable: true,
-      validators: [
-        Validators.required,
-        Validators.maxLength(IssueConstraints.DESCRIPTION_MAX_LENGTH)
-      ]
-    }),
-    status: new FormControl(IssueStatus.NEW, {
-      nonNullable: true,
-      validators: [Validators.required]
-    }),
-    priority: new FormControl(IssuePriority.MEDIUM, {
-      nonNullable: true,
-      validators: [Validators.required]
-    }),
-    assignedToUserId: new FormControl<string | null>(null),
-    watchAfterCreate: new FormControl(true, { nonNullable: true }),
-    acceptanceCriteria: new FormArray<FormGroup<AcceptanceCriterionForm>>([])
+  readonly issueModel = signal<CreateIssueFormModel>({
+    title: '',
+    description: '',
+    status: IssueStatus.NEW,
+    priority: IssuePriority.MEDIUM,
+    assignedToUserId: null,
+    watchAfterCreate: true,
+    acceptanceCriteria: []
   });
+
+  readonly issueForm = form(
+    this.issueModel,
+    (path) => {
+      required(path.title, { when: whenTouched, message: 'Title is required' });
+      minLength(path.title, IssueConstraints.TITLE_MIN_LENGTH, {
+        when: whenTouched,
+        message: `Title must be at least ${IssueConstraints.TITLE_MIN_LENGTH} characters`
+      });
+      maxLength(path.title, IssueConstraints.TITLE_MAX_LENGTH, {
+        message: `Title must be at most ${IssueConstraints.TITLE_MAX_LENGTH} characters`
+      });
+
+      required(path.description, {
+        when: whenTouched,
+        message: 'Description is required'
+      });
+      maxLength(path.description, IssueConstraints.DESCRIPTION_MAX_LENGTH, {
+        message: `Description must be at most ${IssueConstraints.DESCRIPTION_MAX_LENGTH} characters`
+      });
+
+      required(path.status, { when: whenTouched, message: 'Status is required' });
+      required(path.priority, { when: whenTouched, message: 'Priority is required' });
+
+      applyEach(path.acceptanceCriteria, (item) => {
+        required(item.content, {
+          when: whenTouched,
+          message: 'Acceptance criterion is required'
+        });
+        maxLength(item.content, IssueAcceptanceCriteriaConstraints.CONTENT_MAX_LENGTH, {
+          message: `Acceptance criterion must be at most ${IssueAcceptanceCriteriaConstraints.CONTENT_MAX_LENGTH} characters`
+        });
+      });
+    },
+    {
+      submission: {
+        action: async () => {
+          this.submitError.set(null);
+          this.isSubmitting.set(true);
+
+          const model = this.issueModel();
+          const request: CreateIssueRequest = {
+            title: model.title.trim(),
+            description: model.description.trim(),
+            status: model.status,
+            priority: model.priority,
+            assignedToUserId: model.assignedToUserId,
+            watchAfterCreate: model.watchAfterCreate,
+            acceptanceCriteria: model.acceptanceCriteria.map((criterion) => ({
+              content: criterion.content.trim()
+            }))
+          };
+
+          try {
+            const issue = await firstValueFrom(this.issuesService.createIssue(request));
+            this.toastService.success('Issue created', issue.title);
+            void this.router.navigate(['/issues', issue.id]);
+          } catch (error) {
+            this.submitError.set(
+              error instanceof Error ? error.message : 'Create failed.'
+            );
+          } finally {
+            this.isSubmitting.set(false);
+          }
+        }
+      }
+    }
+  );
 
   constructor() {
     this.issuesService
@@ -123,75 +176,32 @@ export class CreateIssueComponent {
   }
 
   addAcceptanceCriterion(): void {
-    this.form.controls.acceptanceCriteria.push(this.createAcceptanceCriterionGroup());
+    this.issueModel.update((model) => ({
+      ...model,
+      acceptanceCriteria: [...model.acceptanceCriteria, { content: '' }]
+    }));
   }
 
   removeAcceptanceCriterion(index: number): void {
-    this.form.controls.acceptanceCriteria.removeAt(index);
+    this.issueModel.update((model) => ({
+      ...model,
+      acceptanceCriteria: model.acceptanceCriteria.filter((_, i) => i !== index)
+    }));
+  }
+
+  setStatus(status: IssueStatus): void {
+    this.issueForm.status().value.set(status);
+  }
+
+  setPriority(priority: IssuePriority): void {
+    this.issueForm.priority().value.set(priority);
+  }
+
+  setAssignedToUserId(userId: string | null): void {
+    this.issueForm.assignedToUserId().value.set(userId);
   }
 
   cancel(): void {
     void this.router.navigate(['/issues']);
-  }
-
-  onSubmit(): void {
-    this.isSubmitted.set(true);
-    this.submitError.set(null);
-
-    if (this.form.invalid) {
-      this.form.markAllAsTouched();
-      return;
-    }
-
-    const request: CreateIssueRequest = {
-      title: this.form.controls.title.value.trim(),
-      description: this.form.controls.description.value.trim(),
-      status: this.form.controls.status.value,
-      priority: this.form.controls.priority.value,
-      assignedToUserId: this.form.controls.assignedToUserId.value,
-      watchAfterCreate: this.form.controls.watchAfterCreate.value,
-      acceptanceCriteria: this.form.controls.acceptanceCriteria.controls.map(
-        (criterion) => ({
-          content: criterion.controls.content.value.trim()
-        })
-      )
-    };
-
-    this.isSubmitting.set(true);
-
-    this.issuesService
-      .createIssue(request)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: (issue) => {
-          this.isSubmitting.set(false);
-          this.toastService.success('Issue created', issue.title);
-          void this.router.navigate(['/issues', issue.id]);
-        },
-        error: (error: Error) => {
-          this.submitError.set(error.message);
-          this.isSubmitting.set(false);
-        }
-      });
-  }
-
-  shouldShowError(
-    control: FormControl<string> | FormControl<IssueStatus> | FormControl<IssuePriority>
-  ): boolean {
-    return !!control.errors && (control.touched || this.isSubmitted());
-  }
-
-  private createAcceptanceCriterionGroup(
-    content = ''
-  ): FormGroup<AcceptanceCriterionForm> {
-    return new FormGroup({
-      content: new FormControl(content, {
-        nonNullable: true,
-        validators: [
-          Validators.required,
-          Validators.maxLength(IssueAcceptanceCriteriaConstraints.CONTENT_MAX_LENGTH)
-        ]
-      })
-    });
   }
 }

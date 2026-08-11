@@ -1,5 +1,6 @@
 import { Component, computed, input } from '@angular/core';
-import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { FormsModule } from '@angular/forms';
+import type { FieldTree } from '@angular/forms/signals';
 import { PermissionCatalogItemDto } from '@features/roles/models/role.model';
 import {
   RoleMessages,
@@ -10,7 +11,7 @@ import { Message } from 'primeng/message';
 
 @Component({
   selector: 'app-permission-checklist',
-  imports: [ReactiveFormsModule, Checkbox, Message],
+  imports: [FormsModule, Checkbox, Message],
   template: `
     <div class="flex flex-col gap-4">
       @if (showFormError()) {
@@ -31,8 +32,10 @@ import { Message } from 'primeng/message';
               >
                 <p-checkbox
                   [inputId]="permission.code"
-                  [formControl]="control()"
-                  [value]="permission.code"
+                  [binary]="true"
+                  [ngModel]="isPermissionSelected(permission.code)"
+                  (ngModelChange)="setPermissionSelected(permission.code, $event)"
+                  [ngModelOptions]="{ standalone: true }"
                 />
                 <label
                   [attr.for]="permission.code"
@@ -53,7 +56,7 @@ import { Message } from 'primeng/message';
 })
 export class PermissionChecklistComponent {
   readonly catalog = input<PermissionCatalogItemDto[]>([]);
-  readonly control = input.required<FormControl<string[]>>();
+  readonly permissionCodesField = input.required<FieldTree<string[]>>();
   readonly showFormError = input(false);
 
   readonly RoleMessages = RoleMessages;
@@ -61,4 +64,17 @@ export class PermissionChecklistComponent {
   readonly groupedPermissions = computed(() =>
     groupEffectivePermissions(this.catalog())
   );
+
+  isPermissionSelected(code: string): boolean {
+    return this.permissionCodesField()().value().includes(code);
+  }
+
+  setPermissionSelected(code: string, selected: boolean): void {
+    const fieldState = this.permissionCodesField()();
+    const current = fieldState.value();
+
+    fieldState.value.set(
+      selected ? [...current, code] : current.filter((item) => item !== code)
+    );
+  }
 }

@@ -1,33 +1,14 @@
 <div class="flex flex-col gap-4 pt-2">
-  <form class="p-fluid" [formGroup]="commentForm" (ngSubmit)="addComment()">
-    <div class="flex flex-col gap-1.5">
+  <form class="p-fluid" [formRoot]="commentForm">
+    <app-form-field [field]="commentForm.content">
       <label for="comment-content">Add a comment</label>
       <textarea
         id="comment-content"
         pTextarea
-        [formControl]="commentForm.controls.content"
+        [formField]="commentForm.content"
         rows="4"
-        [invalid]="
-          commentForm.controls.content.touched && commentForm.controls.content.errors
-        "
       ></textarea>
-    </div>
-
-    @if (shouldShowCommentError()) {
-      <div class="mt-2 flex flex-col gap-2">
-        @if (commentForm.controls.content.errors?.['required']) {
-          <p-message severity="error" variant="simple">
-            Comment content is required
-          </p-message>
-        }
-        @if (commentForm.controls.content.errors?.['maxlength']) {
-          <p-message severity="error" variant="simple">
-            Comment must be at most
-            {{ issueCommentConstraints.CONTENT_MAX_LENGTH }} characters
-          </p-message>
-        }
-      </div>
-    }
+    </app-form-field>
 
     @if (commentError()) {
       <p-message severity="error" class="mt-2">

@@ -35,44 +35,28 @@
       </button>
     </div>
   } @else {
-    <form
-      class="p-fluid flex flex-col gap-4"
-      [formGroup]="form"
-      (ngSubmit)="onSubmit()"
-    >
+    <form class="p-fluid flex flex-col gap-4" [formRoot]="roleForm">
       <p-panel header="Role details" [toggleable]="true">
-        <div class="flex flex-col gap-1.5">
+        <app-form-field [field]="roleForm.name">
           <label for="name">Name</label>
-          <input
-            id="name"
-            type="text"
-            pInputText
-            [formControl]="form.controls.name"
-            [invalid]="shouldShowError(form.controls.name)"
-          />
-        </div>
+          <input id="name" type="text" pInputText [formField]="roleForm.name" />
+        </app-form-field>
 
-        <div class="mt-4 flex flex-col gap-1.5">
+        <app-form-field class="mt-4" [field]="roleForm.description">
           <label for="description">Description</label>
           <textarea
             id="description"
             pTextarea
             rows="3"
-            [formControl]="form.controls.description"
-            [invalid]="shouldShowError(form.controls.description)"
+            [formField]="roleForm.description"
           ></textarea>
-          @if (shouldShowError(form.controls.description)) {
-            <p-message severity="error" variant="simple">
-              {{ RoleMessages.descriptionTooLong }}
-            </p-message>
-          }
-        </div>
+        </app-form-field>
       </p-panel>
 
       <p-panel header="Permissions" [toggleable]="true">
         <app-permission-checklist
           [catalog]="catalog()"
-          [control]="form.controls.permissionCodes"
+          [permissionCodesField]="roleForm.permissionCodes"
           [showFormError]="permissionsError()"
         />
       </p-panel>

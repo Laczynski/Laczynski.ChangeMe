@@ -111,7 +111,8 @@
           id="assignedUsersSearch"
           type="text"
           pInputText
-          [formControl]="usersSearchControl"
+          [value]="usersSearchQuery()"
+          (input)="usersSearchQuery.set($any($event.target).value)"
           placeholder="Search assigned users..."
           class="w-full"
         />
