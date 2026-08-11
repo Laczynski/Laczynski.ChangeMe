@@ -13,7 +13,7 @@ updates:
           - patch
 
   - package-ecosystem: npm
-    directory: /src/ChangeMe.Frontend
+    directory: /src/Template.Frontend
     schedule:
       interval: weekly
     ignore:
@@ -58,7 +58,7 @@ updates:
           - patch
 
   - package-ecosystem: nuget
-    directory: /src/ChangeMe.Backend
+    directory: /src/Template.Backend
     schedule:
       interval: weekly
     groups:

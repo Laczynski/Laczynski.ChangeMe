@@ -15,7 +15,7 @@
 | [deployment.md](deployment.md)                                       | Runtime API URL, production checklist, TLS, CORS, split-host deployment          |
 | [data-generator.md](data-generator.md)                               | Fill the database with optional demo users and issues after migrations           |
 | [ci.md](ci.md)                                                       | Understand GitHub Actions, reproduce CI locally, or debug a failing pipeline job |
-| [publishing.md](publishing.md)                                       | Release the `ChangeMe` NuGet template on tag push                              |
+| [publishing.md](publishing.md)                                       | Release the `Template` NuGet template on tag push                              |
 
 ## Start here by task
 

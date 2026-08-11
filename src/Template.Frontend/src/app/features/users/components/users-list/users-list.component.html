@@ -1,0 +1,129 @@
+<p-card
+  class="mb-4"
+  header="Users list"
+  subheader="Browse, search and manage user accounts."
+>
+  <div class="mb-4 flex justify-end">
+    @if (canCreateUsers()) {
+      <a pButton [routerLink]="['/users/create']">
+        <i class="pi pi-user-plus" aria-hidden="true"></i>
+        Create user
+      </a>
+    }
+  </div>
+
+  @if (errorMessage()) {
+    <p-message severity="error" class="mb-4">{{ errorMessage() }}</p-message>
+  }
+
+  <p-menu #userActionsMenu [model]="userActionItems()" [popup]="true" />
+
+  <dg-prime-data-grid [grid]="grid" dataKey="id" searchPlaceholder="Search users…">
+    <ng-template
+      dgColumn="LastName"
+      header="Name"
+      [filter]="{ type: 'text', placeholder: 'Name contains…' }"
+      let-user
+    >
+      <a
+        class="text-primary font-medium hover:underline"
+        [routerLink]="['/users', user.id]"
+      >
+        {{ formatUserName(user) || '—' }}
+      </a>
+    </ng-template>
+
+    <ng-template
+      dgColumn="Email"
+      header="Email"
+      [filter]="{ type: 'text', placeholder: 'Email contains…' }"
+      let-user
+    >
+      {{ user.email }}
+    </ng-template>
+
+    <ng-template
+      dgColumn="Status"
+      header="Status"
+      [filter]="{ type: 'enum', options: statusFilters }"
+      let-user
+    >
+      <p-tag
+        [value]="getUserStatusLabel(user.status)"
+        [severity]="getUserStatusSeverity(user.status)"
+      />
+    </ng-template>
+
+    <ng-template dgColumn="RoleNames" header="Roles" [sortable]="false" let-user>
+      <div class="flex flex-wrap gap-1">
+        @for (roleName of user.roleNames; track roleName) {
+          <p-tag [value]="roleName" severity="secondary" />
+        }
+      </div>
+    </ng-template>
+
+    <ng-template
+      dgColumn="LastSignInAt"
+      header="Last sign-in"
+      [filter]="{ type: 'date' }"
+      let-user
+    >
+      @if (user.lastSignInAt) {
+        {{ user.lastSignInAt | date: 'dd.MM.yyyy HH:mm' }}
+      } @else {
+        {{ UserMessages.neverSignedIn }}
+      }
+    </ng-template>
+
+    <ng-template
+      dgColumn="CreatedAt"
+      header="Created at"
+      [filter]="{ type: 'date' }"
+      let-user
+    >
+      {{ user.createdAt | date: 'dd.MM.yyyy HH:mm' }}
+    </ng-template>
+
+    <ng-template dgColumn="actions" header="" [sortable]="false" let-user>
+      <button
+        type="button"
+        pButton
+        severity="secondary"
+        [text]="true"
+        size="small"
+        [iconOnly]="true"
+        pTooltip="User actions"
+        tooltipPosition="top"
+        [attr.aria-label]="'Actions for ' + formatUserReference(user)"
+        (click)="openUserActionsMenu($event, user)"
+      >
+        <i class="pi pi-ellipsis-v" aria-hidden="true"></i>
+      </button>
+    </ng-template>
+
+    <ng-template dgEmpty>
+      <div class="flex flex-col items-center gap-2 py-4">
+        <p class="text-muted-color m-0 text-center">{{ emptyMessage() }}</p>
+        <div class="flex flex-wrap items-center justify-center gap-2">
+          @if (canCreateUsers()) {
+            <a pButton size="small" [routerLink]="['/users/create']">
+              <i class="pi pi-user-plus" aria-hidden="true"></i>
+              Create user
+            </a>
+          }
+          <button
+            type="button"
+            pButton
+            size="small"
+            severity="secondary"
+            [outlined]="true"
+            (click)="refresh()"
+          >
+            <i class="pi pi-refresh" aria-hidden="true"></i>
+            Refresh
+          </button>
+        </div>
+      </div>
+    </ng-template>
+  </dg-prime-data-grid>
+</p-card>

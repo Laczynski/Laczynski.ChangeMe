@@ -4,7 +4,7 @@
 
 ## Overview
 
-`ChangeMe.Backend.DataGenerator` is a console project under `src/ChangeMe.Backend/tools/ChangeMe.Backend.DataGenerator/`. It is **not** part of the production API host and is **not** used by automated tests.
+`Template.Backend.DataGenerator` is a console project under `src/Template.Backend/tools/Template.Backend.DataGenerator/`. It is **not** part of the production API host and is **not** used by automated tests.
 
 | Mechanism               | Purpose                                                                  |
 | ----------------------- | ------------------------------------------------------------------------ |
@@ -16,7 +16,7 @@
 1. Database is reachable (see `docs/technical/database-and-docker.md`).
 2. Migrations applied (automatic on API startup in Development, or `npm run ef:database:update` from the repository root).
 
-3. `ConnectionStrings:DefaultConnection` in `src/ChangeMe.Backend/src/ChangeMe.Backend.Web/appsettings.Development.json` points at your database.
+3. `ConnectionStrings:DefaultConnection` in `src/Template.Backend/src/Template.Backend.Web/appsettings.Development.json` points at your database.
 
 ## Commands
 
@@ -42,15 +42,15 @@ All inserts go through domain factories (`User.Create`, `Issue.Create`, etc.) an
 
 ## Configuration
 
-Settings live in the Web project `appsettings.Development.json` under `DataGenerator` (also documented in the tool [README](../../src/ChangeMe.Backend/tools/ChangeMe.Backend.DataGenerator/README.md)).
+Settings live in the Web project `appsettings.Development.json` under `DataGenerator` (also documented in the tool [README](../../src/Template.Backend/tools/Template.Backend.DataGenerator/README.md)).
 
-The generator copies `appsettings.json` and `appsettings.Development.json` from `ChangeMe.Backend.Web` at build output time.
+The generator copies `appsettings.json` and `appsettings.Development.json` from `Template.Backend.Web` at build output time.
 
 ## Architecture
 
 ```text
 npm run data:generate
-  → ChangeMe.Backend.DataGenerator (console)
+  → Template.Backend.DataGenerator (console)
   → DatabaseConfig.InitializeDatabaseAsync (migrate + ApplicationDataSeeder)
   → DemoDataExistsChecker (skip or DemoDataCleaner on --reset)
   → UsersGenerator → IssuesGenerator → NotificationsGenerator

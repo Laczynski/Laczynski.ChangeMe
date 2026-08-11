@@ -1,0 +1,12 @@
+global using System;
+global using System.Linq;
+global using System.Threading.Tasks;
+global using Ardalis.Result;
+global using Microsoft.EntityFrameworkCore;
+global using Microsoft.EntityFrameworkCore.Metadata.Builders;
+global using Microsoft.Extensions.Configuration;
+global using Microsoft.Extensions.DependencyInjection;
+global using Microsoft.Extensions.Logging;
+global using Template.Backend.Domain.Aggregates.Users.Interfaces;
+global using Template.Backend.Domain.Common;
+global using Template.Backend.Infrastructure.Common;

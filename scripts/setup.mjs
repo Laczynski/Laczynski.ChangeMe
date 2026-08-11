@@ -52,7 +52,7 @@ function checkPrerequisite(command, args, label) {
   console.log(`✓ ${label}${version ? ` (${version})` : ""}`);
 }
 
-console.log("ChangeMe setup\n");
+console.log("Laczynski Template setup\n");
 
 checkPrerequisite("node", ["--version"], "Node.js");
 checkPrerequisite("dotnet", ["--version"], ".NET SDK");
@@ -77,7 +77,7 @@ if (dockerCheck.status === 0) {
 console.log("\nInstalling dependencies...");
 run("npm", ["install"]);
 run("npm", ["run", "install:frontend"]);
-run("dotnet", ["restore", "src/ChangeMe.Backend/ChangeMe.Backend.slnx"]);
+run("dotnet", ["restore", "src/Template.Backend/Template.Backend.slnx"]);
 
 console.log("\nSetup complete.");
 console.log("Next steps:");

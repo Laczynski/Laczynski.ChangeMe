@@ -16,7 +16,7 @@ Today Compose overrides only what the container must differ from local `dotnet r
 
 To change Docker-only settings, prefer `docker-compose.yml` environment entries over editing appsettings committed for local dev.
 
-For sensitive local overrides (JWT signing key, SMTP credentials, database password), see `src/ChangeMe.Backend/src/ChangeMe.Backend.Web/secrets.json.example` and set values via [User Secrets](https://learn.microsoft.com/aspnet/core/security/app-secrets) or environment variables — never commit real secrets.
+For sensitive local overrides (JWT signing key, SMTP credentials, database password), see `src/Template.Backend/src/Template.Backend.Web/secrets.json.example` and set values via [User Secrets](https://learn.microsoft.com/aspnet/core/security/app-secrets) or environment variables — never commit real secrets.
 
 Deployed stacks (runtime API URL, TLS, CORS, production checklist): [deployment.md](deployment.md).
 
@@ -34,7 +34,7 @@ For a one-off apply without starting the API: `npm run ef:database:update`.
 
 - **Docker Compose** runs `postgres` (image `postgres:18`) and wires the API to that host.
 - PostgreSQL **18+** official images store data under a versioned path; mount the named volume at **`/var/lib/postgresql`** (not `/var/lib/postgresql/data`). After upgrading from PostgreSQL 16/17 Compose volumes, run `npm run docker:down:volumes` once and recreate the stack, or migrate data with `pg_dump` / `pg_upgrade`.
-- Default connection string for local dev: `src/ChangeMe.Backend/src/ChangeMe.Backend.Web/appsettings.Development.json`.
+- Default connection string for local dev: `src/Template.Backend/src/Template.Backend.Web/appsettings.Development.json`.
 
 - **Integration tests** use disposable databases via Testcontainers (`BackendWebApplicationFactory`). The factory calls `MigrateAsync()`. A running Docker engine is required.
 

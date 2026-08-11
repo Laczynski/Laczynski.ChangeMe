@@ -1,0 +1,146 @@
+<p-card header="Issues list" subheader="Browse, filter and monitor issues.">
+  <div class="mb-4 flex justify-end">
+    <a pButton [routerLink]="['/issues', 'create']">
+      <i class="pi pi-plus" aria-hidden="true"></i>
+      Add issue
+    </a>
+  </div>
+
+  @if (errorMessage()) {
+    <p-message severity="error" class="mb-4">{{ errorMessage() }}</p-message>
+  }
+
+  <p-menu #issueActionsMenu [model]="issueActionItems()" [popup]="true" />
+
+  <dg-prime-data-grid [grid]="grid" dataKey="id" searchPlaceholder="Search issues…">
+    <ng-template
+      dgColumn="Title"
+      header="Title"
+      [filter]="{ type: 'text', placeholder: 'Title contains…' }"
+      let-issue
+    >
+      <a
+        class="text-primary font-medium hover:underline"
+        [routerLink]="['/issues', issue.id]"
+      >
+        {{ issue.title }}
+      </a>
+    </ng-template>
+
+    <ng-template
+      dgColumn="Status"
+      header="Status"
+      [filter]="{ type: 'enum', options: issueStatuses() }"
+      let-issue
+    >
+      <p-tag
+        [value]="getIssueStatusLabel(issue.status)"
+        [severity]="getIssueStatusSeverity(issue.status)"
+      />
+    </ng-template>
+
+    <ng-template
+      dgColumn="Priority"
+      header="Priority"
+      [filter]="{ type: 'enum', options: issuePriorities() }"
+      let-issue
+    >
+      <p-tag
+        [value]="getIssuePriorityLabel(issue.priority)"
+        [severity]="getIssuePrioritySeverity(issue.priority)"
+      />
+    </ng-template>
+
+    <ng-template
+      dgColumn="AssignedToUserId"
+      header="Assigned to"
+      [sortable]="false"
+      [filter]="assignedToFilter()"
+      let-issue
+    >
+      {{ issue.assignedToUserName || 'Unassigned' }}
+    </ng-template>
+
+    <ng-template
+      dgColumn="CreatedAt"
+      header="Created at"
+      [filter]="{ type: 'date' }"
+      let-issue
+    >
+      {{ issue.createdAt | date: 'dd.MM.yyyy HH:mm' }}
+    </ng-template>
+
+    <ng-template
+      dgColumn="LastActivityAt"
+      header="Last activity"
+      [filter]="{ type: 'date' }"
+      let-issue
+    >
+      {{ issue.lastActivityAt | date: 'dd.MM.yyyy HH:mm' }}
+    </ng-template>
+
+    <ng-template dgColumn="actions" header="" [sortable]="false" let-issue>
+      <div class="flex flex-wrap items-center gap-2">
+        <button
+          type="button"
+          pButton
+          [severity]="issue.isWatchedByCurrentUser ? 'success' : 'secondary'"
+          [outlined]="!issue.isWatchedByCurrentUser"
+          size="small"
+          [disabled]="isWatchPending(issue.id)"
+          [pTooltip]="getWatchTooltip(issue)"
+          tooltipPosition="top"
+          [attr.aria-label]="getWatchTooltip(issue)"
+          (click)="toggleWatch(issue)"
+        >
+          @if (isWatchPending(issue.id)) {
+            <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
+          } @else {
+            <i
+              [class]="issue.isWatchedByCurrentUser ? 'pi pi-bell-slash' : 'pi pi-bell'"
+              aria-hidden="true"
+            ></i>
+          }
+          {{ issue.watchersCount }}
+        </button>
+        <button
+          type="button"
+          pButton
+          severity="secondary"
+          [text]="true"
+          size="small"
+          [iconOnly]="true"
+          pTooltip="Issue actions"
+          tooltipPosition="top"
+          [attr.aria-label]="'Actions for ' + issue.title"
+          (click)="openIssueActionsMenu($event, issue)"
+        >
+          <i class="pi pi-ellipsis-v" aria-hidden="true"></i>
+        </button>
+      </div>
+    </ng-template>
+
+    <ng-template dgEmpty>
+      <div class="flex flex-col items-center gap-2 py-4">
+        <p class="text-center text-muted-color">{{ emptyMessage() }}</p>
+        <div class="flex flex-wrap items-center gap-2">
+          <a pButton size="small" [routerLink]="['/issues', 'create']">
+            <i class="pi pi-plus" aria-hidden="true"></i>
+            Add issue
+          </a>
+          <button
+            type="button"
+            pButton
+            size="small"
+            severity="secondary"
+            [outlined]="true"
+            (click)="refresh()"
+          >
+            <i class="pi pi-refresh" aria-hidden="true"></i>
+            Refresh
+          </button>
+        </div>
+      </div>
+    </ng-template>
+  </dg-prime-data-grid>
+</p-card>

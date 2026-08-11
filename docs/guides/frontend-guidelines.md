@@ -1,6 +1,6 @@
 # Frontend Guidelines
 
-> **L5 — Implementation.** Scope: current conventions for writing Angular code in this frontend.
+> **L5 â€” Implementation.** Scope: current conventions for writing Angular code in this frontend.
 >
 > **Product behaviour** (lists, forms, validation UX, toasts): [`product-standards.md`](../requirements/_shared/conventions/product-standards.md) (L2). **Feature rules**: target `FR-*` (L4). This file covers _how_ to implement in Angular/PrimeNG.
 
@@ -8,7 +8,7 @@
 
 Angular 22 standalone application with strict TypeScript settings, ESLint, and Prettier. UI components come from **PrimeNG** with the **Aura**-based `AppPreset` from `@primeuix/themes`. Layout and spacing use **Tailwind CSS v4** with the official `tailwindcss-primeui` plugin. State currently uses a mix of Angular signals and RxJS Observables. HTTP calls go through a shared `ApiService`. Feature code is grouped under `src/app/features`.
 
-For dev server, lint, format, and test commands from `src/ChangeMe.Frontend` or from the repository root (`npm run start:frontend`, `npm run lint:frontend`, and related scripts), see `AGENTS.md`.
+For dev server, lint, format, and test commands from `src/Template.Frontend` or from the repository root (`npm run start:frontend`, `npm run lint:frontend`, and related scripts), see `AGENTS.md`.
 
 ## Project structure
 
@@ -18,7 +18,7 @@ For dev server, lint, format, and test commands from `src/ChangeMe.Frontend` or 
 - Put validation limits, select options, labels, and other UI-oriented constants in a single `features/<feature>/utils/<feature>.utils.ts` file (for example `issue.utils.ts`, `auth.utils.ts`). Keep DTOs, enums, and request/response shapes in `models/`.
 - Put shared transport or utility contracts in `shared/`.
 - Put cross-cutting app services in `core/` or `features/auth/` depending on ownership.
-- Use `app-back-button` with a fixed **label** and **route** for in-app back navigation (for example **`Back to issues list`** → **`/issues`**, **`Back to issue details`** → **`/issues/:id`**). Do not use browser history stacks or `sessionStorage` navigation stacks.
+- Use `app-back-button` with a fixed **label** and **route** for in-app back navigation (for example **`Back to issues list`** â†’ **`/issues`**, **`Back to issue details`** â†’ **`/issues/:id`**). Do not use browser history stacks or `sessionStorage` navigation stacks.
 
 ## Component rules
 
@@ -55,7 +55,7 @@ For dev server, lint, format, and test commands from `src/ChangeMe.Frontend` or 
 ## API base URL
 
 - **Development (`ng serve`):** explicit in `environment.development.ts` (`http://localhost:5000/api/v1`).
-- **Production / Docker:** explicit in `public/runtime-config.js` (`apiUrl: '/api/v1'`) or `CHANGE_ME_API_URL` — no value in `environment.ts`.
+- **Production / Docker:** explicit in `public/runtime-config.js` (`apiUrl: '/api/v1'`) or `CHANGE_ME_API_URL` â€” no value in `environment.ts`.
 - HTTP and SignalR services use `getApiUrl()` / `getNotificationsHubUrl()` from `src/environments/runtime-config.ts`.
 - Deployment patterns (nginx `/api` proxy, CORS, split hosts): [deployment.md](../technical/deployment.md).
 
@@ -74,8 +74,8 @@ For dev server, lint, format, and test commands from `src/ChangeMe.Frontend` or 
 
 > **Warning:** From PrimeNG v22, the library is part of **PrimeUI** and requires a valid license key for production use. Without a key, PrimeNG may display a license notice in the UI.
 
-- **Community License (free)** — for eligible small teams, students, non-profits, and non-commercial OSS. See [Community License](https://primeui.dev/licenses/community).
-- **Commercial License (paid)** — for organizations that do not qualify for the community tier. See [Commercial License](https://primeui.dev/licenses/commercial).
+- **Community License (free)** â€” for eligible small teams, students, non-profits, and non-commercial OSS. See [Community License](https://primeui.dev/licenses/community).
+- **Commercial License (paid)** â€” for organizations that do not qualify for the community tier. See [Commercial License](https://primeui.dev/licenses/commercial).
 - Full terms are also in `node_modules/primeng/LICENSE.md`.
 
 Set the key once in `providePrimeNG()` in `src/app/app.config.ts`:
@@ -102,12 +102,12 @@ Do not commit license keys to the repository. For local development, use a perso
 - Prefer PrimeNG form controls (`pInputText`, `pTextarea`, `p-select`, `p-multiselect`, `p-checkbox`, `p-password`) with reactive forms and `[formControl]` binding instead of native HTML inputs.
 - For validated fields, bind invalid state to PrimeNG: `[invalid]="form.controls.field.touched && form.controls.field.errors"`.
 - Wrap page content in `p-card` when a screen needs a clear content frame; use `p-fluid` on forms that should stretch inputs to the container width.
-- Use `p-message` for inline validation and request errors. Put the message copy inside the tag (`<p-message>…</p-message>`); do not use the deprecated `text` input.
+- Use `p-message` for inline validation and request errors. Put the message copy inside the tag (`<p-message>â€¦</p-message>`); do not use the deprecated `text` input.
 - PrimeNG exposes toast through `MessageService` (`add` / `clear`) plus `<p-toast>` in the root template. Use the app `ToastService` facade in features so `key`, `life`, and severity helpers stay consistent; do not inject `MessageService` in feature code.
 - Use `p-message` for inline field validation and screen-level load errors; use toasts for successful mutations and action failures that are not tied to a single form field.
 - Use `p-tag` for compact status labels such as issue status or priority.
 - Use `p-table` for tabular data, `p-paginator` for server-driven paging, and `p-progressSpinner` or table `[loading]` for in-flight data.
-- **List screens** (full-page tables and grids — for example Issues, Users, Roles) use **QueryGrid** via `@query-grid/primeng` (`<qg-prime-data-grid>`, `QgColumnDirective`, `GridResourceFactory`). Column-header filters, multi-sort, search, and pagination are driven by a `GridResource` created in the component; the feature service passes `GridQuery` to the API as a `grid` query parameter and returns `GridResult<T>` from `@query-grid/core`. See `features/issues/components/issues-list/` as the reference implementation.
+- **List screens** (full-page tables and grids â€” for example Issues, Users, Roles) use **DataGrid** via `@laczynski/datagrid-primeng` (`<dg-prime-data-grid>`, `DgColumnDirective`, `GridResourceFactory`). Column-header filters, multi-sort, search, and pagination are driven by a `GridResource` created in the component; the feature service passes `GridQuery` to the API as a `grid` query parameter and returns `GridResult<T>` from `@laczynski/datagrid`. See `features/issues/components/issues-list/` as the reference implementation.
 - **Embedded lists** (issue tabs, sessions, notifications, role assigned users) call the same API shape with `GridQuery`/`GridResult`; use `shared/data/utils/grid.utils.ts` for `createGridQuery`, `hasMoreGridItems`, and `createIssueTabGridQuery`.
 - Keep business logic in feature services and component TypeScript. PrimeNG should handle presentation only.
 
@@ -120,9 +120,9 @@ Do not commit license keys to the repository. For local development, use a perso
 - Put PrimeNG semantic color and surface utilities (`bg-surface-0`, `border-surface-200`, `text-color`, `dark:` variants) on elements you control directly in the template. Do not wrap them in custom CSS classes unless you must target PrimeNG internal markup.
 - Omit `styleUrl` on feature components unless a screen has a rare rule that cannot be expressed with template utilities or PrimeNG inputs (`class`, `pt`, and so on).
 - For host-enabled PrimeNG components (`<p-* />` whose visible root is the custom element, e.g. `p-progress-spinner`, `p-timeline`), use the native `class` attribute instead of deprecated `styleClass`.
-- Overlay components that render their panel inside the template (`p-drawer`, `p-dialog`) still need `styleClass` to style the visible surface — `class` on the host does not reach the inner panel.
-- Use named `ng-template` references (`#marker`, `#content`, …) instead of deprecated `pTemplate`.
-- Use `ButtonDirective` (`pButton`) on native `<button>` or `<a>` elements. Do not use deprecated `<p-button>`. Put icons (`<i class="pi …">`) and label text as direct children; use `[iconOnly]="true"` with `aria-label` for icon-only actions. For loading, set `[disabled]` and render `<i class="pi pi-spin pi-spinner">` instead of the regular icon. Import `ButtonDirective` from `primeng/button`.
+- Overlay components that render their panel inside the template (`p-drawer`, `p-dialog`) still need `styleClass` to style the visible surface â€” `class` on the host does not reach the inner panel.
+- Use named `ng-template` references (`#marker`, `#content`, â€¦) instead of deprecated `pTemplate`.
+- Use `ButtonDirective` (`pButton`) on native `<button>` or `<a>` elements. Do not use deprecated `<p-button>`. Put icons (`<i class="pi â€¦">`) and label text as direct children; use `[iconOnly]="true"` with `aria-label` for icon-only actions. For loading, set `[disabled]` and render `<i class="pi pi-spin pi-spinner">` instead of the regular icon. Import `ButtonDirective` from `primeng/button`.
 - On `p-drawer`, use `closable` instead of deprecated `showCloseIcon`.
 - Theme preset extensions belong in `src/app/theme/app-preset.ts`. To switch the base look, start from another preset (`Lara`, `Nora`, `Material`) in that file.
 - Application font is **Inter** (Google Fonts in `index.html`, mirrored in `AppPreset` and `@theme` in `tailwind.css`).
