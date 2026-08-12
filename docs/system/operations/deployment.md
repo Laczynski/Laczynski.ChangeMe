@@ -1,8 +1,11 @@
 # Deployment
 
-> Scope: how to run Template outside local `dotnet run` / `ng serve` — runtime API URL, Docker Compose, and production checklist.
+> Type: operations
+> Scope: system
+> Status: implemented
+> Canonical for: runtime API routing and the production deployment checklist
 >
-> Database, Compose services, and migrations: [database-and-docker.md](database-and-docker.md).
+> Local Compose: [local full-stack environment](local-stack.md). Migrations: [backend persistence](../../modules/backend/operations/persistence.md).
 
 ## How the frontend reaches the API
 
@@ -16,21 +19,9 @@ SignalR hub URL is derived from `apiUrl`. In Docker, nginx proxies `/hubs/` to t
 
 Development uses `environment.development.ts` only. Production reads **`window.__CHANGE_ME_CONFIG__.apiUrl`** from `public/runtime-config.js` (loaded before the Angular bundle) — there is no silent fallback to build-time environment files.
 
-## Docker Compose (recommended local full stack)
+## Default deployment topology
 
-From the repository root:
-
-```powershell
-npm run docker:up
-```
-
-- **Frontend:** `http://localhost:4200` — production Angular build behind nginx.
-- **Backend:** `http://localhost:5000` — direct API/Swagger access (optional).
-- **API from the browser:** `/api/v1` on port 4200 — nginx forwards to the `backend` service.
-
-The frontend container sets **`CHANGE_ME_API_URL=/api/v1`** (same origin). `nginx.conf` proxies `/api/` and `/hubs/` to `backend:8080`.
-
-Apply migrations before first run if the database volume is new — see [database-and-docker.md](database-and-docker.md).
+The Compose reference topology serves the Angular build through nginx and proxies `/api/` and `/hubs/` to `backend:8080`. The browser therefore uses one public origin. Commands, ports, services, and local configuration precedence are canonical in [local full-stack environment](local-stack.md).
 
 ## Runtime config
 
@@ -64,11 +55,11 @@ Do **not** commit real production URLs or secrets in tracked files — set `CHAN
 - Set **`InitialAdministratorOptions`** only for first bootstrap, then remove or empty passwords from config.
 - Keep **`RateLimitingOptions:Enabled`** `true` in production (see [Rate limiting](#rate-limiting)); tune `AuthPermitLimit` and `ApiPermitLimit` for your traffic.
 
-See [database-and-docker.md](database-and-docker.md) for Compose overrides and sensitive local values.
+See [local full-stack environment](local-stack.md) for Compose overrides and sensitive local values.
 
 ### Migrations
 
-- **`InitialCreate`** is included — apply with `npm run ef:database:update` or your pipeline (`dotnet ef database update`).
+- **`InitialCreate`** is included — apply with `npm run ef:database:update` or your pipeline (`dotnet ef database update`); see [backend persistence](../../modules/backend/operations/persistence.md).
 - Prefer applying migrations from **CI/CD** rather than `Database:ApplyMigrationsOnStartup` on many concurrent app instances.
 
 ### CORS
@@ -92,7 +83,7 @@ Same-origin Docker Compose (default) does not need CORS changes for browser API 
 - Restrict **`/hangfire`** when enabled (reverse proxy auth, network policy, or Hangfire authorization filters). The template ships without dashboard authentication.
 - Recurring jobs still register on every instance (`RecurringJob.AddOrUpdate` at startup); only hosts with `ServerEnabled: true` execute them.
 
-Details: [database-and-docker.md — Hangfire](database-and-docker.md#hangfire-and-background-jobs).
+Details: [backend background jobs](../../modules/backend/operations/background-jobs.md).
 
 ### Swagger / OpenAPI
 
@@ -121,6 +112,9 @@ For same-origin deployment, proxy **`/api/`**, **`/hubs/`**, and static SPA asse
 
 | Topic                                     | Document                                                             |
 | ----------------------------------------- | -------------------------------------------------------------------- |
-| Compose, Postgres, Hangfire, file storage | [database-and-docker.md](database-and-docker.md)                     |
-| CI pipeline                               | [ci.md](ci.md)                                                       |
-| Frontend conventions                      | [../guides/frontend-guidelines.md](../guides/frontend-guidelines.md) |
+| Local Compose | [local full-stack environment](local-stack.md) |
+| PostgreSQL and migrations | [backend persistence](../../modules/backend/operations/persistence.md) |
+| Hangfire | [backend background jobs](../../modules/backend/operations/background-jobs.md) |
+| File storage | [backend file storage](../../modules/backend/operations/file-storage.md) |
+| CI pipeline | [continuous integration](ci.md) |
+| Frontend implementation | [frontend development](../../modules/frontend/development.md) |

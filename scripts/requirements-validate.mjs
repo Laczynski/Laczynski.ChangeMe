@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Validate docs/requirements structure: FR specs, quality docs, conventions, cross-references.
- * Run: npm run requirements:validate
+ * Internal validator invoked by `npm run docs:validate`.
  */
 
 import { execSync } from "node:child_process";
@@ -250,7 +250,6 @@ function main() {
   }
 
   const manifest = {
-    generatedAt: new Date().toISOString(),
     functional: [...frIds.entries()]
       .sort(([a], [b]) => a.localeCompare(b))
       .map(([id, file]) => {

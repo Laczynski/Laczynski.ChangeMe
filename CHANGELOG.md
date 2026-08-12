@@ -104,9 +104,9 @@ Fresh installs: `dotnet new install Laczynski.Template --force`, then `dotnet ne
 - **Initial administrator seed** — bootstrap admin user on first empty database.
 - **Issue file attachments** — upload, download, and delete with local file storage and validation.
 - **Issue details tabs** — separate comments, change history, and attachments tabs.
-- **Data generator** — `npm run data:generate` for Development demo data (`docs/technical/data-generator.md`).
+- **Data generator** — `npm run data:generate` for Development demo data (`docs/modules/backend/demo-data.md`).
 - **Template symbols** — derived `changeMe` (camelCase) and `CHANGE_ME` (SCREAMING_SNAKE) from the `-n` project name.
-- **Documentation split** — `docs/guides/`, `docs/technical/`, `docs/requirements/` with validation via `npm run requirements:validate`; `docs/technical/deployment.md`, `database-and-docker.md`, `ci.md`, and `data-generator.md`.
+- **Documentation split** — product requirements plus system- and module-owned documentation with validation via `npm run docs:validate`.
 - **Generated-project readme** — consumer-focused root `README.md` from `template-content/generated-readme/` (maintainer readme stays on GitHub only).
 - **Frontend UI stack** — PrimeNG + Tailwind CSS; shared applied-filters chips and back-button components.
 
@@ -132,7 +132,7 @@ If you generated a project from **1.0.0** and want to align with **2.0.0** patte
 
 1. **API clients** — prefix routes with `/api/v1`.
 2. **Auth** — replace public registration with admin user creation; adopt refresh/session endpoints if you extend auth.
-3. **Production frontend** — serve SPA and API from one host with nginx proxy, or set `CHANGE_ME_API_URL` and `CorsOptions:AllowedOrigins` for split-host deployment (`docs/technical/deployment.md`).
+3. **Production frontend** — serve SPA and API from one host with nginx proxy, or set `CHANGE_ME_API_URL` and `CorsOptions:AllowedOrigins` for split-host deployment (`docs/system/operations/deployment.md`).
 4. **Scripts** — use root `package.json` for common tasks; run `npm run install:frontend` once before E2E.
 5. **Permissions** — gate new endpoints and UI with the permission catalog pattern if you add features.
 

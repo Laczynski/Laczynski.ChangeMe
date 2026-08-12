@@ -1,0 +1,52 @@
+# Persistence
+
+> Type: operations
+> Scope: backend
+> Status: implemented
+> Canonical for: PostgreSQL configuration, EF Core migrations, and test databases
+
+## Summary
+
+- `ApplicationDbContext` uses PostgreSQL.
+- EF configuration and migrations live under `Template.Backend.Infrastructure/Persistence/`.
+- Development startup applies pending migrations; production should apply them in CI/CD.
+- Integration tests create disposable PostgreSQL databases with Testcontainers.
+
+## Configuration
+
+The local connection string is in `src/Template.Backend/src/Template.Backend.Web/appsettings.Development.json`. Docker Compose overrides it so the backend connects to the `postgres` service.
+
+`InitialCreate` is included under `Infrastructure/Persistence/Migrations/`.
+
+## Migrations
+
+Run from the repository root:
+
+| Task | Command |
+| --- | --- |
+| Add | `npm run ef:migrations:add -- <Name>` |
+| Remove latest | `npm run ef:migrations:remove` |
+| Apply without starting API | `npm run ef:database:update` |
+
+In Development, `DatabaseOptions:ApplyMigrationsOnStartup` is enabled. `dotnet run`, `npm run start:backend`, and the Compose backend therefore apply pending migrations.
+
+Keep startup migration disabled in production and apply migrations from the deployment pipeline before multiple API instances start.
+
+## PostgreSQL container
+
+The local stack uses PostgreSQL 18. Official PostgreSQL 18+ images store data under a versioned directory, so the Compose volume is mounted at `/var/lib/postgresql`, not `/var/lib/postgresql/data`.
+
+When upgrading a disposable local volume from PostgreSQL 16/17, recreate it with `npm run docker:down:volumes`. Preserve non-disposable data with `pg_dump` or `pg_upgrade` instead.
+
+## Seeds and tests
+
+- `ApplicationDataSeeder` creates system roles and the optional initial administrator when database initialization runs.
+- Optional sample users and issues are owned by the [demo data tool](../demo-data.md).
+- `BackendWebApplicationFactory` creates a disposable PostgreSQL container, overrides the connection string, and calls `MigrateAsync()`.
+- Backend integration tests require a running Docker engine.
+
+## Verification
+
+Run `npm run test:backend:integration` after endpoint or persistence changes. For local schema verification, apply the migration to a disposable database and start the API.
+
+Cross-module Compose configuration: [local full-stack environment](../../../system/operations/local-stack.md).

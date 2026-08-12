@@ -10,10 +10,10 @@ It generates:
 - MailHog for local email capture
 - backend unit and integration test projects
 - Playwright E2E smoke tests (Chromium via `npm run install:frontend`)
-- `docs/` with guides, technical notes, requirements workflow (`FR-*` specs, validation script), and `AGENTS.md`
+- `docs/` with system/module ownership, architecture diagrams, requirements workflow (`FR-*` specs, validation script), and `AGENTS.md`
 - layered backend (Web → UseCases → Domain → Infrastructure), JWT + RBAC reference, API `/api/v1`, Mediator + FastEndpoints
 
-Production Docker stack uses **same-origin** `/api/v1` through nginx; see `docs/technical/deployment.md`.
+Production Docker stack uses **same-origin** `/api/v1` through nginx; see `docs/system/operations/deployment.md`.
 
 ## Install
 
@@ -29,7 +29,7 @@ dotnet new laczynski-fullstack -n IssuesDemo -o IssuesDemo
 
 ## After generation
 
-- Start the API once in Development (migrations apply on startup), then see `docs/technical/database-and-docker.md` for Compose and production notes.
+- Start the API once in Development (migrations apply on startup), then see `docs/system/operations/local-stack.md` and `docs/modules/backend/operations/persistence.md`.
 
 ## Verify the install
 

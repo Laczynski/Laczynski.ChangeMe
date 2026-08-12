@@ -1,7 +1,7 @@
 # Requirements index
 
-> Five layers: **Domain** · **Conventions** · **Quality** · **Capabilities (FR-*)** · **Implementation (guides)**.
-> Layer index: `_shared/README.md`. Start: `requirements-change-process.md`. Authoring: `requirements-authoring-guide.md`. Validate: `npm run requirements:validate`.
+> Five layers: **Domain** · **Conventions** · **Quality** · **Capabilities (FR-*)** · **Implementation (module and system docs)**.
+> Layer index: `_shared/README.md`. Start: `requirements-change-process.md`. Authoring: `requirements-authoring-guide.md`. Validate: `npm run docs:validate`.
 
 ## L1 — Domain (`_shared/domain/`)
 
@@ -80,4 +80,4 @@ See [changes/](changes/) for open requirement deltas.
 
 ---
 
-_Auto-generated from `.requirements-manifest.json` via `node scripts/requirements-readme.mjs` (also refreshed by `npm run requirements:validate`)._
+_Auto-generated from `.requirements-manifest.json` via the internal requirements validator (refreshed by `npm run docs:validate`)._

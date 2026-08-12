@@ -22,7 +22,7 @@ Avoid **`dotnet new -o`** under **`artifacts/`** (or other nested outputs inside
 
 ## Publish NuGet package
 
-Tag-based CI publish is documented in **`docs/technical/publishing.md`**. Summary:
+Tag-based CI publish is documented in **`docs/system/operations/publishing.md`**. Summary:
 
 1. Bump **`Version`** in **`template-pack/Laczynski.Template.csproj`** and update **`CHANGELOG.md`**.
 2. Push a git tag (`v2.1.0`) — [publish.yml](.github/workflows/publish.yml) tests, packs, publishes to nuget.org + GitHub Packages, and creates a GitHub Release.
@@ -33,7 +33,7 @@ Local pack only:
 npm run pack:backend
 ```
 
-Optional local push with API key — see **`docs/technical/publishing.md`**.
+Optional local push with API key — see **`docs/system/operations/publishing.md`**.
 
 Package readme: **`template-pack/NuGetPackageREADME.md`**.
 

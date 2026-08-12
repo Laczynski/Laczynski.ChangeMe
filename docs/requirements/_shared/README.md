@@ -8,7 +8,7 @@
 | **L2 Conventions**    | `conventions/`   | _How does the product usually behave?_ | Any UI, forms, lists, feedback, confirmations                                                                        |
 | **L3 Quality**        | `quality/`       | _How good must it be?_                 | Performance, a11y, i18n, responsiveness matter                                                                       |
 | **L4 Capabilities**   | `../functional/` | _What must this feature do?_           | **Always** — unit of work (`FR-*`)                                                                                   |
-| **L5 Implementation** | `../../guides/`  | _How do we build it in this repo?_     | Code patterns; [STD → test layers](../../guides/testing-guidelines.md#mapping-std--to-test-layers) when adding tests |
+| **L5 Implementation** | `../../modules/*/development.md`, `../../system/development/` | _How do we build it in this repo?_ | Module patterns; [STD → test layers](../../system/development/testing-strategy.md#mapping-std--to-test-layers) when adding tests |
 
 ## Override rule
 
@@ -20,7 +20,7 @@
 2. `conventions/product-standards.md` (L2) for UI work
 3. Relevant `domain/*` (L1) when access or entities matter
 4. Relevant `quality/*` (L3) when NFR applies
-5. Matching `docs/guides/*` (L5) for stack patterns
+5. Matching module development document and `docs/system/development/*` (L5) for implementation patterns
 
 ## Entry documents
 

@@ -96,7 +96,7 @@ public static class DatabaseConfig
       throw new InvalidOperationException(
         """
         No EF Core migrations were found in the Infrastructure assembly. MigrateAsync() succeeds with zero migrations but creates no tables.
-        Add an initial migration from the solution root (see docs/technical/database-and-docker.md):
+        Add an initial migration from the solution root (see docs/modules/backend/operations/persistence.md):
           npm run ef:migrations:add -- InitialCreate
         Then restart the API in Development (DatabaseOptions:ApplyMigrationsOnStartup is true in appsettings.Development.json), or run npm run ef:database:update.
         """);

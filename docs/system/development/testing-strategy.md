@@ -1,8 +1,11 @@
-# Testing Guidelines
+# Testing strategy
 
-> Scope: **default is no new test** unless a lower layer cannot catch the failure. Which layer owns what, anti-patterns, scenario pickers, and what to run before a PR.
+> Type: development
+> Scope: system
+> Status: implemented
+> Canonical for: test-layer ownership, intentional test omissions, and pre-PR test selection
 >
-> Commands, CI, paths, and integration-test setup: [`AGENTS.md`](../../AGENTS.md), [`docs/technical/ci.md`](../technical/ci.md), [`docs/technical/database-and-docker.md`](../technical/database-and-docker.md), and [repo-map.md](repo-map.md#test-map).
+> Commands: [`AGENTS.md`](../../../AGENTS.md). CI: [continuous integration](../operations/ci.md). Integration database: [backend persistence](../../modules/backend/operations/persistence.md). Paths: [repository map](repository-map.md#test-map).
 
 ## Core rule
 
@@ -12,7 +15,7 @@ When you add one: ground it in touched `FR-*` bullets and inherited `STD-*` / `_
 
 See [Mapping STD-\* to test layers](#mapping-std--to-test-layers) when a change inherits L2 conventions.
 
-Automated tests do **not** use `Template.Backend.DataGenerator` — they seed via `IssueTestHelper`, `TestAuthHelper`, and Testcontainers ([repo-map.md](repo-map.md#test-map), [`data-generator.md`](../technical/data-generator.md)).
+Automated tests do **not** use `Template.Backend.DataGenerator` — they seed via `IssueTestHelper`, `TestAuthHelper`, and Testcontainers ([repository map](repository-map.md#test-map), [demo data](../../modules/backend/demo-data.md)).
 
 ## Layer ownership
 
@@ -27,7 +30,7 @@ Colocate frontend specs as `*.spec.ts` next to the source. Integration tests: `s
 
 ## Mapping STD-\* to test layers
 
-Use the target `FR-*` `inherits_conventions` to see which rows apply. **L4 business rules** (field limits, side effects, rejection messages with business meaning) are proven from `FR-*` bullets — the table below is for **L2 conventions** only. Full pass/fail criteria: [product-standards.md](../requirements/_shared/conventions/product-standards.md#implementation-review-checklist).
+Use the target `FR-*` `inherits_conventions` to see which rows apply. **L4 business rules** (field limits, side effects, rejection messages with business meaning) are proven from `FR-*` bullets — the table below is for **L2 conventions** only. Full pass/fail criteria: [product-standards.md](../../requirements/_shared/conventions/product-standards.md#implementation-review-checklist).
 
 | STD             | What to prove                          | Lowest layer                         | Typical assertion                                                                            |
 | --------------- | -------------------------------------- | ------------------------------------ | -------------------------------------------------------------------------------------------- |
@@ -83,18 +86,18 @@ Pick the lowest layers that satisfy the `FR-*` bullets. Dash (`—`) means **ski
 | Visual / layout only        | —                   | —                                    | —                                                                   | —                                                         | `npm run lint:frontend` only — no new automated tests                              |
 | API contract only           | If domain changed   | **First** — contract source of truth | Models/services if mapping changed                                  | Only if user flow changes                                 | Skip frontend/E2E when only server contract changed and mapping is already covered |
 
-CI does **not** run ESLint or formatting — run `npm run lint:frontend` and `npm run format:check:all` locally when you touched matching code ([`ci.md`](../technical/ci.md)).
+CI and local quality commands: [continuous integration](../operations/ci.md).
 
 ## What to run
 
-Prefer the **smallest** relevant check. Command details: [`AGENTS.md`](../../AGENTS.md).
+Prefer the **smallest** relevant check. Command details: [`AGENTS.md`](../../../AGENTS.md).
 
 | Change                          | Run                                                                                                                             |
 | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
 | Frontend logic or services      | `npm run lint:frontend` plus `npm run test:frontend:ci` (or affected specs)                                                     |
 | Backend domain or helpers only  | `npm run test:backend:unit`                                                                                                     |
 | Backend endpoint or persistence | `npm run test:backend:integration` — Docker required                                                                            |
-| User journey or wide regression | `npm run test:all`; add `npm run test:e2e` when the journey or compliance gate changed ([e2e-guidelines.md](e2e-guidelines.md)) |
+| User journey or wide regression | `npm run test:all`; add `npm run test:e2e` when the journey or compliance gate changed ([E2E testing](e2e-testing.md)) |
 | No Docker available             | `npm run test:frontend:ci` and `npm run test:backend:unit` first; integration when Docker is up                                 |
 
 ## Guardrails for AI agents

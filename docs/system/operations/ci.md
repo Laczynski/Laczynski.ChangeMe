@@ -1,7 +1,10 @@
 # Continuous integration
 
-> Scope: GitHub Actions workflow for this repository.
-> **Source of truth:** [`.github/workflows/ci.yml`](../../.github/workflows/ci.yml) — update this file when CI changes; keep `ci.md` in sync.
+> Type: operations
+> Scope: system
+> Status: implemented
+> Canonical for: human-readable CI job ownership and local reproduction
+> Source of truth: [`.github/workflows/ci.yml`](../../../.github/workflows/ci.yml)
 
 ## Triggers
 
@@ -15,19 +18,19 @@ Four jobs run **in parallel** (no job depends on another):
 
 | Job              | What it runs                                                             | Working directory       |
 | ---------------- | ------------------------------------------------------------------------ | ----------------------- |
-| **Requirements** | `npm ci` → `npm run requirements:validate`                               | Repository root         |
+| **Documentation** | `npm ci` → docs validation → requirements validation                    | Repository root         |
 | **Frontend**     | `npm ci` → `npm test -- --watch=false` → `npm run build`                 | `src/Template.Frontend` |
 | **Backend**      | `dotnet restore` → `dotnet test` → `dotnet build`                        | Repository root         |
 | **E2E**          | PostgreSQL service → `npm ci` → Playwright → smoke tests (`npm run e2e`) | `src/Template.Frontend` |
 
-### Requirements
+### Documentation
 
-Validates `docs/requirements/` structure: `FR-*` / `NFR-*` frontmatter, cross-references, change records, and regenerates `docs/requirements/README.md`. See `docs/requirements/requirements-change-process.md`.
+`npm run docs:validate` is the only public documentation check. It validates common links, ownership, type contracts, names, and index reachability, then runs the internal requirements validator for `FR-*` / `NFR-*` frontmatter, cross-references, change records, and generated indexes. It fails when a generated requirements index was stale, after updating that file locally, so CI also verifies that generated output is committed. See `docs/requirements/requirements-change-process.md`.
 
-Run locally before pushing specification changes:
+Run locally after documentation or specification changes:
 
 ```powershell
-npm run requirements:validate
+npm run docs:validate
 ```
 
 ### Frontend
@@ -55,16 +58,16 @@ npm run requirements:validate
 | ----------------------------- | ---------------------------------------------------------------------------- |
 | Full stack in Docker          | `npm run docker:up`                                                          |
 | Backend tests only in Compose | `npm run docker:test:backend`                                                |
-| **Publishing**                | Push a `v*` tag → [publish.yml](../../.github/workflows/publish.yml)         |
-| **Dependency updates**        | Dependabot opens weekly PRs — [dependabot.yml](../../.github/dependabot.yml) |
+| **Publishing**                | Push a `v*` tag → [publish.yml](../../../.github/workflows/publish.yml)         |
+| **Dependency updates**        | Dependabot opens weekly PRs — [dependabot.yml](../../../.github/dependabot.yml) |
 
-For test scope and project layout, see `docs/guides/testing-guidelines.md`.
+For test scope and project layout, see [testing strategy](../development/testing-strategy.md).
 
 ## Publish workflow
 
 Separate from CI — runs on **tag push** `v*`. Tests, packs the `Template` template, publishes NuGet (nuget.org + GitHub Packages), and creates a GitHub Release.
 
-Details: [publishing.md](publishing.md).
+Details: [publishing](publishing.md).
 
 ## Reproduce CI locally
 
@@ -72,7 +75,7 @@ From the repository root after `npm install`:
 
 ```powershell
 npm run install:frontend
-npm run requirements:validate
+npm run docs:validate
 npm run lint:frontend
 npm run format:check:all
 npm run test:frontend:ci
@@ -91,4 +94,4 @@ npm run test:all
 npm run build:all
 ```
 
-(`test:all` does not include `requirements:validate` or frontend build.)
+(`test:all` does not include documentation validation, requirements validation, or frontend build.)

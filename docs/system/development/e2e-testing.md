@@ -1,8 +1,11 @@
-# E2E testing guidelines
+# E2E testing
 
-> Scope: Playwright smoke suite in `src/Template.Frontend/e2e/`.
+> Type: development
+> Scope: system
+> Status: implemented
+> Canonical for: Playwright suite layout, fixtures, locators, and execution
 >
-> When to add E2E: [testing-guidelines.md](testing-guidelines.md). Commands: [`AGENTS.md`](../../AGENTS.md). CI: [ci.md](../technical/ci.md).
+> When to add E2E: [testing strategy](testing-strategy.md). Commands: [`AGENTS.md`](../../../AGENTS.md). CI: [continuous integration](../operations/ci.md).
 
 ## Layout
 
@@ -136,5 +139,5 @@ npm run test:e2e:ui        # interactive debugging
 
 ## Related documents
 
-- [testing-guidelines.md](testing-guidelines.md) — layer ownership
-- [repo-map.md](repo-map.md) — where E2E lives in the repo
+- [Testing strategy](testing-strategy.md) — layer ownership
+- [Repository map](repository-map.md) — where E2E lives in the repo

@@ -22,27 +22,27 @@ The included **issue-tracking sample** shows how features are structured — log
 
 - Root **`package.json`** — start/build, lint/format, tests, E2E, EF migrations, Docker Compose, demo data, requirements validation
 - **Docker Compose** — full stack (frontend, backend, PostgreSQL, MailHog)
-- **Playwright E2E** — project layout, fixtures, smoke pattern (`docs/guides/e2e-guidelines.md`)
+- **Playwright E2E** — project layout, fixtures, smoke pattern (`docs/system/development/e2e-testing.md`)
 - **Testcontainers** — integration tests against real PostgreSQL
 - **Data generator** — Development seed data CLI (`npm run data:generate`)
 
 ### Documentation workflow
 
-| Layer                    | Purpose                                                                                             |
-| ------------------------ | --------------------------------------------------------------------------------------------------- |
-| **`docs/guides/`**       | How to implement — repo map, frontend/backend guidelines, testing & E2E guidelines, feature recipes |
-| **`docs/technical/`**    | How to run & deploy — Docker, database, CI, deployment checklist                                    |
-| **`docs/requirements/`** | What to build — `FR-*` / `NFR-*` specs, authoring guide, change process                             |
+| Location | Purpose |
+| --- | --- |
+| **`docs/requirements/`** | What to build — domain, conventions, quality, and `FR-*` specifications |
+| **`docs/system/`** | Cross-module development, designs, local stack, deployment, and CI |
+| **`docs/modules/`** | Frontend/backend implementation and operations; movable with future repositories |
 
 - **`AGENTS.md`** — fast-start for AI agents and contributors
-- **`npm run requirements:validate`** — lint specs and regenerate the requirements index
+- **`npm run docs:validate`** — check all documentation, including requirement specs, cross-references, and generated indexes
 
 ### Testing approach
 
 - **Frontend** — specs where useful; Playwright smoke tests for main flows
 - **Backend unit** — domain and infrastructure helpers
 - **Backend integration** — API behaviour with Testcontainers
-- **`docs/guides/testing-guidelines.md`** — layer ownership and when to skip redundant tests
+- **`docs/system/development/testing-strategy.md`** — layer ownership and when to skip redundant tests
 
 ## Purpose
 
@@ -101,11 +101,11 @@ npm test
 npm run test:e2e
 ```
 
-See `docs/guides/e2e-guidelines.md` for Playwright setup (Chromium from `npm run install:frontend`).
+See `docs/system/development/e2e-testing.md` for Playwright setup (Chromium from `npm run install:frontend`).
 
 ### Backend
 
-Includes `InitialCreate` — in Development, migrations apply on API startup (`DatabaseOptions:ApplyMigrationsOnStartup` is `true` in `appsettings.Development.json`; see `docs/technical/database-and-docker.md`).
+Includes `InitialCreate` — in Development, migrations apply on API startup (`DatabaseOptions:ApplyMigrationsOnStartup` is `true` in `appsettings.Development.json`; see `docs/modules/backend/operations/persistence.md`).
 
 From `src/Template.Backend`:
 
@@ -122,7 +122,7 @@ After migrations are applied, from the **repository root**:
 npm run data:generate
 ```
 
-Creates demo users (`user1@demo.local`, password in `DataGenerator:DefaultPassword`), issues, comments, and notifications. Use `npm run data:generate -- --reset` to refresh. See `docs/technical/data-generator.md`.
+Creates demo users (`user1@demo.local`, password in `DataGenerator:DefaultPassword`), issues, comments, and notifications. Use `npm run data:generate -- --reset` to refresh. See `docs/modules/backend/demo-data.md`.
 
 Useful commands:
 
@@ -145,8 +145,8 @@ This starts the frontend, backend, MailHog, and the database service defined in 
 
 See [`docs/README.md`](docs/README.md) for the full index.
 
-- `docs/guides/` - implementation conventions (start at `docs/guides/README.md`)
-- `docs/technical/` - run and configure the stack (start at `docs/technical/README.md`)
+- `docs/system/` - cross-module development, designs, and operations
+- `docs/modules/` - frontend/backend implementation and module-owned operations
 - `docs/requirements/` - product specs and change workflow (start at `docs/requirements/requirements-change-process.md`; templates `_functional-specification-template.md`, `_changes-template.md`)
 
 ## About `AGENTS.md`
@@ -170,7 +170,7 @@ Use the smallest relevant test scope for the change:
 - backend domain change: unit tests
 - backend endpoint or auth change: integration tests
 
-See `docs/guides/testing-guidelines.md`.
+See `docs/system/development/testing-strategy.md`.
 
 ## License
 

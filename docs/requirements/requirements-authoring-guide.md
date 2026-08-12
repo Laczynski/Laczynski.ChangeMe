@@ -12,7 +12,7 @@
 | **New `FR-*`**     | Copy `_functional-specification-template.md` to `docs/requirements/functional/<domain>/fr-<area>-<nnn>-<slug>.md`. Assign the next free `FR-<AREA>-NNN` in that domain. Fill frontmatter and sections per this guide. |
 | **Updated `FR-*`** | Edit the existing file only. Describe what changed in the pending change record (**Behavior delta**), not only in the specification body.                                                                             |
 
-After either path, add or update a pending record in `docs/requirements/changes/` and run `npm run requirements:validate`.
+After either path, add or update a pending record in `docs/requirements/changes/` and run `npm run docs:validate`.
 
 ## Before you write
 
@@ -83,8 +83,8 @@ Do not include source code, API endpoints, HTTP details, database tables, or mig
 | L1 Domain         | `_shared/domain/`      | What exists?                         |
 | L2 Conventions    | `_shared/conventions/` | How does the product usually behave? |
 | L3 Quality        | `_shared/quality/`     | How good must it be?                 |
-| L4 Capabilities   | `functional/FR-*`      | What must this feature do?           |
-| L5 Implementation | `docs/guides/`         | How do we build it in this repo?     |
+| L4 Capabilities   | `functional/<domain>/fr-*.md` | What must this feature do?    |
+| L5 Implementation | `docs/modules/*/development.md`, `docs/system/development/` | How do we build it in this repo? |
 
 **Override rule:** L4 overrides L2; L2 overrides implicit habit; L3 applies unless L4 scopes it out; L5 never defines product behavior.
 
@@ -93,4 +93,4 @@ Do not include source code, API endpoints, HTTP details, database tables, or mig
 1. Testable outcomes are in **Functional requirements** or in the correct shared layer.
 2. `inherits_conventions` lists only valid `STD-*` ids from `product-standards.md`.
 3. Pending change record lists every touched document with a clear **Behavior delta**.
-4. `npm run requirements:validate` passes.
+4. `npm run docs:validate` passes.

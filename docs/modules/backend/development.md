@@ -1,8 +1,11 @@
-# Backend Guidelines
+# Backend development
 
-> **L5 — Implementation.** Scope: current conventions for implementing backend work in this repository.
+> Type: development
+> Scope: backend
+> Status: implemented
+> Canonical for: .NET layer ownership, endpoint, handler, and persistence implementation rules
 >
-> **Product behaviour** and business rules: target `FR-*` (L4) and [`product-standards.md`](../requirements/_shared/conventions/product-standards.md) (L2) when API responses affect UX. This file covers _how_ to implement in .NET/FastEndpoints.
+> Product behaviour: target `FR-*` (L4) and [`product-standards.md`](../../requirements/_shared/conventions/product-standards.md) (L2) when API responses affect UX. This document owns implementation only.
 
 ## Stack summary
 
@@ -54,7 +57,7 @@ For build, run, and test commands from `src/Template.Backend` or from the reposi
 5. Add or update services in `UseCases/<Feature>/Services/` when shared, or in `UseCases/<Feature>/<ChildResource>/Services/` when sub-slice-specific.
 6. Reuse or extend domain methods in `Domain/`.
 7. Update EF configuration or migrations in `Infrastructure/` if persistence changes.
-8. Add or update integration tests when the endpoint or persistence changes ([testing-guidelines.md](testing-guidelines.md)).
+8. Add or update integration tests when the endpoint or persistence changes ([testing strategy](../../system/development/testing-strategy.md)).
 
 ## Feature and sub-slice layout
 
@@ -141,7 +144,7 @@ Infrastructure services (e.g. `UserAuthTokenService`) **stage** EF changes only 
 
 ## Tests
 
-Layer ownership, anti-patterns, and when to skip: [testing-guidelines.md](testing-guidelines.md). Integration tests: `src/Template.Backend/tests/Template.Backend.IntegrationTests/Endpoints/<Feature>/` (sub-slices for nested routes).
+Layer ownership, anti-patterns, and when to skip: [testing strategy](../../system/development/testing-strategy.md). Integration tests: `src/Template.Backend/tests/Template.Backend.IntegrationTests/Endpoints/<Feature>/` (sub-slices for nested routes).
 
 ## Guardrails for AI agents
 

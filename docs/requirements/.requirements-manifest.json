@@ -1,5 +1,4 @@
 {
-  "generatedAt": "2026-07-17T18:40:58.480Z",
   "functional": [
     {
       "id": "FR-AUTH-001",
@@ -9,7 +8,13 @@
       "status": "active",
       "file": "functional/identity/fr-auth-001-login-with-sessions.md",
       "depends_on": [],
-      "inherits_quality": [],
+      "inherits_quality": [
+        "NFR-QUAL-001",
+        "NFR-A11Y-001",
+        "NFR-I18N-001",
+        "NFR-PERF-001",
+        "NFR-RSP-001"
+      ],
       "inherits_conventions": [
         "STD-ACC-001",
         "STD-MSG-001",
@@ -75,7 +80,13 @@
         "FR-AUTH-003",
         "FR-USR-001"
       ],
-      "inherits_quality": [],
+      "inherits_quality": [
+        "NFR-QUAL-001",
+        "NFR-A11Y-001",
+        "NFR-I18N-001",
+        "NFR-PERF-001",
+        "NFR-RSP-001"
+      ],
       "inherits_conventions": [
         "STD-ACC-001",
         "STD-LST-002",
@@ -91,7 +102,13 @@
       "status": "active",
       "file": "functional/identity/fr-auth-008-password-policy.md",
       "depends_on": [],
-      "inherits_quality": [],
+      "inherits_quality": [
+        "NFR-QUAL-001",
+        "NFR-A11Y-001",
+        "NFR-I18N-001",
+        "NFR-PERF-001",
+        "NFR-RSP-001"
+      ],
       "inherits_conventions": [
         "STD-ACC-001",
         "STD-MSG-001",
@@ -109,7 +126,13 @@
         "FR-AUTH-001",
         "FR-USR-005"
       ],
-      "inherits_quality": [],
+      "inherits_quality": [
+        "NFR-QUAL-001",
+        "NFR-A11Y-001",
+        "NFR-I18N-001",
+        "NFR-PERF-001",
+        "NFR-RSP-001"
+      ],
       "inherits_conventions": [
         "STD-ACC-001",
         "STD-LST-001",
@@ -128,7 +151,13 @@
         "FR-USR-005",
         "FR-ISS-004"
       ],
-      "inherits_quality": [],
+      "inherits_quality": [
+        "NFR-QUAL-001",
+        "NFR-A11Y-001",
+        "NFR-I18N-001",
+        "NFR-PERF-001",
+        "NFR-RSP-001"
+      ],
       "inherits_conventions": [
         "STD-ACC-001",
         "STD-FRM-001",
@@ -148,7 +177,13 @@
         "FR-ISS-004",
         "FR-ISS-006"
       ],
-      "inherits_quality": [],
+      "inherits_quality": [
+        "NFR-QUAL-001",
+        "NFR-A11Y-001",
+        "NFR-I18N-001",
+        "NFR-PERF-001",
+        "NFR-RSP-001"
+      ],
       "inherits_conventions": [
         "STD-ACC-001",
         "STD-LST-002",
@@ -190,7 +225,13 @@
       "depends_on": [
         "FR-ISS-004"
       ],
-      "inherits_quality": [],
+      "inherits_quality": [
+        "NFR-QUAL-001",
+        "NFR-A11Y-001",
+        "NFR-I18N-001",
+        "NFR-PERF-001",
+        "NFR-RSP-001"
+      ],
       "inherits_conventions": [
         "STD-ACC-001",
         "STD-LST-002",
@@ -208,7 +249,13 @@
         "FR-ISS-003",
         "FR-ISS-004"
       ],
-      "inherits_quality": [],
+      "inherits_quality": [
+        "NFR-QUAL-001",
+        "NFR-A11Y-001",
+        "NFR-I18N-001",
+        "NFR-PERF-001",
+        "NFR-RSP-001"
+      ],
       "inherits_conventions": [
         "STD-ACC-001",
         "STD-LST-002",
@@ -230,7 +277,13 @@
         "FR-ROL-005",
         "FR-USR-005"
       ],
-      "inherits_quality": [],
+      "inherits_quality": [
+        "NFR-QUAL-001",
+        "NFR-A11Y-001",
+        "NFR-I18N-001",
+        "NFR-PERF-001",
+        "NFR-RSP-001"
+      ],
       "inherits_conventions": [
         "STD-ACC-001",
         "STD-MSG-001"
@@ -246,7 +299,13 @@
       "depends_on": [
         "FR-ROL-003"
       ],
-      "inherits_quality": [],
+      "inherits_quality": [
+        "NFR-QUAL-001",
+        "NFR-A11Y-001",
+        "NFR-I18N-001",
+        "NFR-PERF-001",
+        "NFR-RSP-001"
+      ],
       "inherits_conventions": [
         "STD-ACC-001",
         "STD-LST-001",
@@ -265,7 +324,13 @@
         "FR-ROL-001",
         "FR-ROL-005"
       ],
-      "inherits_quality": [],
+      "inherits_quality": [
+        "NFR-QUAL-001",
+        "NFR-A11Y-001",
+        "NFR-I18N-001",
+        "NFR-PERF-001",
+        "NFR-RSP-001"
+      ],
       "inherits_conventions": [
         "STD-ACC-001",
         "STD-FRM-001",
@@ -286,7 +351,13 @@
         "FR-ROL-003",
         "FR-USR-004"
       ],
-      "inherits_quality": [],
+      "inherits_quality": [
+        "NFR-QUAL-001",
+        "NFR-A11Y-001",
+        "NFR-I18N-001",
+        "NFR-PERF-001",
+        "NFR-RSP-001"
+      ],
       "inherits_conventions": [
         "STD-ACC-001",
         "STD-DTL-001",
@@ -308,7 +379,13 @@
         "FR-USR-004",
         "FR-USR-005"
       ],
-      "inherits_quality": [],
+      "inherits_quality": [
+        "NFR-QUAL-001",
+        "NFR-A11Y-001",
+        "NFR-I18N-001",
+        "NFR-PERF-001",
+        "NFR-RSP-001"
+      ],
       "inherits_conventions": [
         "STD-ACC-001",
         "STD-MSG-001",
@@ -322,8 +399,20 @@
       "type": "functional",
       "status": "active",
       "file": "functional/access/fr-rol-006-initial-administrator-and-system-roles.md",
-      "depends_on": [],
-      "inherits_quality": [],
+      "depends_on": [
+        "FR-AUTH-001",
+        "FR-ROL-001",
+        "FR-ROL-003",
+        "FR-ROL-004",
+        "FR-ROL-005"
+      ],
+      "inherits_quality": [
+        "NFR-QUAL-001",
+        "NFR-A11Y-001",
+        "NFR-I18N-001",
+        "NFR-PERF-001",
+        "NFR-RSP-001"
+      ],
       "inherits_conventions": [
         "STD-ACC-001",
         "STD-MSG-001"
@@ -342,7 +431,13 @@
         "FR-AUTH-004",
         "FR-ROL-001"
       ],
-      "inherits_quality": [],
+      "inherits_quality": [
+        "NFR-QUAL-001",
+        "NFR-A11Y-001",
+        "NFR-I18N-001",
+        "NFR-PERF-001",
+        "NFR-RSP-001"
+      ],
       "inherits_conventions": [
         "STD-ACC-001",
         "STD-FRM-001",
@@ -361,7 +456,13 @@
         "FR-USR-003",
         "FR-USR-005"
       ],
-      "inherits_quality": [],
+      "inherits_quality": [
+        "NFR-QUAL-001",
+        "NFR-A11Y-001",
+        "NFR-I18N-001",
+        "NFR-PERF-001",
+        "NFR-RSP-001"
+      ],
       "inherits_conventions": [
         "STD-ACC-001",
         "STD-LST-001",
@@ -381,7 +482,13 @@
         "FR-ROL-001",
         "FR-ROL-005"
       ],
-      "inherits_quality": [],
+      "inherits_quality": [
+        "NFR-QUAL-001",
+        "NFR-A11Y-001",
+        "NFR-I18N-001",
+        "NFR-PERF-001",
+        "NFR-RSP-001"
+      ],
       "inherits_conventions": [
         "STD-ACC-001",
         "STD-FRM-001",
@@ -403,7 +510,13 @@
         "FR-USR-003",
         "FR-USR-005"
       ],
-      "inherits_quality": [],
+      "inherits_quality": [
+        "NFR-QUAL-001",
+        "NFR-A11Y-001",
+        "NFR-I18N-001",
+        "NFR-PERF-001",
+        "NFR-RSP-001"
+      ],
       "inherits_conventions": [
         "STD-ACC-001",
         "STD-LST-002",
@@ -422,7 +535,13 @@
         "FR-ISS-002",
         "FR-ROL-006"
       ],
-      "inherits_quality": [],
+      "inherits_quality": [
+        "NFR-QUAL-001",
+        "NFR-A11Y-001",
+        "NFR-I18N-001",
+        "NFR-PERF-001",
+        "NFR-RSP-001"
+      ],
       "inherits_conventions": [
         "STD-ACC-001",
         "STD-MSG-001",

@@ -10,10 +10,19 @@ export function parseFrontmatter(content) {
   if (end === -1) return null;
   const block = content.slice(4, end);
   const meta = {};
-  for (const line of block.split("\n")) {
-    const m = line.match(/^([\w_]+):\s*(.+)$/);
+  const lines = block.split("\n");
+
+  for (let index = 0; index < lines.length; index += 1) {
+    const m = lines[index].match(/^([\w_]+):\s*(.*)$/);
     if (!m) continue;
-    const [, key, raw] = m;
+    const [, key] = m;
+    let raw = m[2].trim();
+
+    if (!raw && /^\s+\S/.test(lines[index + 1] ?? "")) {
+      raw = lines[index + 1].trim();
+      index += 1;
+    }
+
     if (raw.startsWith("[") && raw.endsWith("]")) {
       meta[key] = raw
         .slice(1, -1)

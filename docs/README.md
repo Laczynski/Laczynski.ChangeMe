@@ -1,50 +1,44 @@
 # Documentation index
 
-> Start with [`AGENTS.md`](../AGENTS.md) for commands, repo layout, and task-based reading order.
+> Start with [`AGENTS.md`](../AGENTS.md) for commands and task-based reading order. Documentation ownership, naming, and content rules: [documentation rules](documentation-rules.md).
 
-## Guides (`guides/`)
+## Start by task
 
-Implementation conventions and recipes. Start with [guides/README.md](guides/README.md).
+| Task | Read |
+| --- | --- |
+| Understand repository ownership | [Repository map](system/development/repository-map.md) |
+| Implement a cross-module feature | Target `FR-*` → [cross-module feature workflow](system/development/feature-workflow.md) → relevant module development doc |
+| Change frontend code | [Frontend development](modules/frontend/development.md) |
+| Understand frontend session renewal | [Auth session lifecycle](modules/frontend/architecture/auth-session-lifecycle.md) |
+| Change backend code or add an endpoint | [Backend development](modules/backend/development.md) |
+| Select test layers | [Testing strategy](system/development/testing-strategy.md) |
+| Add or debug browser journeys | [E2E testing](system/development/e2e-testing.md) |
+| Run the full stack locally | [Local full-stack environment](system/operations/local-stack.md) |
+| Change EF Core or PostgreSQL | [Backend persistence](modules/backend/operations/persistence.md) |
+| Operate Hangfire jobs | [Background jobs](modules/backend/operations/background-jobs.md) |
+| Operate attachment storage | [File storage](modules/backend/operations/file-storage.md) |
+| Generate sample data | [Demo data](modules/backend/demo-data.md) |
+| Deploy the system | [Deployment](system/operations/deployment.md) |
+| Reproduce CI | [Continuous integration](system/operations/ci.md) |
+| Publish the template | [Publishing](system/operations/publishing.md) |
+| Continue repository modularization | [Modular documentation migration](system/designs/modular-documentation-migration.md) |
 
-| Document                                                | Description                                                       |
-| ------------------------------------------------------- | ----------------------------------------------------------------- |
-| [README.md](guides/README.md)                           | Entry point — when to read each guide                             |
-| [repo-map.md](guides/repo-map.md)                       | Where code lives and which layer owns what                        |
-| [frontend-guidelines.md](guides/frontend-guidelines.md) | Angular frontend conventions                                      |
-| [backend-guidelines.md](guides/backend-guidelines.md)   | .NET backend conventions                                          |
-| [testing-guidelines.md](guides/testing-guidelines.md)   | Test layer ownership, anti-patterns, when to skip automated tests |
-| [e2e-guidelines.md](guides/e2e-guidelines.md)           | Playwright layout, locators, conventions, config, commands        |
-| [feature-recipes.md](guides/feature-recipes.md)         | Short recipes for common feature work                             |
+## Ownership
 
-## Technical (`technical/`)
+| Location | Canonical responsibility |
+| --- | --- |
+| [`requirements/`](requirements/README.md) | Product domain, conventions, quality, and functional behaviour |
+| [`system/`](system/) | Knowledge owned by the main repository or crossing module boundaries |
+| [`modules/frontend/`](modules/frontend/) | Frontend implementation and internal architecture; moves with the frontend repository |
+| [`modules/backend/`](modules/backend/) | Backend implementation, development tools, and operations; moves with the backend repository |
 
-Run, configure, and troubleshoot the stack. Start with [technical/README.md](technical/README.md).
+## Requirements workflow
 
-| Document                                                                       | Description                                                |
-| ------------------------------------------------------------------------------ | ---------------------------------------------------------- |
-| [README.md](technical/README.md)                                               | Entry point — when to read each technical doc              |
-| [technical-documentation-guide.md](technical/technical-documentation-guide.md) | When to add or extend technical docs                       |
-| [database-and-docker.md](technical/database-and-docker.md)                     | EF Core migrations, Docker Compose, Hangfire, file storage |
-| [deployment.md](technical/deployment.md)                                       | Runtime API URL, production deployment checklist           |
-| [data-generator.md](technical/data-generator.md)                               | Optional demo data for local development                   |
-| [ci.md](technical/ci.md)                                                       | GitHub Actions workflow and local reproduction             |
+Requirements remain an independent, validated structure:
 
-## Requirements (`requirements/`)
+- [Change process](requirements/requirements-change-process.md)
+- [Authoring guide](requirements/requirements-authoring-guide.md)
+- [Five-layer model](requirements/_shared/README.md)
+- [Generated requirements index](requirements/README.md)
 
-Product behaviour and the change workflow. Five layers: see [`_shared/README.md`](requirements/_shared/README.md).
-
-| Document                                                                                     | Description                                                    |
-| -------------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
-| [requirements-change-process.md](requirements/requirements-change-process.md)                | Workflow for analysts and developers                           |
-| [requirements-authoring-guide.md](requirements/requirements-authoring-guide.md)              | How to write and update `FR-*` specifications                  |
-| [\_shared/README.md](requirements/_shared/README.md)                                         | **Five layers** — Domain · Conventions · Quality · FR · Guides |
-| [README.md](requirements/README.md)                                                          | Auto-generated index                                           |
-| [\_functional-specification-template.md](requirements/_functional-specification-template.md) | Skeleton template for new `FR-*` files                         |
-| [\_changes-template.md](requirements/_changes-template.md)                                   | Template for pending requirement deltas                        |
-| [changes/](requirements/changes/)                                                            | Pending requirement deltas                                     |
-| [functional/](requirements/functional/)                                                      | L4 — functional specifications by domain                       |
-| [\_shared/domain/](requirements/_shared/domain/)                                             | L1 — glossary, account model, permissions                      |
-| [\_shared/conventions/](requirements/_shared/conventions/)                                   | L2 — product standards (`STD-*`)                               |
-| [\_shared/quality/](requirements/_shared/quality/)                                           | L3 — NFR documents                                             |
-
-Validate requirements structure: `npm run requirements:validate` from the repository root.
+Run `npm run docs:validate` after any documentation change. It includes the specialized requirements validation and regenerates the requirements index.

@@ -7,18 +7,23 @@
 - `src/Template.Frontend` - Angular 22 frontend.
 - `src/Template.Backend` - .NET backend solution.
 - `docker-compose.yml` - local full-stack environment with frontend, backend, PostgreSQL, and MailHog.
-- `docs/` - guides, technical, and requirements (`docs/README.md` for the full index).
-- `docs/guides/README.md`, `docs/technical/README.md`, `docs/requirements/requirements-change-process.md` - entry points per area.
+- `docs/` - product requirements plus system- and module-owned documentation (`docs/README.md` for the task index).
+- `docs/documentation-rules.md` - ownership, naming, diagram, and no-duplication rules for documentation.
+- `docs/system/` - cross-module development, designs, and operations owned by this repository.
+- `docs/modules/frontend/`, `docs/modules/backend/` - module documentation designed to move with future repositories.
 - Root `package.json` - optional npm scripts that run frontend and backend tasks from the repository root (see Commands).
 
 ## Start here by task
 
-- Frontend change: read `docs/guides/README.md`, then `repo-map.md` and `frontend-guidelines.md` under `docs/guides/`.
-- Backend change: read `docs/guides/README.md`, then `repo-map.md` and `backend-guidelines.md` under `docs/guides/`.
-- Test work or bugfix verification: read `docs/guides/testing-guidelines.md`.
-- Cross-stack feature: read all four docs above before editing.
-- Auth deployment, Docker, CI, or local stack: read `docs/technical/README.md`, then the linked technical doc (`deployment.md` for production runtime URL and checklist).
-- Requirement changes: read `docs/requirements/requirements-change-process.md`; authoring in `docs/requirements/requirements-authoring-guide.md`; **five layers** in `docs/requirements/_shared/README.md`; product behavior defaults in `docs/requirements/_shared/conventions/product-standards.md`; pending deltas in `docs/requirements/changes/`; validate with `npm run requirements:validate`.
+- First codebase orientation: read `docs/system/development/repository-map.md`.
+- Frontend change: read `docs/modules/frontend/development.md`; for session renewal also read `docs/modules/frontend/architecture/auth-session-lifecycle.md`.
+- Backend change: read `docs/modules/backend/development.md`; add the focused document under `docs/modules/backend/operations/` only when persistence, jobs, or file storage changes.
+- Test work or bugfix verification: read `docs/system/development/testing-strategy.md`; read `e2e-testing.md` only for browser journeys.
+- Cross-stack feature: read the target requirements, `docs/system/development/feature-workflow.md`, and the affected module development documents.
+- Docker or local stack: read `docs/system/operations/local-stack.md`; production deployment: `docs/system/operations/deployment.md`; CI: `docs/system/operations/ci.md`.
+- Documentation additions or updates: read `docs/documentation-rules.md`.
+- Repository extraction, documentation ownership changes, or `docs/` reorganization: also read `docs/system/designs/modular-documentation-migration.md`.
+- Requirement changes: read `docs/requirements/requirements-change-process.md`; authoring in `docs/requirements/requirements-authoring-guide.md`; **five layers** in `docs/requirements/_shared/README.md`; product behavior defaults in `docs/requirements/_shared/conventions/product-standards.md`; pending deltas in `docs/requirements/changes/`; validate with `npm run docs:validate`.
 
 ## Commands
 
@@ -33,11 +38,11 @@ From the repository root, run `npm run setup` once after clone (installs npm pac
 - Frontend quality: `npm run lint:frontend`, `npm run format:frontend`, `npm run test:frontend` (interactive watch when TTY), or `npm run test:frontend:ci` (single run, `--watch=false`)
 - Backend tests: `npm run test:backend` (entire solution — unit and integration projects), `npm run test:backend:unit`, or `npm run test:backend:integration`
 - Full automated check (frontend CI tests + full backend solution tests, parallel): `npm run test:all` — backend integration tests use Testcontainers and need a running Docker engine
-- E2E (Playwright): `npm run test:e2e` (needs Chromium from `npm run install:frontend`, PostgreSQL on `localhost`; Playwright starts the stack); `npm run test:e2e:ui` for interactive debugging — also runs in CI on every PR (`docs/technical/ci.md`)
-- CI workflow (GitHub Actions): see `docs/technical/ci.md`
+- E2E (Playwright): `npm run test:e2e` (needs Chromium from `npm run install:frontend`, PostgreSQL on `localhost`; Playwright starts the stack); `npm run test:e2e:ui` for interactive debugging — also runs in CI on every PR (`docs/system/operations/ci.md`)
+- CI workflow (GitHub Actions): see `docs/system/operations/ci.md`
 - EF Core (from repo root): `npm run ef:migrations:add -- <Name>`, `npm run ef:migrations:remove`, `npm run ef:database:update`
-- Demo data (after migrations; Development only): `npm run data:generate`, or `npm run data:generate -- --reset` — see `docs/technical/data-generator.md`
-- Requirements structure: `npm run requirements:validate` — checks `FR-*` / `NFR-*` specs, cross-references, and regenerates `docs/requirements/README.md`
+- Demo data (after migrations; Development only): `npm run data:generate`, or `npm run data:generate -- --reset` — see `docs/modules/backend/demo-data.md`
+- Documentation: `npm run docs:validate` — checks links, system/module contracts and index reachability, then validates `FR-*` / `NFR-*` cross-references and regenerates the requirements index
 
 ### Frontend (in `src/Template.Frontend`)
 
@@ -50,7 +55,7 @@ From the repository root, run `npm run setup` once after clone (installs npm pac
 
 ### Backend (in `src/Template.Backend`)
 
-- Includes `InitialCreate` — in Development, migrations apply on API startup (`DatabaseOptions:ApplyMigrationsOnStartup` is `true` in `appsettings.Development.json`; see `docs/technical/database-and-docker.md`).
+- Includes `InitialCreate` — in Development, migrations apply on API startup (`DatabaseOptions:ApplyMigrationsOnStartup` is `true` in `appsettings.Development.json`; see `docs/modules/backend/operations/persistence.md`).
 - Restore/build solution: `dotnet build Template.Backend.slnx`
 - Run web app: `dotnet run --project src/Template.Backend.Web`
 - All tests in the solution: `dotnet test Template.Backend.slnx`
@@ -67,7 +72,7 @@ From the repository root, run `npm run setup` once after clone (installs npm pac
 - Follow logs: `npm run docker:logs`
 - Backend tests in container (bind-mounts the repo; integration tests need the host Docker socket): `npm run docker:test:backend`
 
-Configuration in containers: `appsettings.json` + `appsettings.Development.json` (image build) with overrides from `docker-compose.yml` environment variables — see `docs/technical/database-and-docker.md`.
+Configuration in containers: `appsettings.json` + `appsettings.Development.json` (image build) with overrides from `docker-compose.yml` environment variables — see `docs/system/operations/local-stack.md`.
 
 ## Repo navigation rules
 
@@ -118,8 +123,8 @@ Five layers — see `docs/requirements/_shared/README.md`:
 | L1 Domain         | `docs/requirements/_shared/domain/`                          | Terms, account model, permissions              |
 | L2 Conventions    | `docs/requirements/_shared/conventions/product-standards.md` | Any UI — lists, forms, validation UX, feedback |
 | L3 Quality        | `docs/requirements/_shared/quality/`                         | Performance, a11y, i18n                        |
-| L4 Capabilities   | `docs/requirements/functional/FR-*`                          | The feature you are implementing               |
-| L5 Implementation | `docs/guides/`                                               | Code patterns in this repo                     |
+| L4 Capabilities   | `docs/requirements/functional/<domain>/fr-*.md`              | The feature you are implementing               |
+| L5 Implementation | `docs/modules/*/development.md`, `docs/system/development/`  | Module patterns and cross-module workflows     |
 
 **Override rule:** L4 overrides L2; L5 never defines product behavior.
 
