@@ -1,9 +1,4 @@
-import {
-  HttpClient,
-  HttpErrorResponse,
-  HttpHandlerFn,
-  HttpRequest
-} from '@angular/common/http';
+import { HttpClient, HttpHandlerFn, HttpRequest } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { getApiUrl } from '@environments/runtime-config';
@@ -18,6 +13,13 @@ import {
   MyAccountDto,
   UpdateMyAccountRequest
 } from '../models/auth.model';
+import {
+  RefreshSessionError,
+  getAccessTokenLifetimeMs,
+  getRefreshTokenLifetimeMs,
+  hasPersistedSession,
+  toRefreshSessionError
+} from '../utils/auth-session.utils';
 import { AuthConstraints } from '../utils/auth.utils';
 import { AuthStorageService } from './auth-storage.service';
 
@@ -38,13 +40,10 @@ export class AuthService {
   private refreshInFlight: Promise<AuthResponse> | null = null;
 
   readonly currentSession = this.session.asReadonly();
-  readonly isAuthenticated = computed(() => {
-    const current = this.session();
-    return current !== null && this.getAccessTokenLifetimeMs(current) > 0;
-  });
+  readonly isAuthenticated = computed(() => hasPersistedSession(this.session()));
   readonly token = computed(() => {
     const current = this.session();
-    if (!current || this.getAccessTokenLifetimeMs(current) <= 0) {
+    if (!current || getAccessTokenLifetimeMs(current) <= 0) {
       return null;
     }
 
@@ -71,16 +70,21 @@ export class AuthService {
       return Promise.resolve();
     }
 
-    if (this.getAccessTokenLifetimeMs(storedSession) <= 0) {
-      return this.refreshStoredSession().then((session) => {
-        if (!session) {
-          this.clearLocalSession();
-        }
-      });
+    if (getRefreshTokenLifetimeMs(storedSession) <= 0) {
+      this.clearLocalSession();
+      return Promise.resolve();
     }
 
-    this.scheduleRenewal(storedSession);
-    return Promise.resolve();
+    if (getAccessTokenLifetimeMs(storedSession) > 0) {
+      this.scheduleRenewal(storedSession);
+      return Promise.resolve();
+    }
+
+    return this.refreshStoredSession().then((session) => {
+      if (!session) {
+        this.clearLocalSession();
+      }
+    });
   }
 
   hasPermission(permissionCode: string): boolean {
@@ -138,7 +142,7 @@ export class AuthService {
       switchMap(() => {
         const token = this.token();
         if (!token) {
-          return throwError(() => new Error('Session expired.'));
+          return throwError(() => new RefreshSessionError('Session expired.', 'auth'));
         }
 
         return next(
@@ -148,34 +152,49 @@ export class AuthService {
         );
       }),
       catchError((error: unknown) => {
-        this.clearLocalSession();
-        void this.router.navigateByUrl('/login');
-        return throwError(() => error);
+        const refreshError = toRefreshSessionError(error);
+        if (refreshError.kind === 'auth') {
+          this.clearLocalSession();
+          void this.router.navigateByUrl('/login');
+        }
+
+        return throwError(() => refreshError);
       })
     );
   }
 
-  private postAuth<T>(endpoint: string, body: unknown): Observable<T> {
+  private postRefresh(body: { refreshToken: string }): Observable<AuthResponse> {
     return this.http
-      .post<Result<T>>(`${this.baseUrl}${endpoint}`, body, {
+      .post<Result<AuthResponse>>(`${this.baseUrl}auth/refresh`, body, {
         headers: { 'X-Skip-Auth-Refresh': 'true' }
       })
       .pipe(
         map((response) => {
           if (response.isSuccess) {
-            return response.value as T;
+            return response.value as AuthResponse;
           }
 
-          throw new Error(this.getErrorMessage(response));
+          throw new RefreshSessionError(this.getErrorMessage(response), 'auth');
         }),
-        catchError((error: unknown) => throwError(() => this.toError(error)))
+        catchError((error: unknown) => {
+          const refreshError = toRefreshSessionError(error);
+          if (refreshError.kind === 'auth') {
+            this.clearLocalSession();
+          }
+
+          return throwError(() => refreshError);
+        })
       );
   }
 
   private refreshSessionOnce(): Promise<AuthResponse> {
     const current = this.session();
     if (!current?.refreshToken) {
-      return Promise.reject(new Error('Session expired.'));
+      return Promise.reject(new RefreshSessionError('Session expired.', 'auth'));
+    }
+
+    if (getRefreshTokenLifetimeMs(current) <= 0) {
+      return Promise.reject(new RefreshSessionError('Session expired.', 'auth'));
     }
 
     if (this.refreshInFlight) {
@@ -183,22 +202,16 @@ export class AuthService {
     }
 
     this.refreshInFlight = firstValueFrom(
-      this.postAuth<AuthResponse>('auth/refresh', {
+      this.postRefresh({
         refreshToken: current.refreshToken
-      }).pipe(
-        tap((session) => this.setSession(session)),
-        catchError((error: unknown) => {
-          this.clearLocalSession();
-          return throwError(() => error);
-        })
-      )
+      }).pipe(tap((session) => this.setSession(session)))
     )
       .catch((error: unknown) => {
-        if (error instanceof Error) {
+        if (error instanceof RefreshSessionError) {
           throw error;
         }
 
-        throw new Error('Session expired.');
+        throw toRefreshSessionError(error);
       })
       .finally(() => {
         this.refreshInFlight = null;
@@ -210,7 +223,13 @@ export class AuthService {
   private async refreshStoredSession(): Promise<AuthResponse | null> {
     try {
       return await this.refreshSessionOnce();
-    } catch {
+    } catch (error: unknown) {
+      const refreshError = toRefreshSessionError(error);
+      if (refreshError.kind === 'transient') {
+        this.scheduleTransientRefreshRetry();
+        return this.session();
+      }
+
       return null;
     }
   }
@@ -237,15 +256,42 @@ export class AuthService {
     }
 
     this.renewalTimerId = setTimeout(() => {
-      void this.refreshSessionOnce().catch(() => {
-        this.clearLocalSession();
-        void this.router.navigateByUrl('/login');
+      void this.refreshSessionOnce().catch((error: unknown) => {
+        this.handleBackgroundRefreshFailure(error);
       });
     }, delay);
   }
 
+  private scheduleTransientRefreshRetry(): void {
+    this.clearRenewalTimer();
+
+    const session = this.session();
+    if (!hasPersistedSession(session)) {
+      this.clearLocalSession();
+      void this.router.navigateByUrl('/login');
+      return;
+    }
+
+    this.renewalTimerId = setTimeout(() => {
+      void this.refreshSessionOnce().catch((error: unknown) => {
+        this.handleBackgroundRefreshFailure(error);
+      });
+    }, AuthConstraints.TRANSIENT_REFRESH_RETRY_MS);
+  }
+
+  private handleBackgroundRefreshFailure(error: unknown): void {
+    const refreshError = toRefreshSessionError(error);
+    if (refreshError.kind === 'auth') {
+      this.clearLocalSession();
+      void this.router.navigateByUrl('/login');
+      return;
+    }
+
+    this.scheduleTransientRefreshRetry();
+  }
+
   private getRenewalDelayMs(session: AuthResponse): number | null {
-    const lifetimeMs = this.getAccessTokenLifetimeMs(session);
+    const lifetimeMs = getAccessTokenLifetimeMs(session);
 
     if (lifetimeMs <= AuthConstraints.MIN_RENEWAL_SCHEDULE_MS) {
       return null;
@@ -257,14 +303,6 @@ export class AuthService {
     );
 
     return Math.max(AuthConstraints.MIN_RENEWAL_SCHEDULE_MS, lifetimeMs - leadTimeMs);
-  }
-
-  private getAccessTokenLifetimeMs(session: AuthResponse | null): number {
-    if (!session) {
-      return 0;
-    }
-
-    return new Date(session.expiresAtUtc).getTime() - Date.now();
   }
 
   private clearRenewalTimer(): void {
@@ -280,20 +318,5 @@ export class AuthService {
     }
 
     return 'Request failed.';
-  }
-
-  private toError(error: unknown): Error {
-    if (error instanceof HttpErrorResponse) {
-      const body = error.error as Partial<Result<unknown>> | null;
-      if (body && typeof body.isSuccess === 'boolean' && !body.isSuccess) {
-        return new Error(this.getErrorMessage(body as Result<unknown>));
-      }
-    }
-
-    if (error instanceof Error) {
-      return error;
-    }
-
-    return new Error('Request failed.');
   }
 }
