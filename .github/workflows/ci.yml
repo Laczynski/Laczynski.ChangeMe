@@ -19,7 +19,7 @@ permissions:
 
 jobs:
   requirements:
-    name: Requirements
+    name: Documentation
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -35,8 +35,8 @@ jobs:
       - name: Install root dependencies
         run: npm ci
 
-      - name: Validate requirements structure
-        run: npm run requirements:validate
+      - name: Validate documentation structure and links
+        run: npm run docs:validate
 
   frontend:
     name: Frontend

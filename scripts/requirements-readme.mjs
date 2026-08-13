@@ -20,8 +20,8 @@ for (const spec of manifest.functional ?? []) {
 
 let md = `# Requirements index
 
-> Five layers: **Domain** · **Conventions** · **Quality** · **Capabilities (FR-*)** · **Implementation (guides)**.
-> Layer index: \`_shared/README.md\`. Start: \`requirements-change-process.md\`. Authoring: \`requirements-authoring-guide.md\`. Validate: \`npm run requirements:validate\`.
+> Five layers: **Domain** · **Conventions** · **Quality** · **Capabilities (FR-*)** · **Implementation (module and system docs)**.
+> Layer index: \`_shared/README.md\`. Start: \`requirements-change-process.md\`. Authoring: \`requirements-authoring-guide.md\`. Validate: \`npm run docs:validate\`.
 
 ## L1 — Domain (\`_shared/domain/\`)
 
@@ -86,7 +86,7 @@ for (const domain of domainOrder) {
   }
 }
 
-md += `\n---\n\n_Auto-generated from \`.requirements-manifest.json\` via \`node scripts/requirements-readme.mjs\` (also refreshed by \`npm run requirements:validate\`)._\n`;
+md += `\n---\n\n_Auto-generated from \`.requirements-manifest.json\` via the internal requirements validator (refreshed by \`npm run docs:validate\`)._\n`;
 
 fs.writeFileSync(path.join(ROOT, "README.md"), md);
 console.log("Wrote docs/requirements/README.md");

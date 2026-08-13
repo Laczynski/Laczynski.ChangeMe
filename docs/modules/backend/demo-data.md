@@ -1,6 +1,9 @@
-# Data generator (demo data)
+# Demo data
 
-> Scope: local development tool that fills the database with sample data.
+> Type: development
+> Scope: backend
+> Status: implemented
+> Canonical for: optional demo dataset generation and reset
 
 ## Overview
 
@@ -13,7 +16,7 @@
 
 ## Prerequisites
 
-1. Database is reachable (see `docs/technical/database-and-docker.md`).
+1. Database is reachable (see [backend persistence](operations/persistence.md)).
 2. Migrations applied (automatic on API startup in Development, or `npm run ef:database:update` from the repository root).
 
 3. `ConnectionStrings:DefaultConnection` in `src/Template.Backend/src/Template.Backend.Web/appsettings.Development.json` points at your database.
@@ -42,7 +45,7 @@ All inserts go through domain factories (`User.Create`, `Issue.Create`, etc.) an
 
 ## Configuration
 
-Settings live in the Web project `appsettings.Development.json` under `DataGenerator` (also documented in the tool [README](../../src/Template.Backend/tools/Template.Backend.DataGenerator/README.md)).
+Settings live in the Web project `appsettings.Development.json` under `DataGenerator` (also documented in the tool [README](../../../src/Template.Backend/tools/Template.Backend.DataGenerator/README.md)).
 
 The generator copies `appsettings.json` and `appsettings.Development.json` from `Template.Backend.Web` at build output time.
 
@@ -61,11 +64,11 @@ npm run data:generate
 
 | Problem                    | Action                                                                                                     |
 | -------------------------- | ---------------------------------------------------------------------------------------------------------- |
-| No migrations found        | Start the API in Development or run `npm run ef:database:update` (`docs/technical/database-and-docker.md`) |
+| No migrations found        | Start the API in Development or run `npm run ef:database:update` (see [persistence](operations/persistence.md)) |
 | Connection refused         | Start Docker Compose or local DB; verify connection string                                                 |
 | Demo data already exists   | Run with `--reset` or delete demo users manually                                                           |
 | Migration history mismatch | Regenerate migrations with PostgreSQL; do not reuse migration snapshots from other database providers      |
 
 ## Tests
 
-Integration tests use their own helpers (`IssueTestHelper`, `TestAuthHelper`) and Testcontainers — they do **not** invoke DataGenerator. Test layout and helpers: [`docs/guides/repo-map.md`](../guides/repo-map.md#test-map).
+Integration tests use their own helpers (`IssueTestHelper`, `TestAuthHelper`) and Testcontainers — they do **not** invoke DataGenerator. Test layout and helpers: [repository map](../../system/development/repository-map.md#test-map).

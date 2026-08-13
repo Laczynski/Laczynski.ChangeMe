@@ -1,13 +1,16 @@
-# Feature Recipes
+# Cross-module feature workflow
 
-> **L5 â€” Implementation.** Short recipes for common tasks in this repository.
+> Type: development
+> Scope: system
+> Status: implemented
+> Canonical for: changes that cross frontend, backend, persistence, and system operations
 >
-> Before starting: read the target `FR-*` (L4). For UI work, read [`product-standards.md`](../requirements/_shared/conventions/product-standards.md) (L2).
+> Before starting: read the target `FR-*` (L4). For UI work, read [`product-standards.md`](../../requirements/_shared/conventions/product-standards.md) (L2).
 
 ## Add a backend endpoint
 
-1. Create or update the endpoint in `src/Template.Backend.Web/Endpoints/<Feature>/` (use `<Feature>/<ChildResource>/` for nested routes — see **Feature and sub-slice layout** in [backend-guidelines.md](backend-guidelines.md)).
-2. Pick the endpoint base type (see **Endpoint conventions** in [backend-guidelines.md](backend-guidelines.md)):
+1. Create or update the endpoint in `src/Template.Backend.Web/Endpoints/<Feature>/` (use `<Feature>/<ChildResource>/` for nested routes — see **Feature and sub-slice layout** in [backend development](../../modules/backend/development.md)).
+2. Pick the endpoint base type (see **Endpoint conventions** in [backend development](../../modules/backend/development.md)):
    - `BaseEndpoint<TRequest, TResponse>` when FastEndpoints should bind body, query, or route into `TRequest`
    - `BaseEndpointWithoutRequest<TRequest, TResponse>` when there is no HTTP payload (use a parameterless `record` for `TRequest`)
    - a custom `Endpoint` / `EndpointWithoutRequest` only for multipart upload, binary download, or other non-standard responses
@@ -30,7 +33,7 @@
 2. Add or extend the service in `features/<feature>/services`.
 3. Create a standalone component under `features/<feature>/components/<name>/`.
 4. Register the route in `src/app/app.routes.ts` if it is navigable directly.
-5. Run lint and add frontend unit tests when client logic changes ([testing-guidelines.md](testing-guidelines.md)); colocate `*.spec.ts` next to the component or service (see `features/issues/components/`).
+5. Run lint and add frontend unit tests when client logic changes ([testing strategy](testing-strategy.md)); colocate `*.spec.ts` next to the component or service (see `features/issues/components/`).
 
 ## Add or migrate a list screen (DataGrid)
 
@@ -38,7 +41,7 @@ Use any existing **list screen** as the template (for example **Issues**, **User
 
 ### Backend
 
-1. List DTO in `UseCases/<Feature>/Dtos/` â€” `[GridSearchable]` on searchable text fields; `[GridIgnore]` on computed or collection fields not meant for server sort/filter.
+1. List DTO in `UseCases/<Feature>/Dtos/` — `[GridSearchable]` on searchable text fields; `[GridIgnore]` on computed or collection fields not meant for server sort/filter.
 2. Query: `public GridQuery Grid { get; set; } = new();` returning `GridResult<TDto>`.
 3. Handler: project to `IQueryable<TDto>`, then `await projected.ToGridResultAsync(query.Grid, cancellationToken)`.
 4. Endpoint: `BaseEndpoint<GetAllXQuery, GridResult<TDto>>` with `GET` route; FastEndpoints binds `?grid=` automatically.
@@ -56,7 +59,7 @@ Use any existing **list screen** as the template (for example **Issues**, **User
 2. Check route guards under `features/auth/guards`.
 3. Check token/session handling in `features/auth/services/auth.service.ts`.
 4. Add or update integration coverage for authenticated and anonymous flows.
-5. Add or update guard/component unit tests; extend E2E smoke only when the user journey changes ([testing-guidelines.md](testing-guidelines.md)).
+5. Add or update guard/component unit tests; extend E2E smoke only when the user journey changes ([testing strategy](testing-strategy.md)).
 
 ## Add file upload and download (reference: Issues attachments)
 
@@ -65,7 +68,7 @@ Use the **Issues attachments** slice as the template for new file features. Shar
 ### Backend
 
 1. Add a value to **`AttachmentType`** (`Domain/Common/Attachments/`), a derived entity (for example `IssueAttachment : Attachment`), and aggregate methods for owner-specific rules.
-2. Configure persistence: shared TPH mapping in **`Infrastructure/Persistence/Config/Attachments/AttachmentConfiguration.cs`** (add `.HasValue<â€¦>(AttachmentType.â€¦)`); owner relationship in **`Config/<Feature>/`** (for example **`Config/Issues/IssueAttachmentConfiguration.cs`**).
+2. Configure persistence: shared TPH mapping in **`Infrastructure/Persistence/Config/Attachments/AttachmentConfiguration.cs`** (add `.HasValue<…>(AttachmentType.…)`); owner relationship in **`Config/<Feature>/`** (for example **`Config/Issues/IssueAttachmentConfiguration.cs`**).
 3. Reuse `Infrastructure/FileStorage/`:
    - `IFileContentValidator` + Mime-Detective content inspection
    - `IFileStorageService` + `LocalFileStorageService` (`container` + `ownerId` paths)
@@ -83,7 +86,7 @@ Use the **Issues attachments** slice as the template for new file features. Shar
    - binary download via `EndpointWithoutRequest`; set `Content-Disposition: attachment` and `X-Content-Type-Options: nosniff`, stream bytes to `Response.Body`; use `HttpContext.SendResultAsync` only for error `Result<T>` responses
 8. Cascade-delete stored files when the owning aggregate is removed.
 9. Add integration tests for happy path, validation failure, auth, and delete authorization.
-10. Document deployment storage (volume, backup, retention) in [database-and-docker.md](../technical/database-and-docker.md).
+10. Update [file storage operations](../../modules/backend/operations/file-storage.md) when volume, backup, or retention changes.
 
 ### Frontend
 

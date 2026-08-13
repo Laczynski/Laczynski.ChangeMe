@@ -1,6 +1,9 @@
-# Repository Map
+# Repository map
 
-> Scope: where things live and which layer owns what. This is the quickest orientation document after `AGENTS.md`.
+> Type: reference
+> Scope: system
+> Status: implemented
+> Canonical for: current repository layout and code ownership
 
 ## Top level
 
@@ -8,7 +11,7 @@
 - Root `package.json` defines optional npm scripts (`start:*`, `build:*`, `test:*`, `install:frontend`, and frontend `lint`/`format`) so you can run common frontend and `dotnet` backend tasks from the repository root. Run `npm install` in the repository root to install root devDependencies such as `concurrently` (used by `start:all` and `test:all`). Frontend `node_modules` still live under `src/Template.Frontend` — refresh them with `npm run install:frontend` from the root (also installs Playwright Chromium for E2E) or `npm install` inside that folder (npm packages only).
 - `src/Template.Frontend` contains the Angular application.
 - `src/Template.Backend` contains the .NET solution and tests.
-- `docs/requirements/` — product rules in five layers (`docs/requirements/_shared/README.md`): **L1** domain · **L2** conventions · **L3** quality · **L4** `FR-*` · **L5** `docs/guides/`.
+- `docs/requirements/` — product rules in five layers (`docs/requirements/_shared/README.md`): **L1** domain · **L2** conventions · **L3** quality · **L4** `FR-*` · **L5** module and system development docs.
 
 ## Frontend map
 
@@ -75,7 +78,7 @@ Each current feature follows a simple slice structure:
   - persistence and infrastructure registrations
 - `tools/Template.Backend.DataGenerator`
   - dev-only console tool for demo/test data (`npm run data:generate`)
-  - see `docs/technical/data-generator.md`
+  - see [backend demo data](../../modules/backend/demo-data.md)
 
 ### Endpoint flow
 
@@ -95,21 +98,19 @@ Current issue endpoints illustrate the standard flow:
   - `Endpoints/<Feature>/` — one test class per endpoint area (use sub-slices for nested routes, for example `Issues/Attachments/`)
   - `Fixtures/` — `BackendWebApplicationFactory` and feature-specific factories
   - `Support/` — `TestAuthHelper` (register + authenticate via real API calls), `IssueTestHelper`, and other feature helpers
-- `src/Template.Frontend` — Vitest unit/component specs colocated as `*.spec.ts`; E2E suite in `e2e/features/` (see [e2e-guidelines.md](e2e-guidelines.md))
+- `src/Template.Frontend` — Vitest unit/component specs colocated as `*.spec.ts`; E2E suite in `e2e/features/` (see [E2E testing](e2e-testing.md))
 
-Which layer to test and when to skip: [`docs/guides/testing-guidelines.md`](testing-guidelines.md).
+Which layer to test and when to skip: [testing strategy](testing-strategy.md).
 
 `BackendWebApplicationFactory` starts disposable PostgreSQL via Testcontainers, applies test environment overrides (connection string, JWT, email settings), and replaces `IEmailService` with `FakeEmailService`.
 
-## Implementation guides
+## Documentation ownership
 
-- `docs/guides/README.md` — entry point for coding conventions and feature recipes
-- `docs/guides/repo-map.md` — this document
-- `docs/guides/frontend-guidelines.md`, `backend-guidelines.md`, `testing-guidelines.md`, `feature-recipes.md`
+| Scope | Location | Contains |
+| --- | --- | --- |
+| Product | `docs/requirements/` | Domain, conventions, quality, functional requirements |
+| System | `docs/system/` | Cross-module development, designs, and operations |
+| Frontend | `docs/modules/frontend/` | Angular implementation and architecture |
+| Backend | `docs/modules/backend/` | .NET implementation, development tools, and operations |
 
-## Technical documentation
-
-- `docs/technical/README.md` — entry point for run, configure, and troubleshoot docs
-- `docs/technical/database-and-docker.md` — EF Core migrations, Docker Compose, Hangfire jobs, file storage
-- `docs/technical/data-generator.md` — optional demo data for local development
-- `docs/technical/ci.md` — GitHub Actions workflow
+The classification and naming rules are canonical in [`docs/documentation-rules.md`](../../documentation-rules.md).

@@ -62,4 +62,4 @@ The seeded system administrator (`admin@example.local` / `admin`) is left unchan
 
 ## More information
 
-Full documentation: `docs/technical/data-generator.md` at the repository root.
+Full documentation: `docs/modules/backend/demo-data.md` at the repository root.

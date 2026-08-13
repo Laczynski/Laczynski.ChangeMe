@@ -220,8 +220,8 @@ Use after implementing or reviewing a feature. Check only the `STD-*` sections l
 1. **L4** — every bullet in **Functional requirements** (authorization, data, operations, validation, business rules).
 2. **L2** — rows above for inherited `STD-*` sections.
 3. **L3** — quality docs in `inherits_quality` when the change touches perf, a11y, or i18n.
-4. **L5** — code follows `docs/guides/`; no product rules invented in implementation guides.
+4. **L5** — code follows the matching `docs/modules/*/development.md` and `docs/system/development/` documents; no product rules are invented in implementation documentation.
 
 If a check fails and the `FR-*` does not document an override, fix the implementation or update the `FR-*` / `STD-*` deliberately in a requirements change — do not leave silent drift.
 
-For **which automated test layer** should prove each `STD-*` row, see [testing-guidelines.md](../../../guides/testing-guidelines.md#mapping-std--to-test-layers) (L5).
+For **which automated test layer** should prove each `STD-*` row, see [testing strategy](../../../system/development/testing-strategy.md#mapping-std--to-test-layers) (L5).

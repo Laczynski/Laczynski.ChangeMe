@@ -22,8 +22,8 @@ Use it to bootstrap Angular + ASP.NET projects with layered backend, JWT session
 
 - Root **`package.json`** — one entry point for start/build, lint/format, unit & integration tests, E2E, EF migrations, Docker Compose, demo data, requirements validation
 - **Docker Compose** — full stack (frontend, backend, PostgreSQL, MailHog) plus optional test profile
-- **GitHub Actions CI** — requirements, frontend, backend, and Playwright E2E in parallel
-- **Playwright E2E** — project layout, fixtures, smoke pattern (`docs/guides/e2e-guidelines.md`)
+- **GitHub Actions CI** — documentation/requirements, frontend, backend, and Playwright E2E in parallel
+- **Playwright E2E** — project layout, fixtures, smoke pattern (`docs/system/development/e2e-testing.md`)
 - **Testcontainers** — integration tests against real PostgreSQL
 - **Data generator** — CLI pattern for Development seed data (`npm run data:generate`)
 - **`dotnet new` token replacement** — `Template` plus derived `changeMe` / `CHANGE_ME` symbols from your project name
@@ -32,14 +32,14 @@ Use it to bootstrap Angular + ASP.NET projects with layered backend, JWT session
 
 Three doc layers, each with an entry point:
 
-| Layer                    | Purpose                                                                                             |
-| ------------------------ | --------------------------------------------------------------------------------------------------- |
-| **`docs/guides/`**       | How to implement — repo map, frontend/backend guidelines, testing & E2E guidelines, feature recipes |
-| **`docs/technical/`**    | How to run & deploy — Docker, database, CI, deployment checklist, data generator                    |
-| **`docs/requirements/`** | What to build — `FR-*` / `NFR-*` specs, authoring guide, change process, validation script          |
+| Location | Purpose |
+| --- | --- |
+| **`docs/requirements/`** | What to build — domain, conventions, quality, and `FR-*` specifications |
+| **`docs/system/`** | Cross-module development, designs, local stack, deployment, and CI |
+| **`docs/modules/`** | Frontend/backend implementation and operations; movable with future repositories |
 
 - **`AGENTS.md`** — fast-start for AI agents and contributors (task → which doc to open, commands, coupling checks)
-- **`npm run requirements:validate`** — lint specs, cross-references, regenerate requirements index
+- **`npm run docs:validate`** — check all documentation, including requirement specs, cross-references, and generated indexes
 - Templates for new specs and change deltas (`_functional-specification-template.md`, `_changes-template.md`)
 
 ### Testing approach
@@ -47,7 +47,7 @@ Three doc layers, each with an entry point:
 - **Frontend** — component/service specs where they add value; primary confidence from Playwright smoke tests
 - **Backend unit** — domain and infrastructure helpers
 - **Backend integration** — API behaviour with Testcontainers; endpoint tests mirror Web layer
-- **`docs/guides/testing-guidelines.md`** — layer ownership, when to skip redundant tests, anti-patterns
+- **`docs/system/development/testing-strategy.md`** — layer ownership, when to skip redundant tests, anti-patterns
 
 ## Purpose
 
@@ -96,7 +96,7 @@ npm run start:all
 - **`npm run setup`** — installs root and frontend npm packages (including Playwright Chromium), restores the .NET solution, and installs Git pre-commit hooks.
 - **Pre-commit hooks** — [Lefthook](https://github.com/evilmartians/lefthook) runs ESLint, Prettier, and `dotnet format` on staged files. Re-run `npm run setup` or `npx lefthook install` after clone if hooks are missing.
 
-See `docs/technical/database-and-docker.md` for Docker Compose, migrations, and secrets.
+See `docs/system/operations/local-stack.md` for Docker Compose and secrets; migrations are in `docs/modules/backend/operations/persistence.md`.
 
 ### Install as a `dotnet new` template
 
@@ -166,7 +166,7 @@ npm run test:e2e
 
 ### Backend (this repository)
 
-Includes `InitialCreate` — in Development, migrations apply on API startup (`DatabaseOptions:ApplyMigrationsOnStartup` is `true` in `appsettings.Development.json`; see `docs/technical/database-and-docker.md`).
+Includes `InitialCreate` — in Development, migrations apply on API startup (`DatabaseOptions:ApplyMigrationsOnStartup` is `true` in `appsettings.Development.json`; see `docs/modules/backend/operations/persistence.md`).
 
 From `src/Template.Backend`:
 
@@ -196,8 +196,8 @@ This starts the frontend, backend, MailHog, and the database service defined in 
 
 The `docs/` directory contains guidance that is also shipped into generated solutions. See [`docs/README.md`](docs/README.md) for the full index.
 
-- `docs/guides/` - implementation conventions (start at `docs/guides/README.md`)
-- `docs/technical/` - run and configure the stack (start at `docs/technical/README.md`)
+- `docs/system/` - cross-module development, designs, and operations
+- `docs/modules/` - frontend/backend implementation and module-owned operations
 - `docs/requirements/` - product specs and change workflow (start at `docs/requirements/requirements-change-process.md`; templates `_functional-specification-template.md`, `_changes-template.md`)
 
 Maintainers of the template package: see [`CONTRIBUTING.md`](CONTRIBUTING.md).
@@ -232,7 +232,7 @@ Use the smallest relevant test scope for the change:
 - backend domain change: unit tests
 - backend endpoint or auth change: integration tests
 
-For more detail, see `docs/guides/testing-guidelines.md`.
+For more detail, see `docs/system/development/testing-strategy.md`.
 
 ## License
 

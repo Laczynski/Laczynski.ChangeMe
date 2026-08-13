@@ -53,7 +53,7 @@ jobs:
       - name: Test
         run: |
           npm ci
-          npm run requirements:validate
+          npm run docs:validate
           npm --prefix src/Template.Frontend ci
           npm run test:frontend:ci
           npm run build:frontend

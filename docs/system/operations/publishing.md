@@ -1,6 +1,9 @@
 # Publishing
 
-> Scope: releasing the **Template** `dotnet new` template NuGet package.
+> Type: operations
+> Scope: system
+> Status: implemented
+> Canonical for: releasing the `Template` `dotnet new` NuGet package
 
 ## Registry
 
@@ -8,7 +11,7 @@
 | ---------- | ---------------------------------- | -------------- |
 | `Template` | [nuget.org](https://www.nuget.org) | GitHub Packages |
 
-Publish on tag push `v*` via [publish.yml](../../.github/workflows/publish.yml) (trusted publishing / OIDC).
+Publish on tag push `v*` via [publish.yml](../../../.github/workflows/publish.yml) (trusted publishing / OIDC).
 
 ## Where the version lives
 
@@ -35,7 +38,7 @@ Publish on tag push `v*` via [publish.yml](../../.github/workflows/publish.yml) 
    git push origin v2.1.0
    ```
 
-   [publish.yml](../../.github/workflows/publish.yml) runs tests, packs the template, publishes NuGet (nuget.org + GitHub Packages), and creates a GitHub Release from `CHANGELOG.md`.
+   [publish.yml](../../../.github/workflows/publish.yml) runs tests, packs the template, publishes NuGet (nuget.org + GitHub Packages), and creates a GitHub Release from `CHANGELOG.md`.
 
 ## One-time setup
 

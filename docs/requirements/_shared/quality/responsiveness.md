@@ -10,7 +10,7 @@ status: active
 ### Target viewports
 
 - Primary design target: **desktop** and **large tablet** (viewport width **≥ 1024** px).
-- Layout uses the existing shell: sidebar, top bar, scrollable content (`docs/guides/frontend-guidelines.md`).
+- Layout uses the existing shell: sidebar, top bar, scrollable content (`docs/modules/frontend/development.md`).
 
 ### Smaller viewports
 

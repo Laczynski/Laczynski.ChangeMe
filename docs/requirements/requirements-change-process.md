@@ -7,8 +7,8 @@
 
 | Role                                   | Read first                                                         | Then                                                                                                                                       |
 | -------------------------------------- | ------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Analyst** (new or updated `FR-*`)    | [requirements-authoring-guide.md](requirements-authoring-guide.md) | Edit specs → [\_changes-template.md](_changes-template.md) → `npm run requirements:validate`                                               |
-| **Developer** (implement pending work) | Pending files in [changes/](changes/)                              | Linked `FR-*` + `_shared/` → [feature-recipes.md](../guides/feature-recipes.md) + [testing-guidelines.md](../guides/testing-guidelines.md) |
+| **Analyst** (new or updated `FR-*`)    | [requirements-authoring-guide.md](requirements-authoring-guide.md) | Edit specs → [\_changes-template.md](_changes-template.md) → `npm run docs:validate`                                                       |
+| **Developer** (implement pending work) | Pending files in [changes/](changes/)                              | Linked `FR-*` + `_shared/` → [feature workflow](../system/development/feature-workflow.md) + [testing strategy](../system/development/testing-strategy.md) |
 | **Find a specification**               | [README.md](README.md) (auto-generated index)                      | Open the linked `FR-*` file                                                                                                                |
 
 ## Five layers
@@ -18,8 +18,8 @@
 | **L1 Domain**         | `_shared/domain/`      | Glossary, account model, permissions catalog — _what exists_          |
 | **L2 Conventions**    | `_shared/conventions/` | Product standards (`CONV-001`, `STD-*` sections) — _default behavior_ |
 | **L3 Quality**        | `_shared/quality/`     | `NFR-*` — accessibility, i18n, performance, responsiveness            |
-| **L4 Capabilities**   | `functional/FR-*`      | Business capabilities — _what each feature must do_                   |
-| **L5 Implementation** | `docs/guides/`         | Frontend, backend, testing — _how we code in this repo_               |
+| **L4 Capabilities**   | `functional/<domain>/fr-*.md` | Business capabilities — _what each feature must do_            |
+| **L5 Implementation** | `docs/modules/*/development.md`, `docs/system/development/` | Module patterns and cross-module workflows — _how we code in this repo_ |
 
 Meta (not a product layer): `requirements-authoring-guide.md`, `requirements-change-process.md`, `changes/`, `README.md`.
 
@@ -32,7 +32,7 @@ Meta (not a product layer): `requirements-authoring-guide.md`, `requirements-cha
 3. Edit only the affected `FR-*` files under `functional/<domain>/`.
 4. Create **one** file in `changes/` from `_changes-template.md`.
 5. List every touched document; describe the **behavior delta**.
-6. Run `npm run requirements:validate` before opening a PR.
+6. Run `npm run docs:validate` before opening a PR.
 
 ### Developer
 
@@ -54,7 +54,7 @@ Meta (not a product layer): `requirements-authoring-guide.md`, `requirements-cha
 ## Validation
 
 ```bash
-npm run requirements:validate
+npm run docs:validate
 ```
 
 Checks: `FR-*` / `NFR-*` / `STD-*` references, required FR sections, broken paths, change records. Regenerates `README.md` and `.requirements-manifest.json`.
@@ -68,5 +68,5 @@ Checks: `FR-*` / `NFR-*` / `STD-*` references, required FR sections, broken path
    - `docs/requirements/_shared/conventions/product-standards.md` (L2) — for any UI or interaction work
    - Relevant `docs/requirements/_shared/domain/*` (L1) — when access, users, or permissions matter
    - Relevant `docs/requirements/_shared/quality/*` (L3) — when NFR applies
-   - Matching `docs/guides/*` (L5) — for code patterns
+   - Matching module development document and `docs/system/development/*` (L5) — for code patterns
 4. Verify: L4 rules met; L2 conventions applied unless L4 overrides; L5 used only for implementation, not product behavior.
