@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 using Template.Backend.Infrastructure.Auth;
+using Template.Backend.Infrastructure.Configurations;
 using Template.Backend.Web.Authorization;
 
 namespace Template.Backend.Web.Configurations;
@@ -11,11 +12,16 @@ public static class AuthConfig
 {
   public static IServiceCollection AddJwtAuthentication(this IServiceCollection services, WebApplicationBuilder builder)
   {
-    services.Configure<AuthOptions>(builder.Configuration.GetSection(AuthOptions.SectionName));
-
-    var jwtOptions = builder.Configuration
+    var authOptions = builder.Configuration
       .GetSection(AuthOptions.SectionName)
-      .Get<AuthOptions>()?.Jwt ?? new JwtOptions();
+      .Get<AuthOptions>() ?? new AuthOptions();
+
+    OptionsValidation.ThrowIfInvalid(
+      new AuthOptionsValidator(),
+      authOptions,
+      AuthOptions.SectionName);
+
+    var jwtOptions = authOptions.Jwt;
 
     var signingKey = Encoding.UTF8.GetBytes(jwtOptions.SigningKey);
 

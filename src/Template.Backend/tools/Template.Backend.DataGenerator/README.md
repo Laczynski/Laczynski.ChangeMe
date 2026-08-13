@@ -12,7 +12,7 @@ This tool fills the database with sample users, issues, comments, acceptance cri
 
 1. A running PostgreSQL database (Docker Compose or local instance).
 2. EF Core migrations applied (automatic on API startup in Development, or `npm run ef:database:update` from the repository root).
-3. A valid connection string in the Web project `appsettings.Development.json` (those files are linked into this tool at build time).
+3. A root `.env` copied from `.env.example`; the generator loads the same local connection string as the API and EF Core tooling.
 
 ## Running
 
@@ -44,7 +44,7 @@ dotnet run --project src/Template.Backend/tools/Template.Backend.DataGenerator/T
 
 By default, accounts `user1@demo.local` through `user8@demo.local` are created with the password from `DataGenerator:DefaultPassword` (default: `Demo123!`).
 
-The seeded system administrator (`admin@example.local` / `admin`) is left unchanged.
+The optional system administrator configured in the root `.env` is left unchanged.
 
 ## Configuration
 

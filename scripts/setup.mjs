@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { spawnSync } from "node:child_process";
+import { copyFileSync, existsSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -74,6 +75,16 @@ if (dockerCheck.status === 0) {
   );
 }
 
+const envExamplePath = join(root, ".env.example");
+const envPath = join(root, ".env");
+
+if (existsSync(envPath)) {
+  console.log("✓ Local .env already exists — left unchanged");
+} else {
+  copyFileSync(envExamplePath, envPath);
+  console.log("✓ Created local .env from .env.example");
+}
+
 console.log("\nInstalling dependencies...");
 run("npm", ["install"]);
 run("npm", ["run", "install:frontend"]);
@@ -81,6 +92,7 @@ run("dotnet", ["restore", "src/Template.Backend/Template.Backend.slnx"]);
 
 console.log("\nSetup complete.");
 console.log("Next steps:");
+console.log("  - Local config: review placeholder values in .env");
 console.log("  - PostgreSQL: docker compose up postgres mailhog -d");
 console.log("  - Dev servers: npm run start:all");
 console.log("  - Full stack:  npm run docker:up");

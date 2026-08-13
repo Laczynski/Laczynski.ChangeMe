@@ -5,8 +5,13 @@ namespace Template.Backend.Infrastructure.Auth;
 public sealed class PasswordPolicyValidator(IOptions<AuthOptions> authOptions) : IPasswordPolicyValidator
 {
   public IReadOnlyList<ValidationError> Validate(string password, string propertyName = "Password")
+    => Validate(password, authOptions.Value.PasswordPolicy, propertyName);
+
+  internal static IReadOnlyList<ValidationError> Validate(
+    string password,
+    PasswordPolicyOptions policy,
+    string propertyName)
   {
-    var policy = authOptions.Value.PasswordPolicy;
     var errors = new List<ValidationError>();
 
     if (string.IsNullOrEmpty(password))

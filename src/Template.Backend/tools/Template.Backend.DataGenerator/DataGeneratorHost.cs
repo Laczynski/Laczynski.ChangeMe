@@ -14,6 +14,8 @@ internal static class DataGeneratorHost
 {
   public static IHost BuildHost(string[] args)
   {
+    LocalEnvironmentLoader.LoadForDevelopment(Environments.Development);
+
     var reset = args.Contains("--reset", StringComparer.OrdinalIgnoreCase);
     var contentRoot = AppContext.BaseDirectory;
 
@@ -67,7 +69,6 @@ internal static class DataGeneratorHost
         $"""
         Missing {developmentSettingsPath}.
         Rebuild the DataGenerator project so Web appsettings.Development.json is copied to the output directory.
-        The Development file must define ConnectionStrings:DefaultConnection (see Template.Backend.Web/appsettings.Development.json).
         """);
     }
 
@@ -79,15 +80,7 @@ internal static class DataGeneratorHost
     if (args.Length > 0)
       configuration.AddCommandLine(args);
 
-    var connectionString = configuration.GetConnectionString("DefaultConnection");
-    if (string.IsNullOrWhiteSpace(connectionString))
-    {
-      throw new InvalidOperationException(
-        $"""
-        Connection string 'DefaultConnection' is empty after loading appsettings from {contentRoot}.
-        Set ConnectionStrings:DefaultConnection in src/Template.Backend/src/Template.Backend.Web/appsettings.Development.json, then rebuild and run again.
-        """);
-    }
+    _ = ConnectionStringsOptionsValidator.GetValidatedDefaultConnection(configuration);
 
     return configuration;
   }

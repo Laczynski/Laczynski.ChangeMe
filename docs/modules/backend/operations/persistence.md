@@ -14,7 +14,9 @@
 
 ## Configuration
 
-The local connection string is in `src/Template.Backend/src/Template.Backend.Web/appsettings.Development.json`. Docker Compose overrides it so the backend connects to the `postgres` service.
+The ignored root `.env`, copied from `.env.example`, owns the locally editable PostgreSQL values. It derives `ConnectionStrings__DefaultConnection` with `Host=localhost` for API, EF Core, and data-generator processes running on the host. Docker Compose builds its backend connection string from the same database/user/password values with `Host=postgres`.
+
+Real environment variables override `.env`; production does not load the file. Cross-module setup and precedence: [local full-stack environment](../../../system/operations/local-stack.md).
 
 `InitialCreate` is included under `Infrastructure/Persistence/Migrations/`.
 

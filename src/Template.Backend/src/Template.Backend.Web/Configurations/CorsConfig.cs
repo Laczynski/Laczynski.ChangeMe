@@ -1,3 +1,5 @@
+using Template.Backend.Infrastructure.Configurations;
+
 namespace Template.Backend.Web.Configurations;
 
 public static class CorsConfig
@@ -9,6 +11,11 @@ public static class CorsConfig
     var corsOptions = builder.Configuration
       .GetSection(CorsOptions.SectionName)
       .Get<CorsOptions>() ?? new CorsOptions();
+
+    OptionsValidation.ThrowIfInvalid(
+      new CorsOptionsValidator(),
+      corsOptions,
+      CorsOptions.SectionName);
 
     services.AddCors(options =>
     {

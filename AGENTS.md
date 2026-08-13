@@ -29,7 +29,7 @@
 
 ### Repository root (npm)
 
-From the repository root, run `npm run setup` once after clone (installs npm packages, Playwright Chromium, restores .NET, and installs Lefthook pre-commit hooks). Frontend packages still live under `src/Template.Frontend`; use `npm run install:frontend` when only frontend dependencies change.
+From the repository root, run `npm run setup` once after clone (creates `.env` from `.env.example` when missing, installs npm packages and Playwright Chromium, restores .NET, and installs Lefthook pre-commit hooks). Existing `.env` files are never overwritten. Frontend packages still live under `src/Template.Frontend`; use `npm run install:frontend` when only frontend dependencies change.
 
 - First-time setup: `npm run setup`
 - Install frontend dependencies and Playwright Chromium: `npm run install:frontend`

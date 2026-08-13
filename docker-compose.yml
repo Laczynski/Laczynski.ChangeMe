@@ -8,7 +8,7 @@ services:
     depends_on:
       - backend
     environment:
-      - CHANGE_ME_API_URL=/api/v1
+      CHANGE_ME_API_URL: /api/v1
     networks:
       - app-network
     restart: unless-stopped
@@ -23,9 +23,17 @@ services:
       - postgres
       - mailhog
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - ConnectionStrings__DefaultConnection=Host=postgres;Database=Template;Username=postgres;Password=postgres
-      - FileStorageOptions__RootPath=/app/storage
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DefaultConnection: "Host=postgres;Database=${POSTGRES_DB:?POSTGRES_DB is required};Username=${POSTGRES_USER:?POSTGRES_USER is required};Password=${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}"
+      AuthOptions__Jwt__SigningKey: "${AuthOptions__Jwt__SigningKey:?AuthOptions__Jwt__SigningKey is required}"
+      InitialAdministratorOptions__Email: "${InitialAdministratorOptions__Email:?InitialAdministratorOptions__Email is required}"
+      InitialAdministratorOptions__Password: "${InitialAdministratorOptions__Password:?InitialAdministratorOptions__Password is required}"
+      InitialAdministratorOptions__FirstName: "${InitialAdministratorOptions__FirstName:?InitialAdministratorOptions__FirstName is required}"
+      InitialAdministratorOptions__LastName: "${InitialAdministratorOptions__LastName:?InitialAdministratorOptions__LastName is required}"
+      EmailOptions__Host: mailhog
+      EmailOptions__Username: "${EmailOptions__Username:-}"
+      EmailOptions__Password: "${EmailOptions__Password:-}"
+      FileStorageOptions__RootPath: /app/storage
     volumes:
       - file-storage-data:/app/storage
     networks:
@@ -37,9 +45,9 @@ services:
     ports:
       - "5432:5432"
     environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=Template
+      POSTGRES_USER: "${POSTGRES_USER:?POSTGRES_USER is required}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}"
+      POSTGRES_DB: "${POSTGRES_DB:?POSTGRES_DB is required}"
     volumes:
       - postgres-data:/var/lib/postgresql
     networks:

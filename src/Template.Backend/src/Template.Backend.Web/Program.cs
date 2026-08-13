@@ -1,6 +1,8 @@
 using Template.Backend.Infrastructure.Configurations;
 using Template.Backend.Web.Configurations;
 
+LocalEnvironmentLoader.LoadForDevelopment(args);
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddSerilog();
@@ -8,18 +10,19 @@ builder.AddSerilog();
 var loggerFactory = LoggerFactory.Create(lb => lb.AddSimpleConsole(o => o.SingleLine = true));
 var logger = loggerFactory.CreateLogger<Program>();
 
+builder.Services.AddRuntimeConfiguration(builder.Configuration);
 builder.Services.AddCors(builder);
-builder.Services.AddRateLimiting(builder);
+builder.Services.AddRateLimiting();
 builder.Services.AddJwtAuthentication(builder);
 
 builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddDatabase(builder, logger);
 builder.Services.AddHangfire(builder, logger);
-builder.Services.AddInfrastructureServices(builder.Configuration, logger);
+builder.Services.AddInfrastructureServices(logger);
 builder.Services.AddApplicationMediator();
-builder.Services.AddNotifications(builder, logger);
-builder.Services.AddFileStorage(builder, logger);
+builder.Services.AddNotifications(logger);
+builder.Services.AddFileStorage(logger);
 
 logger.LogInformation("Starting web host");
 
@@ -27,6 +30,7 @@ builder.Services.AddFastEndpointsWithSwagger(builder.Configuration);
 
 var app = builder.Build();
 
+app.ValidateRuntimeConfiguration();
 app.UseExceptionHandler();
 app.UseSecurityHeaders();
 

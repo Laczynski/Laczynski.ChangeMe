@@ -8,7 +8,7 @@ export const e2eApiUrl = process.env['E2E_API_URL'] ?? 'http://localhost:5000/ap
 
 export const e2eCredentials = {
   email: process.env['E2E_USER_EMAIL'] ?? 'admin@example.local',
-  password: process.env['E2E_USER_PASSWORD'] ?? 'admin123'
+  password: process.env['E2E_USER_PASSWORD'] ?? 'replace-for-local-development-123A'
 };
 
 export const e2eTestPassword = 'StrongPass123!';

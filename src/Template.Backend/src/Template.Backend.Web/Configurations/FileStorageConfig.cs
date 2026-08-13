@@ -6,7 +6,7 @@ namespace Template.Backend.Web.Configurations;
 
 public static class FileStorageConfig
 {
-  public static IServiceCollection AddFileStorage(this IServiceCollection services, WebApplicationBuilder builder, Microsoft.Extensions.Logging.ILogger logger)
+  public static IServiceCollection AddFileStorage(this IServiceCollection services, Microsoft.Extensions.Logging.ILogger logger)
   {
     services.AddScoped<AttachmentStorageCleanupJob>();
 
@@ -17,13 +17,7 @@ public static class FileStorageConfig
   public static WebApplication UseFileStorageCleanup(this WebApplication app)
   {
     var fileStorageOptions = app.Services.GetRequiredService<IOptions<FileStorageOptions>>().Value;
-    var cleanupCronExpression = string.IsNullOrWhiteSpace(fileStorageOptions.CleanupCronExpression)
-      ? "0 * * * *"
-      : fileStorageOptions.CleanupCronExpression;
-
     var cleanupConcurrentExecutionTimeoutSeconds = fileStorageOptions.CleanupConcurrentExecutionTimeoutSeconds;
-    if (cleanupConcurrentExecutionTimeoutSeconds <= 0)
-      cleanupConcurrentExecutionTimeoutSeconds = 3600;
 
     GlobalJobFilters.Filters.Add(
       new AttachmentStorageCleanupConcurrentExecutionFilterAttribute(cleanupConcurrentExecutionTimeoutSeconds));
@@ -32,7 +26,7 @@ public static class FileStorageConfig
     recurringJobs.AddOrUpdate<AttachmentStorageCleanupJob>(
       "attachment-storage-cleanup",
       job => job.ExecuteAsync(JobCancellationToken.Null),
-      cleanupCronExpression);
+      fileStorageOptions.CleanupCronExpression);
 
     return app;
   }
