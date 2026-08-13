@@ -1,0 +1,6 @@
+{
+  "schemaVersion": 1,
+  "instance": {{ inventory_hostname | to_json }},
+  "configurationCommit": {{ application_config_revision | to_json }},
+  "gitLabEnvironment": {{ gitlab_environment | to_json }}
+}

@@ -1,9 +1,12 @@
+using Microsoft.AspNetCore.HttpOverrides;
 using Template.Backend.Infrastructure.Configurations;
 using Template.Backend.Web.Configurations;
 
-LocalEnvironmentLoader.LoadForDevelopment(args);
+var startupOptions = ApplicationStartupOptions.Parse(args);
 
-var builder = WebApplication.CreateBuilder(args);
+LocalEnvironmentLoader.LoadForDevelopment(startupOptions.ConfigurationArguments);
+
+var builder = WebApplication.CreateBuilder(startupOptions.ConfigurationArguments);
 
 builder.AddSerilog();
 
@@ -11,6 +14,10 @@ var loggerFactory = LoggerFactory.Create(lb => lb.AddSimpleConsole(o => o.Single
 var logger = loggerFactory.CreateLogger<Program>();
 
 builder.Services.AddRuntimeConfiguration(builder.Configuration);
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+  options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+});
 builder.Services.AddCors(builder);
 builder.Services.AddRateLimiting();
 builder.Services.AddJwtAuthentication(builder);
@@ -31,6 +38,24 @@ builder.Services.AddFastEndpointsWithSwagger(builder.Configuration);
 var app = builder.Build();
 
 app.ValidateRuntimeConfiguration();
+
+if (startupOptions.MigrateOnly)
+{
+  try
+  {
+    logger.LogInformation("Running database migrations and bootstrap seed without starting the web host");
+    await DatabaseConfig.InitializeDatabaseAsync(app.Services, CancellationToken.None);
+    logger.LogInformation("Database migrations and bootstrap seed completed");
+  }
+  finally
+  {
+    await app.DisposeAsync();
+  }
+
+  return;
+}
+
+app.UseForwardedHeaders();
 app.UseExceptionHandler();
 app.UseSecurityHeaders();
 

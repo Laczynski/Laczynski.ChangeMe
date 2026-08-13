@@ -44,6 +44,14 @@ From the repository root, run `npm run setup` once after clone (creates `.env` f
 - Demo data (after migrations; Development only): `npm run data:generate`, or `npm run data:generate -- --reset` — see `docs/modules/backend/demo-data.md`
 - Documentation: `npm run docs:validate` — checks links, system/module contracts and index reachability, then validates `FR-*` / `NFR-*` cross-references and regenerates the requirements index
 
+### Native VPS delivery (Linux/WSL)
+
+- Install pinned tooling: `python -m pip install --requirement deploy/ansible/requirements-ci.txt`
+- Validate deployment definitions: `python deploy/scripts/validate-gitlab-ci.py`, `python -m unittest discover --start-directory deploy/scripts/tests --verbose`, and `ansible-lint deploy/ansible/playbooks/*.yml`
+- Package contract: `bash deploy/scripts/test-package.sh`
+- Bootstrap, deploy, verify, configuration-only deploy, and rollback procedures: `docs/system/operations/deployment.md`
+- GitLab creates packages and manual deployment choices; Docker and Compose remain local-only
+
 ### Frontend (in `src/Template.Frontend`)
 
 - Install dependencies: prefer `npm run install:frontend` from the repository root (includes Playwright Chromium); `npm install` here installs npm packages only

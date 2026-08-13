@@ -1,0 +1,77 @@
+---
+- name: Deploy configuration revision to active application
+  hosts: application_instances
+  gather_facts: true
+  become: true
+  serial: 1
+  tasks:
+    - name: Inspect active application link
+      ansible.builtin.stat:
+        path: "{{ application_current_path }}"
+        follow: false
+      register: config_deploy_application_link
+
+    - name: Require an active application before configuration-only deployment
+      ansible.builtin.assert:
+        that:
+          - config_deploy_application_link.stat.exists
+          - config_deploy_application_link.stat.islnk
+        fail_msg: "Deploy an application release before running a configuration-only deployment."
+
+    - name: Acquire deployment lock
+      ansible.builtin.command:
+        argv:
+          - mkdir
+          - "/run/lock/{{ application_name }}-deployment"
+      changed_when: true
+
+    - name: Activate and verify configuration revision
+      block:
+        - name: Stage configuration revision
+          ansible.builtin.include_role:
+            name: application_config
+            tasks_from: stage
+
+        - name: Activate selected configuration
+          ansible.builtin.include_role:
+            name: application_config
+            tasks_from: activate
+
+        - name: Restart backend with selected configuration
+          ansible.builtin.systemd_service:
+            name: "{{ application_service_name }}"
+            state: restarted
+
+        - name: Verify backend health
+          ansible.builtin.uri:
+            url: "{{ application_backend_url }}{{ health_path }}"
+            status_code: 200
+            return_content: false
+          register: config_deploy_health
+          retries: 12
+          delay: 5
+          until: config_deploy_health.status == 200
+      rescue:
+        - name: Restore previous configuration link
+          ansible.builtin.file:
+            src: "{{ application_config_active_link.stat.lnk_source }}"
+            dest: "{{ application_current_config_path }}"
+            state: link
+            force: true
+          when:
+            - application_config_active_link.stat.exists
+            - application_config_active_link.stat.islnk
+
+        - name: Restart backend after configuration recovery
+          ansible.builtin.systemd_service:
+            name: "{{ application_service_name }}"
+            state: restarted
+
+        - name: Fail configuration deployment
+          ansible.builtin.fail:
+            msg: "Configuration health verification failed; the previous configuration was restored."
+      always:
+        - name: Release deployment lock
+          ansible.builtin.file:
+            path: "/run/lock/{{ application_name }}-deployment"
+            state: absent

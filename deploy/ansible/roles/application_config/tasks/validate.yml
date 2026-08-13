@@ -1,0 +1,131 @@
+---
+- name: Validate deployment identity and topology
+  ansible.builtin.assert:
+    that:
+      - deployment_enabled | bool
+      - application_name is match('^[a-z0-9][a-z0-9-]*$')
+      - application_service_name is match('^[A-Za-z0-9][A-Za-z0-9._@-]*$')
+      - application_user is match('^[a-z_][a-z0-9_-]*$')
+      - application_group is match('^[a-z_][a-z0-9_-]*$')
+      - deployment_tier in ['development', 'production', 'customer']
+      - ansible_port | int >= 1
+      - ansible_port | int <= 65535
+      - gitlab_environment is match('^[a-z0-9][a-z0-9._/-]*$')
+      - public_url is match('^https?://\S+$')
+      - server_name is match('^[A-Za-z0-9.-]+$')
+      - frontend_api_url is match("^/[A-Za-z0-9._~!$&'()*+,;=:@%/-]*$|^https?://[A-Za-z0-9.-]+(:[0-9]{1,5})?(/[A-Za-z0-9._~!$&'()*+,;=:@%/-]*)?$")
+      - health_path is match('^/[A-Za-z0-9/_-]*$')
+      - application_backend_url == 'http://127.0.0.1:5000'
+      - application_backend_executable is match('^[A-Za-z0-9][A-Za-z0-9._-]*$')
+      - application_runtime_identifier == 'linux-x64'
+      - nginx_tls_enabled is boolean
+      - not (nginx_tls_enabled | bool) or nginx_tls_certificate_path is match('^/')
+      - not (nginx_tls_enabled | bool) or nginx_tls_certificate_key_path is match('^/')
+      - application_root == '/opt/' ~ application_name
+      - application_releases_root == application_root ~ '/releases'
+      - application_current_path == application_root ~ '/current'
+      - application_previous_path == application_root ~ '/previous'
+      - application_config_root == '/etc/' ~ application_name
+      - application_config_revisions_root == application_config_root ~ '/config-revisions'
+      - application_current_config_path == application_config_root ~ '/current-config'
+      - application_previous_config_path == application_config_root ~ '/previous-config'
+      - application_secrets_path == application_config_root ~ '/secrets.env'
+      - application_data_root == '/var/lib/' ~ application_name
+      - application_storage_root == application_data_root ~ '/storage'
+      - application_log_root == '/var/log/' ~ application_name
+      - application_backup_root == '/var/backups/' ~ application_name
+      - application_release_keep_count | int >= 2
+      - application_config_keep_count | int >= 2
+      - backend_config is mapping
+    fail_msg: "Invalid deployment variables for {{ inventory_hostname }}."
+
+- name: Validate configuration revision
+  ansible.builtin.assert:
+    that:
+      - application_config_revision is defined
+      - application_config_revision is match('^[0-9a-f]{40}$')
+    fail_msg: "application_config_revision must be a full lowercase Git commit SHA."
+  when: application_config_revision is defined
+
+- name: Reject unknown or secret backend configuration keys
+  ansible.builtin.assert:
+    that:
+      - backend_config.keys() | intersect(forbidden_backend_config_keys) | length == 0
+      - backend_config.keys() | difference(allowed_backend_config_keys) | length == 0
+    fail_msg: >-
+      backend_config for {{ inventory_hostname }} contains a secret or unsupported key.
+      Secret values belong only in {{ application_secrets_path }}.
+
+- name: Reject multiline backend configuration values
+  ansible.builtin.assert:
+    that:
+      - "'\n' not in (item.value | string)"
+      - "'\r' not in (item.value | string)"
+    fail_msg: "backend_config value {{ item.key }} must fit on one line."
+  loop: "{{ backend_config | dict2items }}"
+  loop_control:
+    label: "{{ item.key }}"
+
+- name: Inspect server-owned secret file
+  ansible.builtin.stat:
+    path: "{{ application_secrets_path }}"
+  register: application_config_secrets_file
+
+- name: Validate server-owned secret file permissions
+  ansible.builtin.assert:
+    that:
+      - application_config_secrets_file.stat.exists
+      - application_config_secrets_file.stat.isreg
+      - application_config_secrets_file.stat.pw_name == 'root'
+      - application_config_secrets_file.stat.mode == '0600'
+    fail_msg: "{{ application_secrets_path }} must be a root-owned regular file with mode 0600."
+
+- name: Read secret variable names without reading their values
+  ansible.builtin.command:
+    argv:
+      - awk
+      - -F=
+      - "/^[A-Za-z_][A-Za-z0-9_]*=/{print $1}"
+      - "{{ application_secrets_path }}"
+  register: application_config_secret_names
+  changed_when: false
+
+- name: Reject non-secret keys in the server-owned secret file
+  ansible.builtin.assert:
+    that:
+      - application_config_secret_names.stdout_lines | difference(allowed_secret_variables) | length == 0
+      - (application_config_secret_names.stdout_lines | unique | length) == (application_config_secret_names.stdout_lines | length)
+    fail_msg: >-
+      {{ application_secrets_path }} contains keys outside the secret allowlist.
+      Move non-secret settings to the versioned Ansible host variables.
+
+- name: Detect malformed secret file lines without returning their contents
+  ansible.builtin.command:
+    argv:
+      - awk
+      - "!/^(#|[[:space:]]*$|[A-Za-z_][A-Za-z0-9_]*=.*$)/{print NR}"
+      - "{{ application_secrets_path }}"
+  register: application_config_malformed_secret_lines
+  changed_when: false
+
+- name: Require valid environment-file syntax
+  ansible.builtin.assert:
+    that:
+      - application_config_malformed_secret_lines.stdout_lines | length == 0
+    fail_msg: >-
+      {{ application_secrets_path }} contains malformed lines:
+      {{ application_config_malformed_secret_lines.stdout_lines | join(', ') }}
+
+- name: Verify required secret variable names without reading values into Ansible
+  ansible.builtin.command:
+    argv:
+      - grep
+      - --quiet
+      - --extended-regexp
+      - "^{{ item | regex_escape }}=.+$"
+      - "{{ application_secrets_path }}"
+  loop: "{{ required_secret_variables }}"
+  loop_control:
+    label: "{{ item }}"
+  changed_when: false
+  no_log: true

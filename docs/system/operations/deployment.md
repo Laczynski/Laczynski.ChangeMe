@@ -3,29 +3,211 @@
 > Type: operations
 > Scope: system
 > Status: implemented
-> Canonical for: runtime API routing and the production deployment checklist
+> Canonical for: GitLab application releases and native Linux VPS bootstrap, deployment, verification, and rollback
 >
 > Local Compose: [local full-stack environment](local-stack.md). Migrations: [backend persistence](../../modules/backend/operations/persistence.md).
 
-## How the frontend reaches the API
+## Summary
 
-| Mode                          | Where `apiUrl` is defined      | Typical use                                                                                |
-| ----------------------------- | ------------------------------ | ------------------------------------------------------------------------------------------ |
-| **`ng serve`** (Development)  | `environment.development.ts`   | Backend on port 5000, frontend on 4200                                                     |
-| **Production build / Docker** | `runtime-config.js` (required) | Default `/api/v1` — nginx proxies `/api/` and `/hubs/` to the backend                      |
-| **Split API host**            | `CHANGE_ME_API_URL` env var    | SPA and API on different origins — see [Runtime config](#runtime-config) and [CORS](#cors) |
+- Docker is used locally only. Deployed instances run a self-contained ASP.NET Core backend under systemd and serve the Angular frontend through nginx.
+- A protected `vX.Y.Z` Git tag verifies and publishes one immutable `linux-x64` package. It does not deploy automatically.
+- GitLab generates an independent manual action for every enabled inventory instance. The same package can be selected for development, production, or customer environments.
+- Git versions all non-secret instance configuration. Each VPS owns its secret values in `/etc/<application>/secrets.env`.
+- The supported baseline is one application instance per Ubuntu 24.04 or Debian 12 x86-64 VPS with externally managed PostgreSQL.
 
-SignalR hub URL is derived from `apiUrl`. In Docker, nginx proxies `/hubs/` to the backend with WebSocket headers.
+## Runtime topology and paths
 
-Development uses `environment.development.ts` only. Production reads **`window.__CHANGE_ME_CONFIG__.apiUrl`** from `public/runtime-config.js` (loaded before the Angular bundle) — there is no silent fallback to build-time environment files.
+nginx serves `/opt/<application>/current/frontend`, exposes the active server-rendered `/runtime-config.js`, and proxies `/api/` plus `/hubs/` to the backend on `127.0.0.1:5000`. systemd runs `/opt/<application>/current/backend/<backend-executable>` as the unprivileged `appsvc` account.
 
-## Default deployment topology
+```text
+/opt/<application>/releases/vX.Y.Z/        immutable application releases
+/opt/<application>/current                 active application symlink
+/opt/<application>/previous                previous application symlink
+/etc/<application>/config-revisions/<sha>/ immutable non-secret configuration
+/etc/<application>/current-config          active configuration symlink
+/etc/<application>/previous-config         previous configuration symlink
+/etc/<application>/secrets.env             server-owned secrets, root:root 0600
+/var/lib/<application>/storage/             persistent files
+/var/lib/<application>/deployment.json      active deployment record
+/var/log/<application>/                     service-writable logs
+```
 
-The Compose reference topology serves the Angular build through nginx and proxies `/api/` and `/hubs/` to `backend:8080`. The browser therefore uses one public origin. Commands, ports, services, and local configuration precedence are canonical in [local full-stack environment](local-stack.md).
+Application packages never contain host configuration or secrets. Releases and configuration revisions are retained separately; active and previous revisions are protected from automatic retention cleanup.
 
-## Runtime config
+## Configure an instance in Git
 
-`public/runtime-config.js` defines the production API URL before bootstrap:
+Ansible must run from Linux, WSL, or a Linux CI runner. Install the pinned controller dependencies in an isolated environment:
+
+```bash
+python3 -m venv .venv-deploy
+. .venv-deploy/bin/activate
+python -m pip install --requirement deploy/ansible/requirements.txt
+export ANSIBLE_CONFIG="$PWD/deploy/ansible/ansible.cfg"
+```
+
+To add an instance:
+
+1. Copy `deploy/ansible/examples/new-instance.yml` to `deploy/ansible/inventory/host_vars/<instance-id>.yml`.
+2. Add the same ID under `application_instances.hosts` in `deploy/ansible/inventory/hosts.yml`.
+3. Replace host names, URLs, tier, GitLab environment name, and `backend_config` values.
+4. Add at least one SSH public key as `deployment_public_keys`. This is the public half of the protected GitLab deployment key.
+5. Leave `deployment_enabled: false` until the server secret file and one-time bootstrap are ready. Enable it through a reviewed merge request.
+
+Only scalar keys listed by `allowed_backend_config_keys` may appear in `backend_config`. Connection strings, JWT signing keys, SMTP credentials, and bootstrap-administrator values are rejected there and belong on the server. Validate the complete inventory before merge:
+
+```bash
+ansible-inventory --inventory deploy/ansible/inventory/hosts.yml --list >/tmp/inventory.json
+python deploy/scripts/generate-deployment-pipeline.py \
+  --inventory deploy/ansible/inventory/hosts.yml \
+  --application-version v0.0.0 \
+  --configuration-commit 0000000000000000000000000000000000000000 \
+  --output /tmp/deployment-pipeline.yml
+```
+
+The generator rejects unsafe paths, enabled `.invalid` examples, duplicate environments, unrecognized config keys, and secrets committed as configuration.
+
+## Provision server secrets
+
+The application deliberately does not load a production repository `.env`. Standard ASP.NET Core environment variables are supplied through systemd environment files.
+
+Before bootstrap, an administrator creates the configuration directory and transfers the secret file through the server's controlled administration path:
+
+```bash
+sudo install -d -o root -g root -m 0755 /etc/<application>
+sudo install -o root -g root -m 0600 /secure-transfer/secrets.env /etc/<application>/secrets.env
+```
+
+The required variables are:
+
+```dotenv
+ConnectionStrings__DefaultConnection=Host=database.internal;Database=Application;Username=application;Password=replace-on-vps
+AuthOptions__Jwt__SigningKey=replace-with-a-unique-key-of-at-least-32-bytes
+```
+
+Optional allowed secrets include SMTP username/password and initial-administrator fields. The deployment automation validates file ownership, mode, syntax, allowlisted names, and required non-empty keys without returning values to Ansible or CI logs. It never creates or updates this file.
+
+After a controlled secret rotation, restart and verify the existing service:
+
+```bash
+sudo systemctl restart <application>-backend
+sudo systemctl is-active --quiet <application>-backend
+curl --fail --silent --show-error https://application.example/health
+```
+
+## Bootstrap a VPS once
+
+Set the instance's real deployment public key and temporarily set `deployment_enabled: true` in the checked-out inventory used for bootstrap. Connect as the initial administrative account; the playbook creates the long-lived `deploy` account and application service account:
+
+```bash
+ansible-playbook \
+  --inventory deploy/ansible/inventory/hosts.yml \
+  --limit <instance-id> \
+  --user <initial-admin> \
+  --private-key <initial-admin-key> \
+  --ask-become-pass \
+  deploy/ansible/playbooks/bootstrap.yml
+```
+
+Bootstrap installs nginx and njs, creates the managed directories, installs systemd/nginx definitions, installs versioned deployment public keys, checks the secret file, and validates nginx. The `deploy` account receives passwordless root sudo because routine Ansible manages root-owned services and paths. Treat its private key as a root-equivalent credential.
+
+Bootstrap does not configure a firewall, provision PostgreSQL, create backups, issue certificates, change server secrets, or install Docker. When nginx terminates TLS, provision the certificate and key separately and set `nginx_tls_enabled`, `nginx_tls_certificate_path`, and `nginx_tls_certificate_key_path`. Leave TLS disabled when HTTPS terminates at an upstream proxy.
+
+Verify access with the deployment key:
+
+```bash
+ansible-playbook \
+  --inventory deploy/ansible/inventory/hosts.yml \
+  --limit <instance-id> \
+  --user deploy \
+  --private-key <deployment-key> \
+  deploy/ansible/playbooks/verify.yml
+```
+
+The first `verify.yml` succeeds only after an application release is active; immediately after bootstrap, use `nginx -t` and proceed with the first deployment.
+
+## Configure GitLab protection and credentials
+
+For every enabled value of `gitlab_environment`, configure two **File** variables scoped to that exact environment:
+
+| Variable | Content |
+| --- | --- |
+| `DEPLOY_SSH_PRIVATE_KEY` | Private key matching a versioned `deployment_public_keys` entry |
+| `DEPLOY_KNOWN_HOSTS` | Pre-verified `known_hosts` line for the inventory host and port |
+
+Protect both variables, the `vX.Y.Z` tag pattern, and production/customer environments. Restrict who may run their manual jobs and require deployment approvals where available. The GitLab runner needs outbound SSH access to every selected VPS. Backend integration tests also require a privileged runner capable of Docker-in-Docker/Testcontainers.
+
+Do not use `ssh-keyscan` inside a deployment job as the trust decision. Capture and verify the server host key through an administrative channel, then store it in `DEPLOY_KNOWN_HOSTS`.
+
+## Release and deploy
+
+A stable tag pipeline performs documentation, deployment-definition, package, frontend, backend, integration, and E2E verification. It publishes:
+
+```text
+<project-slug>-vX.Y.Z-linux-x64.tar.gz
+<project-slug>-vX.Y.Z-linux-x64.tar.gz.sha256
+<project-slug>-vX.Y.Z-linux-x64.tar.gz.manifest.json
+```
+
+The archive contains the self-contained backend, production frontend, internal checksums, and manifest. Publication is idempotent only when existing registry bytes are identical; a tag cannot silently replace a different package.
+
+After publication, a generated child pipeline exposes one blocking manual job per enabled instance. Each job shows the package version, target GitLab environment, and configuration commit and has its own `resource_group`. Running one job does not start any other environment.
+
+To reuse a published package with configuration from a newer commit, run a default-branch pipeline in GitLab and set the pipeline input `application-version` to an existing stable version such as `v1.4.0`. Verification/build jobs are skipped, the current full commit becomes the configuration revision, and the same manual environment choices are generated.
+
+Deployment verifies both package checksums, stages immutable package and configuration revisions, runs the new backend with `--migrate-only`, switches symlinks, restarts systemd, and waits for health. The deployment record contains application version/checksum, package commit, configuration commit, deployment ID, and pipeline URL.
+
+Normal startup keeps `DatabaseOptions:ApplyMigrationsOnStartup=false`. The migration-only command applies pending EF Core migrations and the idempotent bootstrap seed, then exits without starting the HTTP host.
+
+## Configuration-only operation
+
+The standard GitLab path may redeploy the selected existing package with a newer configuration. For an explicit controller-side configuration-only activation, check out the desired commit and run:
+
+```bash
+ansible-playbook \
+  --inventory deploy/ansible/inventory/hosts.yml \
+  --limit <instance-id> \
+  --user deploy \
+  --private-key <deployment-key> \
+  --extra-vars "application_config_revision=$(git rev-parse HEAD)" \
+  deploy/ansible/playbooks/deploy-config.yml
+```
+
+This stages the revision, switches only the configuration symlink, restarts the existing backend, health-checks it, and restores the prior configuration on failure.
+
+## Rollback and failure recovery
+
+Automatic recovery restores previous application and configuration symlinks if service startup or health verification fails. It does not reverse migrations. A release must keep its schema compatible with the previous retained version or document a database restore procedure before deployment.
+
+To select explicit retained revisions:
+
+```bash
+ansible-playbook \
+  --inventory deploy/ansible/inventory/hosts.yml \
+  --limit <instance-id> \
+  --user deploy \
+  --private-key <deployment-key> \
+  --extra-vars "rollback_application_version=v1.3.0" \
+  --extra-vars "rollback_config_revision=<full-commit-sha>" \
+  deploy/ansible/playbooks/rollback.yml
+```
+
+Rollback verifies the retained package's internal checksums, switches both links, restarts, and health-checks. If rollback health fails, it restores the revisions that were active when rollback began.
+
+Both GitLab and the server serialize deployments. A server lock is an atomic directory at `/run/lock/<application>-deployment`; a second run fails instead of racing. If a process is interrupted and leaves a stale lock, first verify that no GitLab deployment, Ansible process, or migration one-shot unit is active. Remove the exact lock directory only after that administrative inspection—automation intentionally does not guess that a lock is stale.
+
+Partial immutable release/configuration directories are never overwritten. Inspect and remove an incomplete exact revision manually before retrying. Retention keeps the newest configured number of revisions and never removes active or previous targets. Persistent storage is outside releases and is never removed by deployment or rollback.
+
+## Production configuration checklist
+
+- Keep a unique `AuthOptions__Jwt__SigningKey` of at least 32 bytes and a production PostgreSQL connection string in `secrets.env`.
+- Configure real SMTP settings; MailHog is local only. Remove initial-administrator secret fields after bootstrap.
+- Keep rate limiting enabled in production. Forward `X-Forwarded-For` and `X-Forwarded-Proto` at every upstream proxy.
+- Keep Swagger and the Hangfire dashboard disabled unless access is explicitly restricted.
+- At least one application instance must run the Hangfire server when background jobs are required.
+- Back up PostgreSQL and persistent application storage independently of releases. Exercise restore before a migration that cannot be rolled back safely.
+- Use same-origin `/api/v1` unless a split frontend/API origin is intentional. Split origins also require the matching `CorsOptions__AllowedOrigins` configuration.
+
+Production frontend configuration is never baked into the package. The active configuration revision renders:
 
 ```javascript
 window.__CHANGE_ME_CONFIG__ = {
@@ -33,147 +215,31 @@ window.__CHANGE_ME_CONFIG__ = {
 };
 ```
 
-The frontend Docker entrypoint **always** writes this file from **`CHANGE_ME_API_URL`** (default `/api/v1` when the variable is unset). `docker-compose.yml` sets it explicitly for the default stack.
+## Verification
 
-Split API host — change the env var:
-
-```yaml
-frontend:
-  environment:
-    - CHANGE_ME_API_URL=https://api.example.com/api/v1
-```
-
-Do **not** commit real production URLs or secrets in tracked files — set `CHANGE_ME_API_URL` in your orchestrator or secret store.
-
-## Production checklist
-
-### Secrets and configuration
-
-- Supply a unique **`AuthOptions:Jwt:SigningKey`** of at least 32 bytes; no signing key is shipped in tracked settings.
-- Set **`ConnectionStrings:DefaultConnection`** for your PostgreSQL instance.
-- Configure **`EmailOptions`** for real SMTP (MailHog is for local dev only).
-- Set all **`InitialAdministratorOptions`** fields only for first bootstrap, then remove or empty the entire section.
-- Keep **`RateLimitingOptions:Enabled`** `true` in production (see [Rate limiting](#rate-limiting)); tune `AuthPermitLimit` and `ApiPermitLimit` for your traffic.
-
-See [local full-stack environment](local-stack.md) for Compose overrides and sensitive local values.
-
-### Protected VPS environment file
-
-Production uses standard ASP.NET Core environment variables; the application does not load a repository `.env` outside `Development`. On a Compose-based Linux VPS, keep the production file outside the checkout, for example `/etc/template/backend.env`, owned by the deployment account with mode `0600`:
+Before enabling a real environment, run the repository deployment checks:
 
 ```bash
-sudo install -o template -g template -m 600 /secure-transfer/backend.env /etc/template/backend.env
+python -m pip install --requirement deploy/ansible/requirements-ci.txt
+python deploy/scripts/validate-gitlab-ci.py
+python -m unittest discover --start-directory deploy/scripts/tests --verbose
+for playbook in deploy/ansible/playbooks/*.yml; do
+  ansible-playbook --inventory deploy/ansible/inventory/hosts.yml --syntax-check "$playbook"
+done
+ansible-lint deploy/ansible/playbooks/*.yml
+bash deploy/scripts/test-package.sh
 ```
 
-A minimal production-shaped file contains the values absent from tracked settings:
-
-```dotenv
-ConnectionStrings__DefaultConnection=Host=postgres;Database=Template;Username=template;Password=replace-on-vps
-AuthOptions__Jwt__SigningKey=replace-with-a-unique-production-signing-key
-EmailOptions__Host=smtp.example.com
-EmailOptions__Port=587
-EmailOptions__EnableSsl=true
-EmailOptions__Username=template
-EmailOptions__Password=replace-when-smtp-authentication-is-used
-EmailOptions__FromEmail=no-reply@example.com
-EmailOptions__FromName=Template
-```
-
-Interpolate only the variables required by the backend container in the production Compose file or override:
-
-```yaml
-services:
-  backend:
-    environment:
-      ASPNETCORE_ENVIRONMENT: Production
-      ConnectionStrings__DefaultConnection: ${ConnectionStrings__DefaultConnection:?Default connection string is required}
-      AuthOptions__Jwt__SigningKey: ${AuthOptions__Jwt__SigningKey:?JWT signing key is required}
-      EmailOptions__Host: ${EmailOptions__Host:?SMTP host is required}
-      EmailOptions__Port: ${EmailOptions__Port:?SMTP port is required}
-      EmailOptions__EnableSsl: ${EmailOptions__EnableSsl:-true}
-      EmailOptions__Username: ${EmailOptions__Username:-}
-      EmailOptions__Password: ${EmailOptions__Password:-}
-      EmailOptions__FromEmail: ${EmailOptions__FromEmail:?Sender email is required}
-      EmailOptions__FromName: ${EmailOptions__FromName:-Template}
-```
-
-Validate structure without emitting resolved values, then recreate the affected container after every configuration change:
-
-```bash
-docker compose --env-file /etc/template/backend.env config --quiet
-docker compose --env-file /etc/template/backend.env up -d --force-recreate backend
-```
-
-Do not print the file or resolved `docker compose config` in CI/CD logs. Transfer/update it through a masked channel, keep it out of source control and image layers, and restrict backup access like any other credential store.
-
-For a backend running directly under systemd, use the same variable names:
-
-```ini
-[Service]
-EnvironmentFile=/etc/template/backend.env
-ExecStart=/opt/template/dotnet/Template.Backend.Web.dll
-```
-
-After updating the file, run `systemctl daemon-reload` when the unit changed and restart the backend service. Verify startup and `/health` without logging environment contents.
-
-### Migrations
-
-- **`InitialCreate`** is included — apply with `npm run ef:database:update` or your pipeline (`dotnet ef database update`); see [backend persistence](../../modules/backend/operations/persistence.md).
-- Prefer applying migrations from **CI/CD** rather than `Database:ApplyMigrationsOnStartup` on many concurrent app instances.
-
-### CORS
-
-Required only when the browser talks to the API on a **different origin** than the SPA (split host with `CHANGE_ME_API_URL`).
-
-Set **`CorsOptions:AllowedOrigins`** in `appsettings.json` or environment variables to your frontend origin(s), for example:
-
-```json
-"CorsOptions": {
-  "AllowedOrigins": ["https://app.example.com"]
-}
-```
-
-Same-origin Docker Compose (default) does not need CORS changes for browser API calls through nginx.
-
-### Hangfire
-
-- Keep **`HangfireOptions:DashboardEnabled`** `false` in production (`appsettings.json` default). Enable only in Development or staging when you need the dashboard.
-- On multi-instance deployments, keep **`HangfireOptions:ServerEnabled`** `true` on at least one instance (job worker) and `false` on stateless HTTP replicas.
-- Restrict **`/hangfire`** when enabled (reverse proxy auth, network policy, or Hangfire authorization filters). The template ships without dashboard authentication.
-- Recurring jobs still register on every instance (`RecurringJob.AddOrUpdate` at startup); only hosts with `ServerEnabled: true` execute them.
-
-Details: [backend background jobs](../../modules/backend/operations/background-jobs.md).
-
-### Swagger / OpenAPI
-
-- Keep **`SwaggerOptions:Enabled`** `false` in production (`appsettings.json` default). Enable in Development (`appsettings.Development.json`) or via environment override for staging.
-- When enabled locally, Swagger UI is available at `/swagger` on the API host.
-
-### Rate limiting
-
-- **Production:** per-IP fixed-window limits on all API traffic; login and refresh use a stricter auth limit on top. Exceeded requests return **429** with **`Retry-After`**. **`/health`** is excluded from the global limit.
-- **Development / default Compose:** off (`RateLimitingOptions:Enabled: false` in `appsettings.Development.json`).
-- **Deploy:** keep `Enabled` true; tune `AuthPermitLimit` and `ApiPermitLimit` via `RateLimitingOptions` in `appsettings.json` or `RateLimitingOptions__*` environment variables. Defaults and option names: `appsettings.json`, `RateLimitingOptions.cs`, `RateLimitingConfig.cs`.
-- Forward **`X-Forwarded-For`** at the reverse proxy (see [TLS and reverse proxy](#tls-and-reverse-proxy)) so limits apply to clients, not the load balancer.
-
-### TLS and reverse proxy
-
-Terminate HTTPS at your load balancer or ingress. Forward `X-Forwarded-Proto` and `X-Forwarded-For` so the API generates correct links when needed.
-
-For same-origin deployment, proxy **`/api/`**, **`/hubs/`**, and static SPA assets from one public host — the template’s `nginx.conf` is the reference for `/api` and `/hubs`.
-
-### Observability
-
-- Serilog writes to console and rolling files under `logs/` by default — redirect to your log aggregator in production.
-- Health checks: backend exposes standard ASP.NET Core health endpoints configured in the Web project.
+Repository checks do not validate project-specific GitLab permissions, environment scoping, runner networking, DNS, TLS, firewall rules, database reachability, or backups. Exercise bootstrap, first deployment, forced health failure, retained rollback, and restore on a disposable target before production.
 
 ## Related docs
 
-| Topic                                     | Document                                                             |
-| ----------------------------------------- | -------------------------------------------------------------------- |
-| Local Compose | [local full-stack environment](local-stack.md) |
+| Topic | Document |
+| --- | --- |
+| Delivery rationale and contracts | [multi-environment application delivery](../designs/multi-environment-application-delivery-design.md) |
+| Local Docker Compose | [local full-stack environment](local-stack.md) |
 | PostgreSQL and migrations | [backend persistence](../../modules/backend/operations/persistence.md) |
 | Hangfire | [backend background jobs](../../modules/backend/operations/background-jobs.md) |
 | File storage | [backend file storage](../../modules/backend/operations/file-storage.md) |
-| CI pipeline | [continuous integration](ci.md) |
-| Frontend implementation | [frontend development](../../modules/frontend/development.md) |
+| CI | [continuous integration](ci.md) |
+| Template package publishing | [publishing](publishing.md) |

@@ -1,0 +1,25 @@
+deployment_enabled: false
+deployment_tier: customer
+gitlab_environment: customer/primary
+
+ansible_host: customer-primary.example.invalid
+ansible_port: 22
+
+public_url: https://customer-primary.example.invalid
+server_name: customer-primary.example.invalid
+frontend_api_url: /api/v1
+health_path: /health
+
+backend_config:
+  AuthOptions__FrontendBaseUrl: https://customer-primary.example.invalid
+  AuthOptions__Jwt__Issuer: Template
+  AuthOptions__Jwt__Audience: Template.Client
+  AuthOptions__Jwt__ExpirationMinutes: "30"
+  AuthOptions__Jwt__SessionLifetimeDays: "14"
+  DatabaseOptions__ApplyMigrationsOnStartup: "false"
+  EmailOptions__Host: smtp.example.invalid
+  EmailOptions__Port: "587"
+  EmailOptions__EnableSsl: "true"
+  EmailOptions__FromEmail: no-reply@example.invalid
+  EmailOptions__FromName: Template
+  FileStorageOptions__RootPath: /var/lib/change-me/storage

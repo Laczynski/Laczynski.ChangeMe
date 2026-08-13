@@ -1,9 +1,11 @@
-# Publishing
+# Template publishing
 
 > Type: operations
 > Scope: system
 > Status: implemented
 > Canonical for: releasing the `Template` `dotnet new` NuGet package
+
+This process releases the reusable template package. It does not version or deploy an application created from the template; generated-application releases are operated through [deployment](deployment.md). The rationale for keeping those release lifecycles separate is recorded in [multi-environment application delivery](../designs/multi-environment-application-delivery-design.md).
 
 ## Registry
 
@@ -11,7 +13,7 @@
 | ---------- | ---------------------------------- | -------------- |
 | `Template` | [nuget.org](https://www.nuget.org) | GitHub Packages |
 
-Publish on tag push `v*` via [publish.yml](../../../.github/workflows/publish.yml) (trusted publishing / OIDC).
+In the template source repository, publish on tag push `v*` via `.github/workflows/publish.yml` (trusted publishing / OIDC). That maintainer-only workflow and `template-pack/` are excluded from generated applications.
 
 ## Where the version lives
 
@@ -38,7 +40,7 @@ Publish on tag push `v*` via [publish.yml](../../../.github/workflows/publish.ym
    git push origin v2.1.0
    ```
 
-   [publish.yml](../../../.github/workflows/publish.yml) runs tests, packs the template, publishes NuGet (nuget.org + GitHub Packages), and creates a GitHub Release from `CHANGELOG.md`.
+   `.github/workflows/publish.yml` runs tests, packs the template, publishes NuGet (nuget.org + GitHub Packages), and creates a GitHub Release from `CHANGELOG.md`.
 
 ## One-time setup
 

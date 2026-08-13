@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "instance": {{ inventory_hostname | to_json }},
+  "applicationVersion": {{ application_release_record_version | default(application_version) | to_json }},
+  "applicationCommit": {{ application_release_manifest.commitSha | to_json }},
+  "packageChecksum": {{ application_package_checksum | default('') | to_json }},
+  "configurationCommit": {{ application_release_record_config | default(application_config_revision) | to_json }},
+  "deploymentId": {{ application_deployment_id | default('manual') | string | to_json }},
+  "pipelineUrl": {{ application_pipeline_url | default('') | to_json }}
+}

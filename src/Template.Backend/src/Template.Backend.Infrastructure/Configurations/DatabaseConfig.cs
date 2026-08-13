@@ -59,14 +59,21 @@ public static class DatabaseConfig
     if (!databaseOptions.ApplyMigrationsOnStartup)
       return;
 
-    await using var scope = app.Services.CreateAsyncScope();
+    await InitializeDatabaseAsync(app.Services, CancellationToken.None);
+  }
+
+  public static async Task InitializeDatabaseAsync(
+    IServiceProvider services,
+    CancellationToken cancellationToken = default)
+  {
+    await using var scope = services.CreateAsyncScope();
     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     await InitializeDatabaseAsync(
       db,
       scope.ServiceProvider.GetRequiredService<IConfiguration>(),
       scope.ServiceProvider.GetRequiredService<IPasswordHasher>(),
       scope.ServiceProvider.GetRequiredService<ILogger<ApplicationDbContext>>(),
-      CancellationToken.None);
+      cancellationToken);
   }
 
   public static async Task InitializeDatabaseAsync(

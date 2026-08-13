@@ -1,4 +1,4 @@
-# Functional specification template
+# Functional specification skeleton
 
 > Copy the block below to `docs/requirements/functional/<domain>/fr-<area>-<nnn>-<slug>.md`.
 > **Layers:** `docs/requirements/_shared/README.md`.

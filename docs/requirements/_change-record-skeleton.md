@@ -1,4 +1,4 @@
-# YYYY-MM-DD — Short title
+# YYYY-MM-DD — Short change title
 
 **Status:** pending
 

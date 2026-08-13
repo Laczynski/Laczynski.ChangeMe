@@ -1,0 +1,135 @@
+.node-cache:
+  cache:
+    key:
+      files:
+        - package-lock.json
+        - src/Template.Frontend/package-lock.json
+    paths:
+      - .npm/
+    policy: pull-push
+
+.verification-rules:
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $SELECTED_APPLICATION_VERSION != ""'
+      when: never
+    - when: on_success
+
+documentation:verify:
+  stage: validate
+  image: node:24.15.0-bookworm
+  extends:
+    - .verification-rules
+    - .node-cache
+  script:
+    - npm ci --cache .npm --prefer-offline
+    - npm run docs:validate
+
+deployment:verify:
+  stage: validate
+  image: python:3.13-slim-bookworm
+  extends: .verification-rules
+  before_script:
+    - python -m pip install --no-cache-dir --requirement deploy/ansible/requirements-ci.txt
+  script:
+    - export ANSIBLE_CONFIG="$CI_PROJECT_DIR/deploy/ansible/ansible.cfg"
+    - ansible-inventory --inventory deploy/ansible/inventory/hosts.yml --list > /tmp/inventory.json
+    - >-
+      python deploy/scripts/generate-deployment-pipeline.py
+      --inventory deploy/ansible/inventory/hosts.yml
+      --application-version v0.0.0
+      --configuration-commit 0000000000000000000000000000000000000000
+      --output /tmp/deployment-pipeline.yml
+    - python -m py_compile deploy/scripts/generate-deployment-pipeline.py
+    - python deploy/scripts/validate-gitlab-ci.py
+    - python -m unittest discover --start-directory deploy/scripts/tests --verbose
+    - for playbook in deploy/ansible/playbooks/*.yml; do ansible-playbook --inventory deploy/ansible/inventory/hosts.yml --syntax-check "$playbook"; done
+    - ansible-lint deploy/ansible/playbooks/*.yml
+
+package:verify:
+  stage: validate
+  image: node:24.15.0-bookworm
+  extends: .verification-rules
+  script:
+    - bash deploy/scripts/test-package.sh
+
+frontend:verify:
+  stage: test
+  image: node:24.15.0-bookworm
+  extends:
+    - .verification-rules
+    - .node-cache
+  script:
+    - npm --prefix src/Template.Frontend ci --cache "$CI_PROJECT_DIR/.npm" --prefer-offline
+    - npm run lint:frontend
+    - npm run format:check:frontend
+    - npm run test:frontend:ci
+    - npm --prefix src/Template.Frontend run build -- --output-path "$CI_PROJECT_DIR/artifacts/frontend"
+  artifacts:
+    expire_in: 1 day
+    paths:
+      - artifacts/frontend/browser/
+
+backend:verify:
+  stage: test
+  image: mcr.microsoft.com/dotnet/sdk:10.0
+  extends: .verification-rules
+  services:
+    - name: docker:28.5.1-dind
+      alias: docker
+  variables:
+    DOCKER_HOST: tcp://docker:2375
+    DOCKER_TLS_CERTDIR: ""
+  cache:
+    key:
+      files:
+        - src/Template.Backend/Directory.Packages.props
+    paths:
+      - .nuget/packages/
+    policy: pull-push
+  script:
+    - dotnet restore src/Template.Backend/Template.Backend.slnx
+    - dotnet format src/Template.Backend/Template.Backend.slnx --severity warn --verify-no-changes --exclude "**/Persistence/Migrations/**"
+    - dotnet test src/Template.Backend/Template.Backend.slnx -c Release --no-restore
+
+e2e:verify:
+  stage: test
+  image: mcr.microsoft.com/dotnet/sdk:10.0
+  extends: .verification-rules
+  services:
+    - name: postgres:18
+      alias: postgres
+      variables:
+        POSTGRES_DB: Template
+        POSTGRES_USER: postgres
+        POSTGRES_PASSWORD: postgres
+    - name: mailhog/mailhog:v1.0.1
+      alias: mailhog
+  variables:
+    CI: "true"
+    ConnectionStrings__DefaultConnection: "Host=postgres;Database=Template;Username=postgres;Password=postgres"
+    AuthOptions__Jwt__SigningKey: "GitLab-CI-only-signing-key-with-at-least-32-bytes"
+    InitialAdministratorOptions__Email: "admin@example.local"
+    InitialAdministratorOptions__Password: "replace-for-gitlab-ci-123A"
+    InitialAdministratorOptions__FirstName: "System"
+    InitialAdministratorOptions__LastName: "Administrator"
+    EmailOptions__Host: "mailhog"
+    EmailOptions__Port: "1025"
+    EmailOptions__FromEmail: "no-reply@example.local"
+  before_script:
+    - apt-get update
+    - apt-get install --yes --no-install-recommends ca-certificates curl xz-utils
+    - curl --fail --silent --show-error --location --output /tmp/node.tar.xz "https://nodejs.org/dist/v24.15.0/node-v24.15.0-linux-x64.tar.xz"
+    - curl --fail --silent --show-error --location --output /tmp/SHASUMS256.txt "https://nodejs.org/dist/v24.15.0/SHASUMS256.txt"
+    - cd /tmp && grep " node-v24.15.0-linux-x64.tar.xz$" SHASUMS256.txt | sha256sum --check --strict
+    - tar --extract --xz --file /tmp/node.tar.xz --directory /usr/local --strip-components=1
+    - cd "$CI_PROJECT_DIR"
+  script:
+    - npm --prefix src/Template.Frontend ci --cache "$CI_PROJECT_DIR/.npm" --prefer-offline
+    - dotnet restore src/Template.Backend/Template.Backend.slnx
+    - npm --prefix src/Template.Frontend exec -- playwright install --with-deps chromium
+    - npm run test:e2e
+  artifacts:
+    when: on_failure
+    expire_in: 7 days
+    paths:
+      - src/Template.Frontend/playwright-report/

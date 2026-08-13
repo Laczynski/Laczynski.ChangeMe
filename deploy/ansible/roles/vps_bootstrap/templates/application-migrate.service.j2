@@ -1,0 +1,19 @@
+[Unit]
+Description={{ application_name }} database migration for release %i
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User={{ application_user }}
+Group={{ application_group }}
+WorkingDirectory={{ application_releases_root }}/%i/backend
+ExecStart={{ application_releases_root }}/%i/backend/{{ application_backend_executable }} --migrate-only
+Environment=ASPNETCORE_ENVIRONMENT=Production
+EnvironmentFile={{ application_current_config_path }}/backend.config.env
+EnvironmentFile={{ application_secrets_path }}
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=full
+ReadWritePaths={{ application_storage_root }} {{ application_log_root }}

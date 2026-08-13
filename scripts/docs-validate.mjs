@@ -23,7 +23,9 @@ const docsFiles = walkMarkdown(docsRoot);
 const linkedFiles = [
   path.join(root, "README.md"),
   path.join(root, "AGENTS.md"),
-  path.join(root, "CONTRIBUTING.md"),
+  ...(existsSync(path.join(root, "CONTRIBUTING.md"))
+    ? [path.join(root, "CONTRIBUTING.md")]
+    : []),
   path.join(
     root,
     "src",

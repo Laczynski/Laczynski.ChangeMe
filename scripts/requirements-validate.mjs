@@ -96,8 +96,8 @@ function main() {
     }
   }
 
-  if (!fs.existsSync(path.join(ROOT, "_changes-template.md"))) {
-    error("Missing docs/requirements/_changes-template.md");
+  if (!fs.existsSync(path.join(ROOT, "_change-record-skeleton.md"))) {
+    error("Missing docs/requirements/_change-record-skeleton.md");
   }
 
   const frFiles = collectFunctionalFiles();

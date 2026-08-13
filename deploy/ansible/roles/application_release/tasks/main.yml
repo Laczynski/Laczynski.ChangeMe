@@ -1,0 +1,338 @@
+---
+- name: Validate deployment inputs
+  ansible.builtin.assert:
+    that:
+      - deployment_enabled | bool
+      - application_version is match('^v[0-9]+\.[0-9]+\.[0-9]+$')
+      - application_package_checksum is match('^[0-9a-f]{64}$')
+      - application_package_path is defined
+      - application_config_revision is match('^[0-9a-f]{40}$')
+      - ansible_facts.os_family == 'Debian'
+      - ansible_facts.architecture == 'x86_64'
+    fail_msg: "Invalid application release inputs or unsupported target host."
+
+- name: Inspect package on Ansible controller
+  ansible.builtin.stat:
+    path: "{{ application_package_path }}"
+    checksum_algorithm: sha256
+    get_checksum: true
+  delegate_to: localhost
+  become: false
+  register: application_release_controller_package
+
+- name: Verify package checksum on Ansible controller
+  ansible.builtin.assert:
+    that:
+      - application_release_controller_package.stat.exists
+      - application_release_controller_package.stat.isreg
+      - application_release_controller_package.stat.checksum == application_package_checksum
+    fail_msg: "The downloaded package does not match its registry checksum."
+
+- name: Acquire deployment lock before remote staging
+  ansible.builtin.command:
+    argv:
+      - mkdir
+      - "/run/lock/{{ application_name }}-deployment"
+  changed_when: true
+
+- name: Stage selected configuration revision
+  ansible.builtin.include_role:
+    name: application_config
+    tasks_from: stage
+
+- name: Inspect release directory
+  ansible.builtin.stat:
+    path: "{{ application_releases_root }}/{{ application_version }}"
+  register: application_release_directory
+
+- name: Inspect release manifest
+  ansible.builtin.stat:
+    path: "{{ application_releases_root }}/{{ application_version }}/manifest.json"
+  register: application_release_manifest_file
+
+- name: Reject partial or unrecognized release directory
+  ansible.builtin.assert:
+    that:
+      - not application_release_directory.stat.exists or application_release_manifest_file.stat.exists
+    fail_msg: >-
+      {{ application_releases_root }}/{{ application_version }} exists without a manifest.
+      Inspect it manually; deployment will not overwrite an ambiguous release.
+
+- name: Create remote package staging directory
+  ansible.builtin.tempfile:
+    state: directory
+    prefix: "{{ application_name }}-release-"
+  register: application_release_remote_staging
+  when: not application_release_directory.stat.exists
+
+- name: Copy package to target
+  ansible.builtin.copy:
+    src: "{{ application_package_path }}"
+    dest: "{{ application_release_remote_staging.path }}/package.tar.gz"
+    owner: root
+    group: root
+    mode: "0600"
+  when: not application_release_directory.stat.exists
+
+- name: Verify copied package checksum
+  ansible.builtin.stat:
+    path: "{{ application_release_remote_staging.path }}/package.tar.gz"
+    checksum_algorithm: sha256
+    get_checksum: true
+  register: application_release_remote_package
+  when: not application_release_directory.stat.exists
+
+- name: Require copied package checksum match
+  ansible.builtin.assert:
+    that:
+      - application_release_remote_package.stat.checksum == application_package_checksum
+  when: not application_release_directory.stat.exists
+
+- name: Create immutable release directory
+  ansible.builtin.file:
+    path: "{{ application_releases_root }}/{{ application_version }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+  when: not application_release_directory.stat.exists
+
+- name: Extract immutable release
+  ansible.builtin.unarchive:
+    src: "{{ application_release_remote_staging.path }}/package.tar.gz"
+    dest: "{{ application_releases_root }}/{{ application_version }}"
+    remote_src: true
+    owner: root
+    group: root
+  when: not application_release_directory.stat.exists
+
+- name: Remove package staging directory after extraction
+  ansible.builtin.file:
+    path: "{{ application_release_remote_staging.path }}"
+    state: absent
+  when:
+    - application_release_remote_staging is not skipped
+    - application_release_remote_staging.path is defined
+
+- name: Verify all files from package manifest
+  ansible.builtin.command:
+    argv:
+      - sha256sum
+      - --check
+      - checksums.sha256
+    chdir: "{{ application_releases_root }}/{{ application_version }}"
+  changed_when: false
+
+- name: Read release manifest
+  ansible.builtin.slurp:
+    src: "{{ application_releases_root }}/{{ application_version }}/manifest.json"
+  register: application_release_encoded_manifest
+
+- name: Decode release manifest
+  ansible.builtin.set_fact:
+    application_release_manifest: "{{ application_release_encoded_manifest.content | b64decode | from_json }}"
+
+- name: Verify release manifest contract
+  ansible.builtin.assert:
+    that:
+      - application_release_manifest.schemaVersion == 1
+      - application_release_manifest.version == application_version
+      - application_release_manifest.runtimeIdentifier == application_runtime_identifier
+      - application_release_manifest.commitSha is match('^[0-9a-fA-F]{40}$')
+    fail_msg: "Package manifest does not match the requested release."
+
+- name: Inspect backend executable
+  ansible.builtin.stat:
+    path: "{{ application_releases_root }}/{{ application_version }}/backend/{{ application_backend_executable }}"
+  register: application_release_backend_executable
+
+- name: Require executable backend
+  ansible.builtin.assert:
+    that:
+      - application_release_backend_executable.stat.exists
+      - application_release_backend_executable.stat.isreg
+      - application_release_backend_executable.stat.executable
+    fail_msg: "The release does not contain executable {{ application_backend_executable }}."
+
+- name: Inspect active application link
+  ansible.builtin.stat:
+    path: "{{ application_current_path }}"
+    follow: false
+  register: application_release_active_link
+
+- name: Activate and verify application release
+  block:
+    - name: Activate selected configuration
+      ansible.builtin.include_role:
+        name: application_config
+        tasks_from: activate
+
+    - name: Run database migrations and bootstrap seed
+      ansible.builtin.systemd_service:
+        name: "{{ application_service_name }}-migrate@{{ application_version }}.service"
+        state: started
+        daemon_reload: true
+
+    - name: Preserve previous application link
+      ansible.builtin.file:
+        src: "{{ application_release_active_link.stat.lnk_source }}"
+        dest: "{{ application_previous_path }}"
+        state: link
+        force: true
+      when:
+        - application_release_active_link.stat.exists
+        - application_release_active_link.stat.islnk
+        - application_release_active_link.stat.lnk_source != application_releases_root ~ '/' ~ application_version
+
+    - name: Activate selected application release
+      ansible.builtin.file:
+        src: "{{ application_releases_root }}/{{ application_version }}"
+        dest: "{{ application_current_path }}"
+        state: link
+        force: true
+
+    - name: Restart backend service
+      ansible.builtin.systemd_service:
+        name: "{{ application_service_name }}"
+        enabled: true
+        state: restarted
+        daemon_reload: true
+
+    - name: Verify backend health
+      ansible.builtin.uri:
+        url: "{{ application_backend_url }}{{ health_path }}"
+        status_code: 200
+        return_content: false
+      register: application_release_health
+      retries: 12
+      delay: 5
+      until: application_release_health.status == 200
+
+    - name: Record active deployment
+      ansible.builtin.template:
+        src: deployment.json.j2
+        dest: "{{ application_data_root }}/deployment.json"
+        owner: root
+        group: "{{ application_group }}"
+        mode: "0640"
+  rescue:
+    - name: Restore previous application link
+      ansible.builtin.file:
+        src: "{{ application_release_active_link.stat.lnk_source }}"
+        dest: "{{ application_current_path }}"
+        state: link
+        force: true
+      when:
+        - application_release_active_link.stat.exists
+        - application_release_active_link.stat.islnk
+
+    - name: Remove application link after failed first deployment
+      ansible.builtin.file:
+        path: "{{ application_current_path }}"
+        state: absent
+      when: not application_release_active_link.stat.exists
+
+    - name: Restore previous configuration link
+      ansible.builtin.file:
+        src: "{{ application_config_active_link.stat.lnk_source }}"
+        dest: "{{ application_current_config_path }}"
+        state: link
+        force: true
+      when:
+        - application_config_active_link.stat.exists
+        - application_config_active_link.stat.islnk
+
+    - name: Remove configuration link after failed first deployment
+      ansible.builtin.file:
+        path: "{{ application_current_config_path }}"
+        state: absent
+      when: not application_config_active_link.stat.exists
+
+    - name: Restart restored application
+      ansible.builtin.systemd_service:
+        name: "{{ application_service_name }}"
+        state: restarted
+      when:
+        - application_release_active_link.stat.exists
+        - application_release_active_link.stat.islnk
+
+    - name: Fail deployment after recovery
+      ansible.builtin.fail:
+        msg: >-
+          Deployment failed. Previous application and configuration links were restored when available.
+          Database migrations were not reversed.
+  always:
+    - name: Remove remote package staging directory
+      ansible.builtin.file:
+        path: "{{ application_release_remote_staging.path }}"
+        state: absent
+      when:
+        - application_release_remote_staging is not skipped
+        - application_release_remote_staging.path is defined
+
+    - name: Release deployment lock
+      ansible.builtin.file:
+        path: "/run/lock/{{ application_name }}-deployment"
+        state: absent
+
+- name: Inspect previous application link for retention
+  ansible.builtin.stat:
+    path: "{{ application_previous_path }}"
+    follow: false
+  register: application_release_previous_link
+
+- name: Inspect previous configuration link for retention
+  ansible.builtin.stat:
+    path: "{{ application_previous_config_path }}"
+    follow: false
+  register: application_release_previous_config_link
+
+- name: Find retained application releases
+  ansible.builtin.find:
+    paths: "{{ application_releases_root }}"
+    file_type: directory
+    recurse: false
+  register: application_release_retained_releases
+
+- name: Select old application release candidates
+  ansible.builtin.set_fact:
+    application_release_removal_candidates: >-
+      {{ (application_release_retained_releases.files | sort(attribute='mtime', reverse=true))[(application_release_keep_count | int) :] }}
+
+- name: Remove old unreferenced application releases
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: absent
+  loop: "{{ application_release_removal_candidates }}"
+  loop_control:
+    label: "{{ item.path }}"
+  when:
+    - item.path is match('^' ~ (application_releases_root | regex_escape) ~ '/v[0-9]+\.[0-9]+\.[0-9]+$')
+    - item.path != application_releases_root ~ '/' ~ application_version
+    - item.path != (application_release_active_link.stat.lnk_source | default(''))
+    - item.path != (application_release_previous_link.stat.lnk_source | default(''))
+
+- name: Find retained configuration revisions
+  ansible.builtin.find:
+    paths: "{{ application_config_revisions_root }}"
+    file_type: directory
+    recurse: false
+  register: application_release_retained_configurations
+
+- name: Select old configuration revision candidates
+  ansible.builtin.set_fact:
+    application_release_configuration_removal_candidates: >-
+      {{ (application_release_retained_configurations.files | sort(attribute='mtime', reverse=true))[(application_config_keep_count | int) :] }}
+
+- name: Remove old unreferenced configuration revisions
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: absent
+  loop: "{{ application_release_configuration_removal_candidates }}"
+  loop_control:
+    label: "{{ item.path }}"
+  when:
+    - item.path is match('^' ~ (application_config_revisions_root | regex_escape) ~ '/[0-9a-f]{40}$')
+    - item.path != application_config_revisions_root ~ '/' ~ application_config_revision
+    - item.path != (application_config_active_link.stat.lnk_source | default(''))
+    - item.path != (application_release_previous_config_link.stat.lnk_source | default(''))

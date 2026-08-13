@@ -40,7 +40,7 @@ Three doc layers, each with an entry point:
 
 - **`AGENTS.md`** — fast-start for AI agents and contributors (task → which doc to open, commands, coupling checks)
 - **`npm run docs:validate`** — check all documentation, including requirement specs, cross-references, and generated indexes
-- Templates for new specs and change deltas (`_functional-specification-template.md`, `_changes-template.md`)
+- Templates for new specs and change deltas (`_functional-specification-skeleton.md`, `_change-record-skeleton.md`)
 
 ### Testing approach
 
@@ -200,7 +200,7 @@ The `docs/` directory contains guidance that is also shipped into generated solu
 
 - `docs/system/` - cross-module development, designs, and operations
 - `docs/modules/` - frontend/backend implementation and module-owned operations
-- `docs/requirements/` - product specs and change workflow (start at `docs/requirements/requirements-change-process.md`; templates `_functional-specification-template.md`, `_changes-template.md`)
+- `docs/requirements/` - product specs and change workflow (start at `docs/requirements/requirements-change-process.md`; templates `_functional-specification-skeleton.md`, `_change-record-skeleton.md`)
 
 Maintainers of the template package: see [`CONTRIBUTING.md`](CONTRIBUTING.md).
 

@@ -1,0 +1,8 @@
+---
+- name: Deploy immutable application package and configuration revision
+  hosts: application_instances
+  gather_facts: true
+  become: true
+  serial: 1
+  roles:
+    - application_release

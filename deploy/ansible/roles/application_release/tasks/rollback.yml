@@ -1,0 +1,158 @@
+---
+- name: Validate rollback inputs
+  ansible.builtin.assert:
+    that:
+      - deployment_enabled | bool
+      - rollback_application_version is match('^v[0-9]+\.[0-9]+\.[0-9]+$')
+      - rollback_config_revision is match('^[0-9a-f]{40}$')
+    fail_msg: "Rollback requires an explicit retained application version and configuration commit."
+
+- name: Inspect rollback application release
+  ansible.builtin.stat:
+    path: "{{ application_releases_root }}/{{ rollback_application_version }}/manifest.json"
+  register: application_release_rollback_manifest_file
+
+- name: Inspect rollback configuration revision
+  ansible.builtin.stat:
+    path: "{{ application_config_revisions_root }}/{{ rollback_config_revision }}/manifest.json"
+  register: application_release_rollback_config_manifest_file
+
+- name: Require retained rollback revisions
+  ansible.builtin.assert:
+    that:
+      - application_release_rollback_manifest_file.stat.exists
+      - application_release_rollback_manifest_file.stat.isreg
+      - application_release_rollback_config_manifest_file.stat.exists
+      - application_release_rollback_config_manifest_file.stat.isreg
+    fail_msg: "The requested application or configuration revision is not retained on the VPS."
+
+- name: Verify retained application files
+  ansible.builtin.command:
+    argv:
+      - sha256sum
+      - --check
+      - checksums.sha256
+    chdir: "{{ application_releases_root }}/{{ rollback_application_version }}"
+  changed_when: false
+
+- name: Read retained release manifest
+  ansible.builtin.slurp:
+    src: "{{ application_releases_root }}/{{ rollback_application_version }}/manifest.json"
+  register: application_release_encoded_rollback_manifest
+
+- name: Prepare rollback deployment record
+  ansible.builtin.set_fact:
+    application_release_record_version: "{{ rollback_application_version }}"
+    application_release_record_config: "{{ rollback_config_revision }}"
+    application_release_manifest: "{{ application_release_encoded_rollback_manifest.content | b64decode | from_json }}"
+
+- name: Inspect active application link before rollback
+  ansible.builtin.stat:
+    path: "{{ application_current_path }}"
+    follow: false
+  register: application_release_rollback_active_link
+
+- name: Inspect active configuration link before rollback
+  ansible.builtin.stat:
+    path: "{{ application_current_config_path }}"
+    follow: false
+  register: application_release_rollback_active_config_link
+
+- name: Require active revisions before rollback
+  ansible.builtin.assert:
+    that:
+      - application_release_rollback_active_link.stat.exists
+      - application_release_rollback_active_link.stat.islnk
+      - application_release_rollback_active_config_link.stat.exists
+      - application_release_rollback_active_config_link.stat.islnk
+    fail_msg: "Rollback is unavailable before the first successful deployment."
+
+- name: Acquire deployment lock
+  ansible.builtin.command:
+    argv:
+      - mkdir
+      - "/run/lock/{{ application_name }}-deployment"
+  changed_when: true
+
+- name: Activate and verify rollback revisions
+  block:
+    - name: Preserve replaced application revision
+      ansible.builtin.file:
+        src: "{{ application_release_rollback_active_link.stat.lnk_source }}"
+        dest: "{{ application_previous_path }}"
+        state: link
+        force: true
+
+    - name: Preserve replaced configuration revision
+      ansible.builtin.file:
+        src: "{{ application_release_rollback_active_config_link.stat.lnk_source }}"
+        dest: "{{ application_previous_config_path }}"
+        state: link
+        force: true
+
+    - name: Activate rollback application revision
+      ansible.builtin.file:
+        src: "{{ application_releases_root }}/{{ rollback_application_version }}"
+        dest: "{{ application_current_path }}"
+        state: link
+        force: true
+
+    - name: Activate rollback configuration revision
+      ansible.builtin.file:
+        src: "{{ application_config_revisions_root }}/{{ rollback_config_revision }}"
+        dest: "{{ application_current_config_path }}"
+        state: link
+        force: true
+
+    - name: Restart rolled-back backend
+      ansible.builtin.systemd_service:
+        name: "{{ application_service_name }}"
+        state: restarted
+
+    - name: Verify rolled-back backend health
+      ansible.builtin.uri:
+        url: "{{ application_backend_url }}{{ health_path }}"
+        status_code: 200
+        return_content: false
+      register: application_release_rollback_health
+      retries: 12
+      delay: 5
+      until: application_release_rollback_health.status == 200
+
+    - name: Record rollback deployment
+      ansible.builtin.template:
+        src: deployment.json.j2
+        dest: "{{ application_data_root }}/deployment.json"
+        owner: root
+        group: "{{ application_group }}"
+        mode: "0640"
+  rescue:
+    - name: Restore application link after failed rollback
+      ansible.builtin.file:
+        src: "{{ application_release_rollback_active_link.stat.lnk_source }}"
+        dest: "{{ application_current_path }}"
+        state: link
+        force: true
+
+    - name: Restore configuration link after failed rollback
+      ansible.builtin.file:
+        src: "{{ application_release_rollback_active_config_link.stat.lnk_source }}"
+        dest: "{{ application_current_config_path }}"
+        state: link
+        force: true
+
+    - name: Restart application after failed rollback
+      ansible.builtin.systemd_service:
+        name: "{{ application_service_name }}"
+        state: restarted
+
+    - name: Fail rollback after recovery
+      ansible.builtin.fail:
+        msg: >-
+          Rollback health verification failed and the originally active revisions were restored.
+          Database migrations were not changed or reversed.
+  always:
+    - name: Release deployment lock
+      ansible.builtin.file:
+        path: "/run/lock/{{ application_name }}-deployment"
+        state: absent

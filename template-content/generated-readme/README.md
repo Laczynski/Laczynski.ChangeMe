@@ -15,7 +15,7 @@ The included **issue-tracking sample** shows how features are structured — log
 - **EF Core** + PostgreSQL — configurations, migrations (`InitialCreate`), `ApplicationDbContext` usage
 - **Cross-cutting infrastructure** — Hangfire jobs, Serilog, email abstraction (MailHog locally), local file storage pattern
 - **Angular feature slices** — `features/<name>/`, shared `ApiService`, interceptors, guards, PrimeNG + Tailwind setup
-- **Production frontend config** — `runtime-config.js`, nginx same-origin proxy for `/api/` and `/hubs/` in Docker
+- **Production frontend config** — server-rendered `runtime-config.js`, with nginx same-origin proxy for `/api/` and `/hubs/`
 - **Sample domain** — issues, users, roles illustrate end-to-end flows; copy the pattern or delete the feature
 
 ### Tooling (ready to run)
@@ -25,6 +25,7 @@ The included **issue-tracking sample** shows how features are structured — log
 - **Playwright E2E** — project layout, fixtures, smoke pattern (`docs/system/development/e2e-testing.md`)
 - **Testcontainers** — integration tests against real PostgreSQL
 - **Data generator** — Development seed data CLI (`npm run data:generate`)
+- **GitLab + Ansible delivery** — immutable tagged packages and independent manual deployment to native Linux VPS instances; Docker remains local-only
 
 ### Documentation workflow
 
@@ -71,6 +72,7 @@ This codebase gives you:
 - `src/Template.Backend` - .NET solution with source projects and tests
 - `docs/` - implementation and testing guidance
 - `docker-compose.yml` - local full-stack environment (frontend, backend, PostgreSQL, MailHog)
+- `.gitlab-ci.yml`, `.gitlab/ci/`, `deploy/` - tagged package release and native VPS deployment automation
 - `AGENTS.md` - working guide for AI agents and contributors
 
 ## Getting Started
@@ -149,13 +151,15 @@ docker compose up --build
 
 This starts the frontend, backend, MailHog, and the database service defined in Compose.
 
+Docker Compose is for local development only. Production/customer instances use the GitLab and Ansible workflow documented in `docs/system/operations/deployment.md`; a tag builds one package and exposes separate manual actions for every enabled environment.
+
 ## Documentation
 
 See [`docs/README.md`](docs/README.md) for the full index.
 
 - `docs/system/` - cross-module development, designs, and operations
 - `docs/modules/` - frontend/backend implementation and module-owned operations
-- `docs/requirements/` - product specs and change workflow (start at `docs/requirements/requirements-change-process.md`; templates `_functional-specification-template.md`, `_changes-template.md`)
+- `docs/requirements/` - product specs and change workflow (start at `docs/requirements/requirements-change-process.md`; templates `_functional-specification-skeleton.md`, `_change-record-skeleton.md`)
 
 ## About `AGENTS.md`
 

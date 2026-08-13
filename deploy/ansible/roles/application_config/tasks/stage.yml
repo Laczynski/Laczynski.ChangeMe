@@ -1,0 +1,89 @@
+---
+- name: Validate application configuration
+  ansible.builtin.include_tasks: validate.yml
+
+- name: Create immutable configuration revision directory
+  ansible.builtin.file:
+    path: "{{ application_config_revisions_root }}/{{ application_config_revision }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Inspect existing backend configuration revision
+  ansible.builtin.stat:
+    path: "{{ application_config_revisions_root }}/{{ application_config_revision }}/backend.config.env"
+  register: application_config_staged_backend
+
+- name: Inspect existing frontend configuration revision
+  ansible.builtin.stat:
+    path: "{{ application_config_revisions_root }}/{{ application_config_revision }}/frontend-runtime.js"
+  register: application_config_staged_frontend
+
+- name: Render immutable backend configuration
+  ansible.builtin.template:
+    src: backend.config.env.j2
+    dest: "{{ application_config_revisions_root }}/{{ application_config_revision }}/backend.config.env"
+    owner: root
+    group: "{{ application_group }}"
+    mode: "0640"
+  when: not application_config_staged_backend.stat.exists
+
+- name: Render immutable frontend configuration
+  ansible.builtin.template:
+    src: frontend-runtime.js.j2
+    dest: "{{ application_config_revisions_root }}/{{ application_config_revision }}/frontend-runtime.js"
+    owner: root
+    group: root
+    mode: "0644"
+  when: not application_config_staged_frontend.stat.exists
+
+- name: Render configuration revision manifest
+  ansible.builtin.template:
+    src: config-manifest.json.j2
+    dest: "{{ application_config_revisions_root }}/{{ application_config_revision }}/manifest.json"
+    owner: root
+    group: root
+    mode: "0644"
+    force: false
+
+- name: Render expected backend configuration for immutable revision verification
+  ansible.builtin.template:
+    src: backend.config.env.j2
+    dest: "/tmp/{{ application_name }}-{{ application_config_revision }}-backend.config.env"
+    owner: root
+    group: root
+    mode: "0600"
+  changed_when: false
+
+- name: Render expected frontend configuration for immutable revision verification
+  ansible.builtin.template:
+    src: frontend-runtime.js.j2
+    dest: "/tmp/{{ application_name }}-{{ application_config_revision }}-frontend-runtime.js"
+    owner: root
+    group: root
+    mode: "0600"
+  changed_when: false
+
+- name: Verify immutable configuration revision content
+  ansible.builtin.command:
+    argv:
+      - cmp
+      - --silent
+      - "{{ item.expected }}"
+      - "{{ item.actual }}"
+  loop:
+    - expected: "/tmp/{{ application_name }}-{{ application_config_revision }}-backend.config.env"
+      actual: "{{ application_config_revisions_root }}/{{ application_config_revision }}/backend.config.env"
+    - expected: "/tmp/{{ application_name }}-{{ application_config_revision }}-frontend-runtime.js"
+      actual: "{{ application_config_revisions_root }}/{{ application_config_revision }}/frontend-runtime.js"
+  changed_when: false
+
+- name: Remove temporary configuration verification files
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - "/tmp/{{ application_name }}-{{ application_config_revision }}-backend.config.env"
+    - "/tmp/{{ application_name }}-{{ application_config_revision }}-frontend-runtime.js"
+  changed_when: false
