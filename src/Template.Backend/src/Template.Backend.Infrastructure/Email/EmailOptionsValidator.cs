@@ -1,5 +1,5 @@
-using System.Net.Mail;
 using Microsoft.Extensions.Options;
+using Template.Backend.Infrastructure.Configurations;
 
 namespace Template.Backend.Infrastructure.Email;
 
@@ -19,7 +19,7 @@ public sealed class EmailOptionsValidator : IValidateOptions<EmailOptions>
     {
       failures.Add("EmailOptions.FromEmail is required.");
     }
-    else if (!IsValidEmail(options.FromEmail))
+    else if (!EmailAddressValidation.IsValid(options.FromEmail))
     {
       failures.Add("EmailOptions.FromEmail must be a valid email address.");
     }
@@ -27,18 +27,5 @@ public sealed class EmailOptionsValidator : IValidateOptions<EmailOptions>
     return failures.Count == 0
       ? ValidateOptionsResult.Success
       : ValidateOptionsResult.Fail(failures);
-  }
-
-  private static bool IsValidEmail(string value)
-  {
-    try
-    {
-      _ = new MailAddress(value);
-      return true;
-    }
-    catch (FormatException)
-    {
-      return false;
-    }
   }
 }

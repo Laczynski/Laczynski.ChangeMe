@@ -1,6 +1,6 @@
 namespace Template.Backend.Infrastructure.FileStorage;
 
-public class FileStorageOptions
+public sealed class FileStorageOptions
 {
   public const string SectionName = nameof(FileStorageOptions);
 
