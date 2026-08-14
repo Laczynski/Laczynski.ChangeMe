@@ -8,14 +8,10 @@ public static class CorsConfig
 
   public static IServiceCollection AddCors(this IServiceCollection services, WebApplicationBuilder builder)
   {
-    var corsOptions = builder.Configuration
-      .GetSection(CorsOptions.SectionName)
-      .Get<CorsOptions>() ?? new CorsOptions();
-
-    OptionsValidation.ThrowIfInvalid(
-      new CorsOptionsValidator(),
-      corsOptions,
-      CorsOptions.SectionName);
+    var corsOptions = OptionsValidation.GetValidated(
+      builder.Configuration,
+      CorsOptions.SectionName,
+      new CorsOptionsValidator());
 
     services.AddCors(options =>
     {

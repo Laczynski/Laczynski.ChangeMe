@@ -14,83 +14,45 @@ public static class RuntimeConfigurationConfig
     this IServiceCollection services,
     IConfiguration configuration)
   {
-    services.AddSingleton<IValidateOptions<ConnectionStringsOptions>, ConnectionStringsOptionsValidator>();
-    services.AddOptions<ConnectionStringsOptions>()
-      .Bind(configuration.GetSection(ConnectionStringsOptions.SectionName))
-      .ValidateOnStart();
+    services.AddValidatedOptions<ConnectionStringsOptions, ConnectionStringsOptionsValidator>(
+      configuration, ConnectionStringsOptions.SectionName);
+    services.AddValidatedOptions<AuthOptions, AuthOptionsValidator>(
+      configuration, AuthOptions.SectionName);
+    services.AddValidatedOptions<EmailOptions, EmailOptionsValidator>(
+      configuration, EmailOptions.SectionName);
+    services.AddValidatedOptions<RateLimitingOptions, RateLimitingOptionsValidator>(
+      configuration, RateLimitingOptions.SectionName);
+    services.AddValidatedOptions<FileStorageOptions, FileStorageOptionsValidator>(
+      configuration, FileStorageOptions.SectionName);
+    services.AddValidatedOptions<NotificationRetentionOptions, NotificationRetentionOptionsValidator>(
+      configuration, NotificationRetentionOptions.SectionName);
+    services.AddValidatedOptions<HangfireOptions, HangfireOptionsValidator>(
+      configuration, HangfireOptions.SectionName);
+    services.AddValidatedOptions<CorsOptions, CorsOptionsValidator>(
+      configuration, CorsOptions.SectionName);
+    services.AddValidatedOptions<InitialAdministratorOptions, InitialAdministratorOptionsValidator>(
+      configuration, InitialAdministratorOptions.SectionName);
 
-    services.AddSingleton<IValidateOptions<AuthOptions>, AuthOptionsValidator>();
-    services.AddOptions<AuthOptions>()
-      .Bind(configuration.GetSection(AuthOptions.SectionName))
-      .ValidateOnStart();
-
-    services.AddSingleton<IValidateOptions<EmailOptions>, EmailOptionsValidator>();
-    services.AddOptions<EmailOptions>()
-      .Bind(configuration.GetSection(EmailOptions.SectionName))
-      .ValidateOnStart();
-
-    services.AddSingleton<IValidateOptions<RateLimitingOptions>, RateLimitingOptionsValidator>();
-    services.AddOptions<RateLimitingOptions>()
-      .Bind(configuration.GetSection(RateLimitingOptions.SectionName))
-      .ValidateOnStart();
-
-    services.AddSingleton<IValidateOptions<FileStorageOptions>, FileStorageOptionsValidator>();
-    services.AddOptions<FileStorageOptions>()
-      .Bind(configuration.GetSection(FileStorageOptions.SectionName))
-      .ValidateOnStart();
-
-    services.AddSingleton<IValidateOptions<NotificationRetentionOptions>, NotificationRetentionOptionsValidator>();
-    services.AddOptions<NotificationRetentionOptions>()
-      .Bind(configuration.GetSection(NotificationRetentionOptions.SectionName))
-      .ValidateOnStart();
-
-    services.AddSingleton<IValidateOptions<HangfireOptions>, HangfireOptionsValidator>();
-    services.AddOptions<HangfireOptions>()
-      .Bind(configuration.GetSection(HangfireOptions.SectionName))
-      .ValidateOnStart();
-
-    services.AddSingleton<IValidateOptions<CorsOptions>, CorsOptionsValidator>();
-    services.AddOptions<CorsOptions>()
-      .Bind(configuration.GetSection(CorsOptions.SectionName))
-      .ValidateOnStart();
-
-    services.AddSingleton<IValidateOptions<InitialAdministratorOptions>, InitialAdministratorOptionsValidator>();
-    services.AddOptions<InitialAdministratorOptions>()
-      .Bind(configuration.GetSection(InitialAdministratorOptions.SectionName))
-      .ValidateOnStart();
-
-    services.AddSingleton<RuntimeConfigurationValidation>();
     return services;
   }
 
   public static WebApplication ValidateRuntimeConfiguration(this WebApplication app)
   {
-    app.Services.GetRequiredService<RuntimeConfigurationValidation>().Validate();
+    Validate<ConnectionStringsOptions>(app.Services);
+    Validate<AuthOptions>(app.Services);
+    Validate<EmailOptions>(app.Services);
+    Validate<RateLimitingOptions>(app.Services);
+    Validate<FileStorageOptions>(app.Services);
+    Validate<NotificationRetentionOptions>(app.Services);
+    Validate<HangfireOptions>(app.Services);
+    Validate<CorsOptions>(app.Services);
+    Validate<InitialAdministratorOptions>(app.Services);
     return app;
   }
 
-  private sealed class RuntimeConfigurationValidation(
-    IOptions<ConnectionStringsOptions> connectionStrings,
-    IOptions<AuthOptions> auth,
-    IOptions<EmailOptions> email,
-    IOptions<RateLimitingOptions> rateLimiting,
-    IOptions<FileStorageOptions> fileStorage,
-    IOptions<NotificationRetentionOptions> notificationRetention,
-    IOptions<HangfireOptions> hangfire,
-    IOptions<CorsOptions> cors,
-    IOptions<InitialAdministratorOptions> initialAdministrator)
+  private static void Validate<TOptions>(IServiceProvider services)
+    where TOptions : class
   {
-    public void Validate()
-    {
-      _ = connectionStrings.Value;
-      _ = auth.Value;
-      _ = email.Value;
-      _ = rateLimiting.Value;
-      _ = fileStorage.Value;
-      _ = notificationRetention.Value;
-      _ = hangfire.Value;
-      _ = cors.Value;
-      _ = initialAdministrator.Value;
-    }
+    _ = services.GetRequiredService<IOptions<TOptions>>().Value;
   }
 }

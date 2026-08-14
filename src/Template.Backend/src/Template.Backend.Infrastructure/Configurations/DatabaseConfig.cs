@@ -5,13 +5,6 @@ using Template.Backend.Infrastructure.Persistence;
 
 namespace Template.Backend.Infrastructure.Configurations;
 
-public sealed class DatabaseOptions
-{
-  public const string SectionName = nameof(DatabaseOptions);
-
-  public bool ApplyMigrationsOnStartup { get; set; }
-}
-
 public static class DatabaseConfig
 {
   public static IServiceCollection AddDatabase(this IServiceCollection services, WebApplicationBuilder builder, ILogger logger)

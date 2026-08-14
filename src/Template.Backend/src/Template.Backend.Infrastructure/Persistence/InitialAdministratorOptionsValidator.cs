@@ -1,7 +1,7 @@
-using System.Net.Mail;
 using Microsoft.Extensions.Options;
 using Template.Backend.Domain.Aggregates.Users;
 using Template.Backend.Infrastructure.Auth;
+using Template.Backend.Infrastructure.Configurations;
 
 namespace Template.Backend.Infrastructure.Persistence;
 
@@ -33,7 +33,7 @@ public sealed class InitialAdministratorOptionsValidator(IOptions<AuthOptions> a
         failures.Add(
           $"InitialAdministratorOptions.Email must not exceed {UserConstraints.EMAIL_MAX_LENGTH} characters.");
       }
-      else if (!IsValidEmail(options.Email))
+      else if (!EmailAddressValidation.IsValid(options.Email))
       {
         failures.Add("InitialAdministratorOptions.Email must be a valid email address.");
       }
@@ -64,19 +64,6 @@ public sealed class InitialAdministratorOptionsValidator(IOptions<AuthOptions> a
     {
       failures.Add(
         $"InitialAdministratorOptions.{propertyName} must not exceed {UserConstraints.NAME_MAX_LENGTH} characters.");
-    }
-  }
-
-  private static bool IsValidEmail(string value)
-  {
-    try
-    {
-      _ = new MailAddress(value);
-      return true;
-    }
-    catch (FormatException)
-    {
-      return false;
     }
   }
 }

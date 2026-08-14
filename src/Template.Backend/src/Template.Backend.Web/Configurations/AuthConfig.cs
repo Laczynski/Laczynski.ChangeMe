@@ -12,14 +12,10 @@ public static class AuthConfig
 {
   public static IServiceCollection AddJwtAuthentication(this IServiceCollection services, WebApplicationBuilder builder)
   {
-    var authOptions = builder.Configuration
-      .GetSection(AuthOptions.SectionName)
-      .Get<AuthOptions>() ?? new AuthOptions();
-
-    OptionsValidation.ThrowIfInvalid(
-      new AuthOptionsValidator(),
-      authOptions,
-      AuthOptions.SectionName);
+    var authOptions = OptionsValidation.GetValidated(
+      builder.Configuration,
+      AuthOptions.SectionName,
+      new AuthOptionsValidator());
 
     var jwtOptions = authOptions.Jwt;
 

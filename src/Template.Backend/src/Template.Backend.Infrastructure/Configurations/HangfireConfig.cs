@@ -5,29 +5,14 @@ using Microsoft.Extensions.Options;
 
 namespace Template.Backend.Infrastructure.Configurations;
 
-public sealed class HangfireOptions
-{
-  public const string SectionName = nameof(HangfireOptions);
-
-  public string DashboardPath { get; set; } = "/hangfire";
-
-  public bool DashboardEnabled { get; set; }
-
-  public bool ServerEnabled { get; set; } = true;
-}
-
 public static class HangfireConfig
 {
   public static IServiceCollection AddHangfire(this IServiceCollection services, WebApplicationBuilder builder, ILogger logger)
   {
-    var hangfireOptions = builder.Configuration
-      .GetSection(HangfireOptions.SectionName)
-      .Get<HangfireOptions>() ?? new HangfireOptions();
-
-    OptionsValidation.ThrowIfInvalid(
-      new HangfireOptionsValidator(),
-      hangfireOptions,
-      HangfireOptions.SectionName);
+    var hangfireOptions = OptionsValidation.GetValidated(
+      builder.Configuration,
+      HangfireOptions.SectionName,
+      new HangfireOptionsValidator());
 
     var connectionString = ConnectionStringsOptionsValidator.GetValidatedDefaultConnection(builder.Configuration);
 
