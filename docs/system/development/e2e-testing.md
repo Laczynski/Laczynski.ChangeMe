@@ -5,7 +5,9 @@
 > Status: implemented
 > Canonical for: Playwright suite layout, fixtures, locators, and execution
 >
-> When to add E2E: [testing strategy](testing-strategy.md). Commands: [`AGENTS.md`](../../../AGENTS.md). CI: [continuous integration](../operations/ci.md).
+> When to add E2E: [testing strategy](testing-strategy.md). Commands: [`AGENTS.md`](../../../AGENTS.md). Automation policy: [continuous integration](../operations/ci.md).
+
+E2E is currently a local/manual suite and does not block CI, package publication, or GitLab Release creation. A future post-deployment execution model is intentionally deferred until target environments, credentials, test data, and runner network access are defined.
 
 ## Layout
 
@@ -80,7 +82,6 @@ await expect(page.getByRole("main")).toContainText(title);
 | Reason     | Detail                                                                                        |
 | ---------- | --------------------------------------------------------------------------------------------- |
 | Isolation  | `e2eTitle()` and `e2eEmail()` produce unique names — tests do not depend on an empty database |
-| CI         | Each GitHub Actions job uses a fresh PostgreSQL service                                       |
 | Simplicity | Less infrastructure (`afterAll`, registries, per-entity delete helpers)                       |
 
 Reset a noisy local database with `npm run data:generate -- --reset`, or recreate the dev database. Revisit cleanup only if orphaned rows affect performance or assertions.

@@ -10,7 +10,7 @@
 ## Summary
 
 - Docker is used locally only. Deployed instances run a self-contained ASP.NET Core backend under systemd and serve the Angular frontend through nginx.
-- A protected `vX.Y.Z` Git tag verifies and publishes one immutable `linux-x64` package. It does not deploy automatically.
+- A protected `vX.Y.Z` Git tag verifies and publishes one immutable `linux-x64` package plus a GitLab Release. It does not deploy automatically.
 - GitLab generates an independent manual action for every enabled inventory instance. The same package can be selected for development, production, or customer environments.
 - Git versions all non-secret instance configuration. Each VPS owns its secret values in `/etc/<application>/secrets.env`.
 - The supported baseline is one application instance per Ubuntu 24.04 or Debian 12 x86-64 VPS with externally managed PostgreSQL.
@@ -140,7 +140,9 @@ Do not use `ssh-keyscan` inside a deployment job as the trust decision. Capture 
 
 ## Release and deploy
 
-A stable tag pipeline performs documentation, deployment-definition, package, frontend, backend, integration, and E2E verification. It publishes:
+A stable tag pipeline performs documentation, deployment-definition, package, frontend, backend, and integration verification. E2E is not a CI or release gate; future post-deployment execution is deferred until target access and configuration are defined.
+
+The tag version must have a non-empty `## [X.Y.Z]` or `## X.Y.Z` section in `CHANGELOG.md`. CI uses that section as the GitLab Release description and publishes:
 
 ```text
 <project-slug>-vX.Y.Z-linux-x64.tar.gz
@@ -148,7 +150,7 @@ A stable tag pipeline performs documentation, deployment-definition, package, fr
 <project-slug>-vX.Y.Z-linux-x64.tar.gz.manifest.json
 ```
 
-The archive contains the self-contained backend, production frontend, internal checksums, and manifest. Publication is idempotent only when existing registry bytes are identical; a tag cannot silently replace a different package.
+The archive contains the self-contained backend, production frontend, internal checksums, and manifest. Publication is idempotent only when existing registry bytes are identical; a tag cannot silently replace a different package. After package publication, GitLab creates a Release for the tag with the versioned notes and direct links to all three registry assets.
 
 After publication, a generated child pipeline exposes one blocking manual job per enabled instance. Each job shows the package version, target GitLab environment, and configuration commit and has its own `resource_group`. Running one job does not start any other environment.
 

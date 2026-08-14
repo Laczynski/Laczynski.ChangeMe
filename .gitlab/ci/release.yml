@@ -39,7 +39,6 @@ release:package:
       artifacts: true
     - job: release:backend
       artifacts: true
-    - e2e:verify
   before_script:
     - apt-get update
     - apt-get install --yes --no-install-recommends git
@@ -57,6 +56,7 @@ release:package:
       artifacts/backend
       artifacts/frontend/browser
       artifacts/package
+    - node scripts/extract-changelog.mjs "${CI_COMMIT_TAG#v}" > artifacts/package/release-notes.md
   artifacts:
     expire_in: 7 days
     paths:
@@ -113,3 +113,30 @@ release:publish:
       publish_immutable_file "artifacts/package/${PACKAGE_FILE}" "${PACKAGE_FILE}"
       publish_immutable_file "artifacts/package/${PACKAGE_FILE}.manifest.json" "${PACKAGE_FILE}.manifest.json"
       publish_immutable_file "artifacts/package/${PACKAGE_FILE}.sha256" "${PACKAGE_FILE}.sha256"
+
+release:create:
+  stage: release
+  image: registry.gitlab.com/gitlab-org/cli:v1.58.0
+  extends: .stable-tag-rules
+  needs:
+    - job: release:package
+      artifacts: true
+    - job: release:publish
+      artifacts: false
+  script:
+    - test -s artifacts/package/release-notes.md
+  release:
+    tag_name: "$CI_COMMIT_TAG"
+    name: "Release $CI_COMMIT_TAG"
+    description: artifacts/package/release-notes.md
+    assets:
+      links:
+        - name: "$CI_PROJECT_PATH_SLUG-$CI_COMMIT_TAG-linux-x64.tar.gz"
+          url: "$CI_API_V4_URL/projects/$CI_PROJECT_ID/packages/generic/$CI_PROJECT_PATH_SLUG/$CI_COMMIT_TAG/$CI_PROJECT_PATH_SLUG-$CI_COMMIT_TAG-linux-x64.tar.gz"
+          link_type: package
+        - name: "Package manifest"
+          url: "$CI_API_V4_URL/projects/$CI_PROJECT_ID/packages/generic/$CI_PROJECT_PATH_SLUG/$CI_COMMIT_TAG/$CI_PROJECT_PATH_SLUG-$CI_COMMIT_TAG-linux-x64.tar.gz.manifest.json"
+          link_type: other
+        - name: "SHA-256 checksum"
+          url: "$CI_API_V4_URL/projects/$CI_PROJECT_ID/packages/generic/$CI_PROJECT_PATH_SLUG/$CI_COMMIT_TAG/$CI_PROJECT_PATH_SLUG-$CI_COMMIT_TAG-linux-x64.tar.gz.sha256"
+          link_type: other

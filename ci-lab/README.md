@@ -113,7 +113,7 @@ Protect the environment if you want to mirror production controls.
 
 ### Verify pipeline (MR / default branch)
 
-Push a branch or open a merge request in the GitLab project. Expect `documentation:verify`, `deployment:verify`, `package:verify`, `frontend:verify`, `backend:verify`, and `e2e:verify` to run.
+Push a branch or open a merge request in the GitLab project. Expect `documentation:verify`, `deployment:verify`, `package:verify`, `frontend:verify`, and `backend:verify` to run. E2E is intentionally not part of CI.
 
 ### Release pipeline (tag)
 
@@ -122,7 +122,7 @@ git tag v0.0.1
 git push ci-lab v0.0.1
 ```
 
-Expect `release:package`, `release:publish`, generated manual deploy jobs, and registry assets under **Deploy** → **Package Registry**.
+Expect `release:package`, `release:publish`, `release:create`, generated manual deploy jobs, registry assets under **Deploy** → **Package Registry**, and release notes under **Deploy** → **Releases**.
 
 ### Manual deploy job
 

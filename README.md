@@ -22,7 +22,7 @@ Use it to bootstrap Angular + ASP.NET projects with layered backend, JWT session
 
 - Root **`package.json`** — one entry point for start/build, lint/format, unit & integration tests, E2E, EF migrations, Docker Compose, demo data, requirements validation
 - **Docker Compose** — full stack (frontend, backend, PostgreSQL, MailHog) plus optional test profile
-- **GitHub Actions CI** — documentation/requirements, frontend, backend, and Playwright E2E in parallel
+- **GitHub Actions CI** — documentation/requirements, frontend, backend, and deployment automation in parallel
 - **Playwright E2E** — project layout, fixtures, smoke pattern (`docs/system/development/e2e-testing.md`)
 - **Testcontainers** — integration tests against real PostgreSQL
 - **Data generator** — CLI pattern for Development seed data (`npm run data:generate`)
@@ -44,7 +44,7 @@ Three doc layers, each with an entry point:
 
 ### Testing approach
 
-- **Frontend** — component/service specs where they add value; primary confidence from Playwright smoke tests
+- **Frontend** — component/service specs where they add value; Playwright smoke tests remain available for selected local browser journeys
 - **Backend unit** — domain and infrastructure helpers
 - **Backend integration** — API behaviour with Testcontainers; endpoint tests mirror Web layer
 - **`docs/system/development/testing-strategy.md`** — layer ownership, when to skip redundant tests, anti-patterns
