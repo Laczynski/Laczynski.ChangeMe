@@ -37,7 +37,7 @@ Set-Content -Path $inventoryTarget -Value $inventory -Encoding UTF8
 
 $hostsContent = Get-Content $hostsFile -Raw
 if ($hostsContent -notmatch '(?m)^\s*ci-lab:\s*$') {
-    $hostsContent = $hostsContent -replace '(?m)^(\s*customer-primary:\s*)$', "        ci-lab:`n`$1"
+    $hostsContent = $hostsContent -replace '(?m)^(\s*production:\s*)$', "`$1`n        ci-lab:"
     Set-Content -Path $hostsFile -Value $hostsContent.TrimEnd() -Encoding UTF8
 }
 

@@ -70,7 +70,7 @@ def validate_instance(instance: str, variables: dict[str, Any]) -> list[str]:
     enabled = variables.get("deployment_enabled")
     require(isinstance(enabled, bool), prefix + "deployment_enabled must be a boolean", errors)
     require(
-        variables.get("deployment_tier") in {"development", "production", "customer"},
+        variables.get("deployment_tier") in {"development", "production"},
         prefix + "deployment_tier is invalid",
         errors,
     )

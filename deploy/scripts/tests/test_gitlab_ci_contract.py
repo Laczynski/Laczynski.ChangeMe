@@ -16,6 +16,12 @@ def load_yaml(path: str) -> dict:
 
 
 class GitLabCiContractTests(unittest.TestCase):
+    def test_default_inventory_contains_only_supported_environments(self) -> None:
+        inventory = load_yaml("deploy/ansible/inventory/hosts.yml")
+        hosts = inventory["all"]["children"]["application_instances"]["hosts"]
+
+        self.assertEqual({"development", "production"}, set(hosts))
+
     def test_deployment_job_uses_repository_setup_and_validation_scripts(self) -> None:
         verification = load_yaml(".gitlab/ci/verify.yml")
         deployment_job = verification["deployment:verify"]

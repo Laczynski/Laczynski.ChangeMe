@@ -11,7 +11,7 @@
 
 - Docker is used locally only. Deployed instances run a self-contained ASP.NET Core backend under systemd and serve the Angular frontend through nginx.
 - A protected `vX.Y.Z` Git tag verifies and publishes one immutable `linux-x64` package plus a GitLab Release. It does not deploy automatically.
-- GitLab generates an independent manual action for every enabled inventory instance. The same package can be selected for development, production, or customer environments.
+- GitLab generates an independent manual action for every enabled inventory instance. The same package can be selected for development or production environments.
 - Git versions all non-secret instance configuration. Each VPS owns its secret values in `/etc/<application>/secrets.env`.
 - The supported baseline is one application instance per Ubuntu 24.04 or Debian 12 x86-64 VPS with externally managed PostgreSQL.
 
@@ -148,7 +148,7 @@ For every enabled value of `gitlab_environment`, configure two **File** variable
 | `DEPLOY_SSH_PRIVATE_KEY` | Private key matching a versioned `deployment_public_keys` entry |
 | `DEPLOY_KNOWN_HOSTS` | Pre-verified `known_hosts` line for the inventory host and port |
 
-Protect both variables, the `vX.Y.Z` tag pattern, and production/customer environments. Restrict who may run their manual jobs and require deployment approvals where available. The GitLab runner needs outbound SSH access to every selected VPS. Backend integration tests also require a privileged runner capable of Docker-in-Docker/Testcontainers.
+Protect both variables, the `vX.Y.Z` tag pattern, and the production environment. Restrict who may run manual production jobs and require deployment approvals where available. The GitLab runner needs outbound SSH access to every selected VPS. Backend integration tests also require a privileged runner capable of Docker-in-Docker/Testcontainers.
 
 Do not use `ssh-keyscan` inside a deployment job as the trust decision. Capture and verify the server host key through an administrative channel, then store it in `DEPLOY_KNOWN_HOSTS`.
 

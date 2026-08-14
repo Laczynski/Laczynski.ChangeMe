@@ -7,7 +7,7 @@
 
 ## Goal
 
-Build an application version once, then let an operator independently decide whether the exact package is deployed to development, production, or a customer instance. Keep non-secret instance configuration reviewable in Git, keep secrets on each VPS, and use the same automation without Docker on deployed environments.
+Build an application version once, then let an operator independently decide whether the exact package is deployed to development or production. Keep non-secret instance configuration reviewable in Git, keep secrets on each VPS, and use the same automation without Docker on deployed environments.
 
 ## Decision
 
@@ -29,17 +29,15 @@ flowchart LR
   Registry --> Plan
   Plan --> Dev[Manual: development]
   Plan --> Prod[Manual: production]
-  Plan --> Customer[Manual: customer]
   Dev --> VPS1[systemd + nginx VPS]
   Prod --> VPS2[systemd + nginx VPS]
-  Customer --> VPS3[systemd + nginx VPS]
 ```
 
 ## Package and configuration identity
 
 The archive contains `backend/`, `frontend/`, `manifest.json`, and `checksums.sha256`. The manifest records the application package name, semantic version, full source commit, runtime identifier, deterministic timestamp, source pipeline URL, and migration-set digest. The archive's own checksum is stored beside it because an archive cannot contain a checksum of its final bytes.
 
-The package contains no environment settings, secrets, host names, TLS material, or customer-specific files. A deployment is identified by both:
+The package contains no environment settings, secrets, host names, TLS material, or environment-specific files. A deployment is identified by both:
 
 ```text
 application package version + package SHA-256 + configuration Git commit
@@ -63,7 +61,7 @@ The active application and configuration are independent symlinks:
 
 The service loads `current-config/backend.config.env` first and `secrets.env` second. nginx serves the active frontend and the active `frontend-runtime.js`, while systemd starts the self-contained backend on loopback.
 
-The dedicated deployment SSH account can become root without a password because routine Ansible changes systemd, nginx, `/opt`, and `/etc`. Its private key is therefore an administrative credential. It must be stored as a protected, environment-scoped GitLab file variable; production and customer environments must be protected and should require approvals when the GitLab tier supports them. Public deployment keys are versioned in inventory.
+The dedicated deployment SSH account can become root without a password because routine Ansible changes systemd, nginx, `/opt`, and `/etc`. Its private key is therefore an administrative credential. It must be stored as a protected, environment-scoped GitLab file variable; the production environment must be protected and should require approvals when the GitLab tier supports them. Public deployment keys are versioned in inventory.
 
 The deployment pipeline never reads, transfers, changes, or prints secret values. It validates only the target file's ownership, permissions, syntax, allowed key names, and presence of required non-empty keys.
 
@@ -81,7 +79,7 @@ Database migrations are deliberately not reversed. Schema changes must remain co
 | --- | --- |
 | Build separately for each environment | The tested bytes could differ from deployed bytes |
 | Deploy tags automatically to development | It removes the requested operator choice |
-| Repository mirror and customer-side rebuild | It adds another source/build boundary without a current requirement |
+| Repository mirror and downstream rebuild | It adds another source/build boundary without a current requirement |
 | Production Docker Compose | Deployed environments are intentionally native Linux |
 | Framework-dependent .NET publish | It makes every VPS runtime installation another deployment dependency |
 | Hand-written deployment Bash | It duplicates inventory, idempotence, templating, handlers, and recovery behavior |

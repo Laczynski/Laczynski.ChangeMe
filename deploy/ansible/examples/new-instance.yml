@@ -1,8 +1,8 @@
 # Copy this file to inventory/host_vars/<instance-id>.yml and add the same
 # instance ID under application_instances.hosts in inventory/hosts.yml.
 deployment_enabled: false
-deployment_tier: customer
-gitlab_environment: customer/replace-me
+deployment_tier: development
+gitlab_environment: development/replace-me
 
 ansible_host: replace-me.example.invalid
 ansible_port: 22

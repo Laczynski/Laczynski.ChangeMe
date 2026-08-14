@@ -7,7 +7,7 @@
       - application_service_name is match('^[A-Za-z0-9][A-Za-z0-9._@-]*$')
       - application_user is match('^[a-z_][a-z0-9_-]*$')
       - application_group is match('^[a-z_][a-z0-9_-]*$')
-      - deployment_tier in ['development', 'production', 'customer']
+      - deployment_tier in ['development', 'production']
       - ansible_port | int >= 1
       - ansible_port | int <= 65535
       - gitlab_environment is match('^[a-z0-9][a-z0-9._/-]*$')

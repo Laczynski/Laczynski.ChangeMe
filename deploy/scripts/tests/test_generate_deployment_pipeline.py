@@ -64,6 +64,18 @@ class GenerateDeploymentPipelineTests(unittest.TestCase):
                 "0123456789abcdef0123456789abcdef01234567",
             )
 
+    def test_unsupported_deployment_tier_is_rejected(self) -> None:
+        inventory = self.create_inventory(enabled=True)
+        variables = inventory["_meta"]["hostvars"]["development"]
+        variables["deployment_tier"] = "staging"
+
+        with self.assertRaisesRegex(ValueError, "deployment_tier is invalid"):
+            MODULE.generate_pipeline(
+                inventory,
+                "v1.2.3",
+                "0123456789abcdef0123456789abcdef01234567",
+            )
+
     @staticmethod
     def create_inventory(enabled: bool) -> dict:
         application_name = "example"

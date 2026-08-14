@@ -161,7 +161,7 @@ docker compose up --build
 
 This starts the frontend, backend, MailHog, and the database service defined in Compose.
 
-Docker Compose is for local development only. Production/customer instances use the GitLab and Ansible workflow documented in `docs/system/operations/deployment.md`; a tag builds one package and exposes separate manual actions for every enabled environment.
+Docker Compose is for local development only. Deployed instances use the GitLab and Ansible workflow documented in `docs/system/operations/deployment.md`; a tag builds one package and exposes separate manual actions for every enabled environment.
 
 ## Documentation
 
