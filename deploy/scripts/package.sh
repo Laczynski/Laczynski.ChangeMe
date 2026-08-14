@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# Build an immutable deterministic Linux release archive with its checksum and manifest.
+
 set -Eeuo pipefail
 
 if [[ $# -ne 9 ]]; then

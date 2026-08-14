@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+/** Routes deployment setup and validation to Linux Bash, using the default WSL distribution on Windows. */
+
 import { spawnSync } from "node:child_process";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";

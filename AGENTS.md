@@ -121,6 +121,7 @@ Configuration in containers: `appsettings.json` + `appsettings.Development.json`
 - Follow the current code structure instead of inventing a new layer or folder layout.
 - Prefer extending an existing feature slice over creating a parallel pattern.
 - Keep docs current when introducing a new enforced convention.
+- Start every executable or repository-automation script with a one- or two-line purpose comment as the first content after the shebang, or at the top when there is no shebang. Describe its outcome and main responsibility; declarative configuration and data files are exempt.
 - Do not assume files visible in the IDE are committed; verify against the filesystem first.
 
 ## Requirements layers (product analysis)

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+"""Validate GitLab YAML structure and local includes without calling a GitLab instance."""
 
 from __future__ import annotations
 

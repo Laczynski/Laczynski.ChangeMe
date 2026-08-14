@@ -1,4 +1,7 @@
 #!/bin/sh
+
+# Render container-specific API and CSP settings, then start nginx in the foreground.
+
 set -e
 
 API_URL="${CHANGE_ME_API_URL:-/api/v1}"

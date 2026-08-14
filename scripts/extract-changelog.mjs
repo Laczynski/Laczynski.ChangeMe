@@ -1,3 +1,5 @@
+/** Extracts a non-empty version section from `CHANGELOG.md` for GitLab release notes. */
+
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -8,10 +10,16 @@ if (!version) {
   process.exit(1);
 }
 
-const changelogPath = join(dirname(fileURLToPath(import.meta.url)), "..", "CHANGELOG.md");
+const changelogPath = join(
+  dirname(fileURLToPath(import.meta.url)),
+  "..",
+  "CHANGELOG.md",
+);
 const lines = readFileSync(changelogPath, "utf8").split(/\r?\n/);
 const headers = [`## ${version}`, `## [${version}]`];
-const start = lines.findIndex((line) => headers.some((header) => line.startsWith(header)));
+const start = lines.findIndex((line) =>
+  headers.some((header) => line.startsWith(header)),
+);
 
 if (start === -1) {
   console.error(`No CHANGELOG section found for ${version}`);

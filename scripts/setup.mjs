@@ -1,4 +1,7 @@
 #!/usr/bin/env node
+
+/** Prepares a fresh checkout by checking prerequisites, creating `.env`, and installing application dependencies. */
+
 import { spawnSync } from "node:child_process";
 import { copyFileSync, existsSync } from "node:fs";
 import { dirname, join } from "node:path";

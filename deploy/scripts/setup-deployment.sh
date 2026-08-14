@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# Create the isolated deployment virtual environment and install the pinned Ansible toolchain.
+
 set -Eeuo pipefail
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
