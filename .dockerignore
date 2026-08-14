@@ -1,0 +1,9 @@
+.env
+.env.*
+**/bin
+**/obj
+**/node_modules
+.git
+.vs
+logs
+src/Template.Backend/storage

@@ -26,8 +26,11 @@
 
   <ItemGroup>
     <None Include="NuGetPackageREADME.md" Pack="true" PackagePath="\" />
+    <Content Include="..\.env.example" Pack="true" PackagePath="content" />
     <Content Include="..\**\*"
              Exclude="
+               ..\.env;
+               ..\.env.*;
                ..\.git\**;
                ..\.angular\**;
                ..\**\.angular\**;

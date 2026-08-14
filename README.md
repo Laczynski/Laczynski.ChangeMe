@@ -93,7 +93,8 @@ docker compose up postgres mailhog -d
 npm run start:all
 ```
 
-- **`npm run setup`** — installs root and frontend npm packages (including Playwright Chromium), restores the .NET solution, and installs Git pre-commit hooks.
+- **`npm run setup`** — creates `.env` from `.env.example` when missing, installs root and frontend npm packages (including Playwright Chromium), restores the .NET solution, and installs Git pre-commit hooks. It never overwrites an existing `.env`.
+- **`.env`** — review and replace its placeholder-only local credentials; the file is ignored by Git.
 - **Pre-commit hooks** — [Lefthook](https://github.com/evilmartians/lefthook) runs ESLint, Prettier, and `dotnet format` on staged files. Re-run `npm run setup` or `npx lefthook install` after clone if hooks are missing.
 
 See `docs/system/operations/local-stack.md` for Docker Compose and secrets; migrations are in `docs/modules/backend/operations/persistence.md`.
@@ -187,6 +188,7 @@ dotnet test tests/Template.Backend.IntegrationTests
 From the repository root:
 
 ```powershell
+Copy-Item .env.example .env
 docker compose up --build
 ```
 

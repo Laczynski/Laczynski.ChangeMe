@@ -101,6 +101,14 @@ jobs:
     env:
       CI: true
       ConnectionStrings__DefaultConnection: Host=localhost;Database=Template;Username=postgres;Password=postgres
+      AuthOptions__Jwt__SigningKey: CI-only-signing-key-with-at-least-32-bytes
+      InitialAdministratorOptions__Email: admin@example.local
+      InitialAdministratorOptions__Password: replace-for-local-development-123A
+      InitialAdministratorOptions__FirstName: System
+      InitialAdministratorOptions__LastName: Administrator
+      EmailOptions__Host: localhost
+      EmailOptions__Port: 1025
+      EmailOptions__FromEmail: no-reply@example.local
     services:
       postgres:
         image: postgres:18

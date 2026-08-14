@@ -5,13 +5,6 @@ using Template.Backend.Infrastructure.Persistence;
 
 namespace Template.Backend.Infrastructure.Configurations;
 
-public sealed class DatabaseOptions
-{
-  public const string SectionName = nameof(DatabaseOptions);
-
-  public bool ApplyMigrationsOnStartup { get; set; }
-}
-
 public static class DatabaseConfig
 {
   public static IServiceCollection AddDatabase(this IServiceCollection services, WebApplicationBuilder builder, ILogger logger)
@@ -26,14 +19,7 @@ public static class DatabaseConfig
   {
     services.Configure<DatabaseOptions>(configuration.GetSection(DatabaseOptions.SectionName));
 
-    var connectionString = configuration.GetConnectionString("DefaultConnection");
-    if (string.IsNullOrWhiteSpace(connectionString))
-    {
-      var keys = string.Join(", ",
-          configuration.GetSection("ConnectionStrings").GetChildren().Select(c => c.Key));
-      throw new InvalidOperationException(
-          $"Connection string 'DefaultConnection' is not configured. Available connection string keys: {keys}");
-    }
+    var connectionString = ConnectionStringsOptionsValidator.GetValidatedDefaultConnection(configuration);
 
     logger.LogInformation("Using PostgreSQL database");
 

@@ -21,6 +21,7 @@
 | Deploy the system | [Deployment](system/operations/deployment.md) |
 | Reproduce CI | [Continuous integration](system/operations/ci.md) |
 | Publish the template | [Publishing](system/operations/publishing.md) |
+| Understand runtime configuration hardening | [Runtime configuration hardening](system/designs/runtime-configuration-hardening-design.md) |
 | Continue repository modularization | [Modular documentation migration](system/designs/modular-documentation-migration.md) |
 
 ## Ownership

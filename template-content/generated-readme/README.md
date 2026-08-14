@@ -75,6 +75,14 @@ This codebase gives you:
 
 ## Getting Started
 
+Run the repository setup once:
+
+```powershell
+npm run setup
+```
+
+Setup creates the ignored `.env` from `.env.example` when missing and never overwrites an existing file. Replace the placeholder values before starting the backend or Docker Compose. The same file supplies local .NET tools and Compose; real environment variables retain precedence.
+
 ### Frontend
 
 From the **repository root** (recommended — includes Playwright Chromium for E2E):

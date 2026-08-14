@@ -6,11 +6,8 @@ namespace Template.Backend.Infrastructure.Configurations;
 
 public static class ServicesConfig
 {
-  public static IServiceCollection AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration, ILogger logger)
+  public static IServiceCollection AddInfrastructureServices(this IServiceCollection services, ILogger logger)
   {
-    services.Configure<EmailOptions>(configuration.GetSection(EmailOptions.SectionName));
-    services.Configure<FileStorageOptions>(configuration.GetSection(FileStorageOptions.SectionName));
-
     services.AddScoped<IEmailService, EmailService>();
     services.AddSingleton<IPasswordPolicyValidator, PasswordPolicyValidator>();
     services.AddSingleton<IPasswordHasher, PasswordHasherAdapter>();

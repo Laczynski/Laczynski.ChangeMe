@@ -9,7 +9,8 @@
 
 - `docker-compose.yml` runs the frontend, backend, PostgreSQL, and MailHog.
 - The browser uses the frontend nginx host; nginx proxies `/api/` and `/hubs/` to the backend.
-- Compose overrides only settings that differ from local `dotnet run` / `ng serve`.
+- One ignored root `.env`, created from `.env.example`, supplies locally editable values to Compose and local .NET tooling.
+- Compose passes only explicitly selected variables and keeps container-only topology in `docker-compose.yml`.
 - Backend persistence, jobs, and file storage are documented with the backend module.
 
 ```mermaid
@@ -22,6 +23,14 @@ flowchart LR
 ```
 
 ## Commands
+
+`npm run setup` creates local configuration from `.env.example` when `.env` is missing and never overwrites an existing file. Review every placeholder and keep the resulting file outside source control:
+
+```powershell
+npm run setup
+```
+
+If dependencies are already installed and only the configuration file is needed, copy `.env.example` to `.env` manually.
 
 Run from the repository root:
 
@@ -45,17 +54,33 @@ The default endpoints are:
 
 ## Configuration precedence
 
-The backend container uses `ASPNETCORE_ENVIRONMENT=Development` and loads, in order:
+The root `.env` owns PostgreSQL database/user/password, the JWT signing key, initial-administrator credentials, and optional SMTP credentials. It is developer convenience rather than encrypted storage: local processes, Docker inspection, and users with filesystem access may read the values.
+
+Local .NET entry points load it only in `Development`, before normal configuration is built:
+
+| Entry point | Loader behavior |
+| --- | --- |
+| API (`dotnet run` or IDE) | Searches the working directory and parents for `.env` |
+| EF Core design-time factory | Uses the same parent traversal before building EF configuration |
+| Demo-data generator | Uses the same loader before building its host |
+
+`DotNetEnv` uses no-clobber behavior. Values already supplied by the shell, IDE, CI, or container remain authoritative; ASP.NET Core then maps `__` to configuration section separators.
+
+The backend container uses `ASPNETCORE_ENVIRONMENT=Development` and receives configuration in this order:
 
 1. `appsettings.json`;
 2. `appsettings.Development.json`;
-3. environment variables from `docker-compose.yml`.
+3. explicitly selected environment variables from `docker-compose.yml`.
 
-Compose overrides settings that differ inside containers, including the PostgreSQL host and `FileStorageOptions__RootPath=/app/storage`. Add Docker-only values as `Section__Property` environment entries rather than changing local-development defaults.
+Compose reads `.env` for `${VARIABLE}` interpolation but does not inject the whole file. It constructs the backend PostgreSQL connection with host `postgres`, sets SMTP host `mailhog`, and sets `FileStorageOptions__RootPath=/app/storage`. The database container receives only the PostgreSQL primitives. Required credentials use Compose required interpolation and fail before startup when absent.
 
 The frontend container writes `public/runtime-config.js` from `CHANGE_ME_API_URL`; the default stack uses `/api/v1`.
 
-Never commit signing keys, SMTP credentials, or production database passwords. Use backend User Secrets for local host runs and environment variables or a secret manager for containers and deployments. The backend example is `src/Template.Backend/src/Template.Backend.Web/secrets.json.example`.
+Never commit `.env`, signing keys, SMTP credentials, database passwords, or initial-administrator passwords. `.dockerignore` also excludes environment files from Docker build contexts. Production does not load `.env`; see [Deployment](deployment.md) for protected server-side environment files.
+
+## Startup validation
+
+The API validates connection-string shape and all registered runtime option sections before migrations, recurring-job registration, or request handling. Errors name the invalid section and property. Validation does not test PostgreSQL, SMTP, or filesystem reachability; health checks and normal startup operations still own those checks.
 
 ## Data and startup
 
@@ -63,6 +88,17 @@ Never commit signing keys, SMTP credentials, or production database passwords. U
 - The PostgreSQL and file-storage named volumes survive container restarts.
 - `npm run docker:down:volumes` removes local Compose data; use it only when a clean local environment is intended.
 - Optional demo data is generated separately with `npm run data:generate`.
+
+## Verification
+
+After editing `.env`:
+
+```powershell
+docker compose config --quiet
+npm run start:backend
+```
+
+Do not print resolved `docker compose config` output when the configuration may contain credentials.
 
 ## Related documents
 

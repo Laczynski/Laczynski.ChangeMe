@@ -38,7 +38,7 @@ e2e/
 - **`app` project** — most specs; uses saved `storageState`.
 - **`auth` project** — `features/auth/` only; empty storage (redirect, login, logout).
 
-Default credentials: `admin@example.local` / `admin123` (`InitialAdministratorOptions`), overridable via `E2E_USER_EMAIL` and `E2E_USER_PASSWORD`.
+Default credentials match `.env.example`: `admin@example.local` / `replace-for-local-development-123A` (`InitialAdministratorOptions`). When local `.env` uses different administrator credentials, expose matching `E2E_USER_EMAIL` and `E2E_USER_PASSWORD` values to the Playwright process.
 
 | File                            | Role                                                  |
 | ------------------------------- | ----------------------------------------------------- |

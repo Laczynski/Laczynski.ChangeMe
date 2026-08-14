@@ -10,10 +10,8 @@ public static class RateLimitingConfig
 
   public const string ApiPolicyName = "api";
 
-  public static IServiceCollection AddRateLimiting(this IServiceCollection services, WebApplicationBuilder builder)
+  public static IServiceCollection AddRateLimiting(this IServiceCollection services)
   {
-    services.Configure<RateLimitingOptions>(builder.Configuration.GetSection(RateLimitingOptions.SectionName));
-
     services.AddRateLimiter(rateLimiterOptions =>
     {
       rateLimiterOptions.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
@@ -80,7 +78,7 @@ public static class RateLimitingConfig
     return RateLimitPartition.GetFixedWindowLimiter(partitionKey, _ => new FixedWindowRateLimiterOptions
     {
       PermitLimit = effectivePermitLimit,
-      Window = TimeSpan.FromSeconds(Math.Max(1, windowSeconds)),
+      Window = TimeSpan.FromSeconds(windowSeconds),
       QueueLimit = 0,
       AutoReplenishment = true
     });

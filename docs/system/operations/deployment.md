@@ -49,13 +49,72 @@ Do **not** commit real production URLs or secrets in tracked files — set `CHAN
 
 ### Secrets and configuration
 
-- Rotate **`AuthOptions:Jwt:SigningKey`** — never ship the template placeholder to production. Use User Secrets locally (`secrets.json.example`) or environment variables / a secret manager.
+- Supply a unique **`AuthOptions:Jwt:SigningKey`** of at least 32 bytes; no signing key is shipped in tracked settings.
 - Set **`ConnectionStrings:DefaultConnection`** for your PostgreSQL instance.
 - Configure **`EmailOptions`** for real SMTP (MailHog is for local dev only).
-- Set **`InitialAdministratorOptions`** only for first bootstrap, then remove or empty passwords from config.
+- Set all **`InitialAdministratorOptions`** fields only for first bootstrap, then remove or empty the entire section.
 - Keep **`RateLimitingOptions:Enabled`** `true` in production (see [Rate limiting](#rate-limiting)); tune `AuthPermitLimit` and `ApiPermitLimit` for your traffic.
 
 See [local full-stack environment](local-stack.md) for Compose overrides and sensitive local values.
+
+### Protected VPS environment file
+
+Production uses standard ASP.NET Core environment variables; the application does not load a repository `.env` outside `Development`. On a Compose-based Linux VPS, keep the production file outside the checkout, for example `/etc/template/backend.env`, owned by the deployment account with mode `0600`:
+
+```bash
+sudo install -o template -g template -m 600 /secure-transfer/backend.env /etc/template/backend.env
+```
+
+A minimal production-shaped file contains the values absent from tracked settings:
+
+```dotenv
+ConnectionStrings__DefaultConnection=Host=postgres;Database=Template;Username=template;Password=replace-on-vps
+AuthOptions__Jwt__SigningKey=replace-with-a-unique-production-signing-key
+EmailOptions__Host=smtp.example.com
+EmailOptions__Port=587
+EmailOptions__EnableSsl=true
+EmailOptions__Username=template
+EmailOptions__Password=replace-when-smtp-authentication-is-used
+EmailOptions__FromEmail=no-reply@example.com
+EmailOptions__FromName=Template
+```
+
+Interpolate only the variables required by the backend container in the production Compose file or override:
+
+```yaml
+services:
+  backend:
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__DefaultConnection: ${ConnectionStrings__DefaultConnection:?Default connection string is required}
+      AuthOptions__Jwt__SigningKey: ${AuthOptions__Jwt__SigningKey:?JWT signing key is required}
+      EmailOptions__Host: ${EmailOptions__Host:?SMTP host is required}
+      EmailOptions__Port: ${EmailOptions__Port:?SMTP port is required}
+      EmailOptions__EnableSsl: ${EmailOptions__EnableSsl:-true}
+      EmailOptions__Username: ${EmailOptions__Username:-}
+      EmailOptions__Password: ${EmailOptions__Password:-}
+      EmailOptions__FromEmail: ${EmailOptions__FromEmail:?Sender email is required}
+      EmailOptions__FromName: ${EmailOptions__FromName:-Template}
+```
+
+Validate structure without emitting resolved values, then recreate the affected container after every configuration change:
+
+```bash
+docker compose --env-file /etc/template/backend.env config --quiet
+docker compose --env-file /etc/template/backend.env up -d --force-recreate backend
+```
+
+Do not print the file or resolved `docker compose config` in CI/CD logs. Transfer/update it through a masked channel, keep it out of source control and image layers, and restrict backup access like any other credential store.
+
+For a backend running directly under systemd, use the same variable names:
+
+```ini
+[Service]
+EnvironmentFile=/etc/template/backend.env
+ExecStart=/opt/template/dotnet/Template.Backend.Web.dll
+```
+
+After updating the file, run `systemctl daemon-reload` when the unit changed and restart the backend service. Verify startup and `/health` without logging environment contents.
 
 ### Migrations
 

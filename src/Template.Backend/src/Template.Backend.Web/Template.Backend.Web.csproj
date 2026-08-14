@@ -7,7 +7,6 @@
     <RootNamespace>Template.Backend.Web</RootNamespace>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);1591</NoWarn>
-    <UserSecretsId>32789f6a-14d8-4684-bbfe-9ccff66e3ce1</UserSecretsId>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     <DockerfileFile>..\..\Dockerfile</DockerfileFile>
     <DockerfileContext>$(MSBuildThisFileDirectory)..\..\..\..\</DockerfileContext>

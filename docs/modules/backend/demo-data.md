@@ -18,8 +18,7 @@
 
 1. Database is reachable (see [backend persistence](operations/persistence.md)).
 2. Migrations applied (automatic on API startup in Development, or `npm run ef:database:update` from the repository root).
-
-3. `ConnectionStrings:DefaultConnection` in `src/Template.Backend/src/Template.Backend.Web/appsettings.Development.json` points at your database.
+3. The root `.env` exists (copy `.env.example`) and its `ConnectionStrings__DefaultConnection` points at your database.
 
 ## Commands
 
@@ -45,7 +44,7 @@ All inserts go through domain factories (`User.Create`, `Issue.Create`, etc.) an
 
 ## Configuration
 
-Settings live in the Web project `appsettings.Development.json` under `DataGenerator` (also documented in the tool [README](../../../src/Template.Backend/tools/Template.Backend.DataGenerator/README.md)).
+Dataset shape remains tracked in the Web project `appsettings.Development.json` under `DataGenerator` (also documented in the tool [README](../../../src/Template.Backend/tools/Template.Backend.DataGenerator/README.md)). Locally editable connection and administrator values come from the root `.env`.
 
 The generator copies `appsettings.json` and `appsettings.Development.json` from `Template.Backend.Web` at build output time.
 

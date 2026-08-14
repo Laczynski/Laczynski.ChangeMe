@@ -8,9 +8,8 @@ namespace Template.Backend.Web.Configurations;
 
 public static class NotificationsConfig
 {
-  public static IServiceCollection AddNotifications(this IServiceCollection services, WebApplicationBuilder builder, Microsoft.Extensions.Logging.ILogger logger)
+  public static IServiceCollection AddNotifications(this IServiceCollection services, Microsoft.Extensions.Logging.ILogger logger)
   {
-    services.Configure<NotificationRetentionOptions>(builder.Configuration.GetSection(NotificationRetentionOptions.SectionName));
     services.AddSignalR();
     services.AddSingleton(TimeProvider.System);
     services.AddScoped<IssueNotificationService>();
@@ -27,15 +26,12 @@ public static class NotificationsConfig
     app.MapHub<NotificationHub>("/hubs/notifications");
 
     var retentionOptions = app.Services.GetRequiredService<IOptions<NotificationRetentionOptions>>().Value;
-    var cleanupCronExpression = string.IsNullOrWhiteSpace(retentionOptions.CleanupCronExpression)
-      ? "0 3 * * *"
-      : retentionOptions.CleanupCronExpression;
 
     var recurringJobs = app.Services.GetRequiredService<IRecurringJobManager>();
     recurringJobs.AddOrUpdate<NotificationRetentionCleanupJob>(
       "notifications-retention-cleanup",
       job => job.ExecuteAsync(JobCancellationToken.Null),
-      cleanupCronExpression);
+      retentionOptions.CleanupCronExpression);
 
     return app;
   }

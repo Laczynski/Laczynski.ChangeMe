@@ -3,7 +3,7 @@
 > Type: development
 > Scope: backend
 > Status: implemented
-> Canonical for: .NET layer ownership, endpoint, handler, and persistence implementation rules
+> Canonical for: .NET layer ownership, endpoint, handler, persistence, and configuration-options implementation rules
 >
 > Product behaviour: target `FR-*` (L4) and [`product-standards.md`](../../requirements/_shared/conventions/product-standards.md) (L2) when API responses affect UX. This document owns implementation only.
 
@@ -46,7 +46,7 @@ For build, run, and test commands from `src/Template.Backend` or from the reposi
 
 ### Infrastructure
 
-- Owns EF Core `ApplicationDbContext`, entity configuration, migrations, auth adapters, email service, and application service registrations.
+- Owns EF Core `ApplicationDbContext`, entity configuration, migrations, auth adapters, email service (`Infrastructure/Email/`), and application service registrations.
 
 ## Standard path for a new endpoint
 
@@ -141,6 +141,18 @@ Infrastructure services (e.g. `UserAuthTokenService`) **stage** EF changes only 
 - The notifications SignalR hub (push notifications only) and its DI registration should be configured through dedicated `Web/Configurations/*Config.cs` files, not inline in `Program.cs`.
 - Endpoint auth defaults come from `BaseEndpoint` and `BaseEndpointWithoutRequest`.
 - Email is abstracted behind `IEmailService`.
+
+## Configuration options
+
+Rationale and environment delivery: [runtime configuration hardening](../../system/designs/runtime-configuration-hardening-design.md).
+
+- Place each `*Options` type and its `*OptionsValidator` as separate `sealed` classes in the owning folder (`Infrastructure/Auth/`, `Infrastructure/Email/`, `Web/Configurations/`, `UseCases/<Feature>/Services/`, …). Do not fold options into `*Config.cs` or service classes.
+- Register every validated section in `Web/Configurations/RuntimeConfigurationConfig.cs` through `AddValidatedOptions` (`IValidateOptions<T>` + bind + `ValidateOnStart()`).
+- Call `OptionsValidation.GetValidated` only when an `Add*Config` method needs the values during service registration (JWT, CORS, Hangfire, connection string). Design-time and demo-data hosts reuse `ConnectionStringsOptionsValidator.GetValidatedDefaultConnection`.
+- `Program` calls `ValidateRuntimeConfiguration()` after `Build()` so invalid values fail before middleware. Hosts that only call `AddRuntimeConfiguration` still fail on `Start` via `ValidateOnStart()`.
+- Simple flags such as `DatabaseOptions` and `SwaggerOptions` may stay without a validator.
+
+Reference implementations: `AuthOptions` / `AuthOptionsValidator`, `EmailOptions` / `EmailOptionsValidator`.
 
 ## Tests
 

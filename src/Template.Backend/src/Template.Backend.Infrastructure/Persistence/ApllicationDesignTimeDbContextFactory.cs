@@ -1,4 +1,6 @@
 using Microsoft.EntityFrameworkCore.Design;
+using Microsoft.Extensions.Hosting;
+using Template.Backend.Infrastructure.Configurations;
 
 namespace Template.Backend.Infrastructure.Persistence;
 
@@ -9,6 +11,11 @@ public sealed class ApplicationDesignTimeDbContextFactory : IDesignTimeDbContext
 {
   public ApplicationDbContext CreateDbContext(string[] args)
   {
+    var environmentName = Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT")
+      ?? Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")
+      ?? Environments.Development;
+    LocalEnvironmentLoader.LoadForDevelopment(environmentName);
+
     var basePath = ResolveWebProjectPath();
     var configuration = new ConfigurationBuilder()
         .SetBasePath(basePath)
@@ -17,10 +24,7 @@ public sealed class ApplicationDesignTimeDbContextFactory : IDesignTimeDbContext
         .AddEnvironmentVariables()
         .Build();
 
-    var cs = configuration.GetConnectionString("DefaultConnection")
-        ?? Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection")
-        ?? throw new InvalidOperationException(
-            "Set ConnectionStrings:DefaultConnection in appsettings or ConnectionStrings__DefaultConnection for EF Core design-time.");
+    var cs = ConnectionStringsOptionsValidator.GetValidatedDefaultConnection(configuration);
 
     var optionsBuilder = new DbContextOptionsBuilder<ApplicationDbContext>();
     optionsBuilder.UseNpgsql(cs, npgsql =>
