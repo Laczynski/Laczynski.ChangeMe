@@ -1,5 +1,0 @@
-# Merge into deploy/ansible/inventory/hosts.yml under application_instances.hosts:
-#
-#   ci-lab:
-
-ci-lab:

@@ -116,12 +116,5 @@ artifacts/
 .template-test/
 .template-test-output/
 
-# Maintainer CI lab (see ci-lab/README.md)
-ci-lab/.env
-ci-lab/data/
-ci-lab/keys/
-ci-lab/runner-config/
-/deploy/ansible/inventory/host_vars/ci-lab.yml
-
 # File storage
 src/Template.Backend/storage/

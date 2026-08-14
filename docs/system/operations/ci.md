@@ -59,7 +59,7 @@ The job runs the same `npm run setup:deployment` and `npm run validate:deploymen
 | Full stack in Docker                                 | `npm run docker:up`                                                                                                                          |
 | Backend tests only in Compose                        | `npm run docker:test:backend`                                                                                                                |
 | Browser E2E journeys                                 | Local/manual `npm run test:e2e`; post-deployment automation is deferred until environments and access are defined                          |
-| Real GitLab pipeline lint and protected environments | Local maintainer lab: [`ci-lab/`](../../../ci-lab/README.md); otherwise validate in the target GitLab project before first production deploy |
+| Real GitLab pipeline lint and protected environments | Validate in the target GitLab project before the first production deployment                                                          |
 | VPS bootstrap/deploy/recovery                        | Exercise on a disposable supported Linux VPS; see [deployment](deployment.md)                                                                |
 | **Template publishing**                              | Source repository only: push a `v*` tag → see [publishing](publishing.md)                                                                    |
 | **Dependency updates**                               | Dependabot opens weekly PRs — [dependabot.yml](../../../.github/dependabot.yml)                                                              |
