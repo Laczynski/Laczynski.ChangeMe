@@ -26,6 +26,7 @@ The included **issue-tracking sample** shows how features are structured — log
 - **Testcontainers** — integration tests against real PostgreSQL
 - **Data generator** — Development seed data CLI (`npm run data:generate`)
 - **GitLab + Ansible delivery** — immutable tagged packages and independent manual deployment to native Linux VPS instances; Docker remains local-only
+- **Agent-assisted releases** — `/release patch|minor|major` in Cursor or Claude Code prepares notes and an MR; `/release publish vX.Y.Z` publishes the reviewed tag
 
 ### Documentation workflow
 

@@ -65,6 +65,8 @@ nupkg/
 [Dd]ebug/
 [Dd]ebugPublic/
 [Rr]elease/
+!.claude/skills/release/
+!.claude/skills/release/**
 [Rr]eleases/
 x64/
 x86/

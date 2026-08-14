@@ -26,6 +26,7 @@ Use it to bootstrap Angular + ASP.NET projects with layered backend, JWT session
 - **Playwright E2E** — project layout, fixtures, smoke pattern (`docs/system/development/e2e-testing.md`)
 - **Testcontainers** — integration tests against real PostgreSQL
 - **Data generator** — CLI pattern for Development seed data (`npm run data:generate`)
+- **Agent-assisted releases** — shared `/release` workflow for Cursor and Claude Code prepares release notes, an MR, and the protected GitLab tag
 - **`dotnet new` token replacement** — `Template` plus derived `changeMe` / `CHANGE_ME` symbols from your project name
 
 ### Documentation workflow

@@ -138,6 +138,19 @@ Protect both variables, the `vX.Y.Z` tag pattern, and production/customer enviro
 
 Do not use `ssh-keyscan` inside a deployment job as the trust decision. Capture and verify the server host key through an administrative channel, then store it in `DEPLOY_KNOWN_HOSTS`.
 
+## Prepare a release through a merge request
+
+The stable Git tag is the canonical application version; application releases do not maintain a second version in `package.json` or .NET project files. Every release is prepared on a `release/vX.Y.Z` branch with a dated, non-empty version section in `CHANGELOG.md`, reviewed through an MR, and tagged only after that MR and its required pipeline succeed.
+
+Cursor and Claude Code expose the same repository-owned `/release` workflow:
+
+```text
+/release patch              # calculate the next version, write notes, verify, and open the MR
+/release publish v1.4.1     # after merge, verify default branch and push the protected tag
+```
+
+The Claude Code implementation is [the release skill](../../../.claude/skills/release/SKILL.md); Cursor's [release command](../../../.cursor/commands/release.md) delegates to that same procedure. The workflow never merges an open MR, publishes from an unmerged branch, bypasses failed checks, or runs a manual environment deployment without explicit authorization.
+
 ## Release and deploy
 
 A stable tag pipeline performs documentation, deployment-definition, package, frontend, backend, and integration verification. E2E is not a CI or release gate; future post-deployment execution is deferred until target access and configuration are defined.

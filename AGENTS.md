@@ -21,6 +21,7 @@
 - Test work or bugfix verification: read `docs/system/development/testing-strategy.md`; read `e2e-testing.md` only for browser journeys.
 - Cross-stack feature: read the target requirements, `docs/system/development/feature-workflow.md`, and the affected module development documents.
 - Docker or local stack: read `docs/system/operations/local-stack.md`; production deployment: `docs/system/operations/deployment.md`; CI: `docs/system/operations/ci.md`.
+- Application release: read `docs/system/operations/deployment.md` and `docs/system/operations/ci.md`; use `/release patch|minor|major` in Cursor or Claude Code to prepare the reviewed release MR, then `/release publish vX.Y.Z` after merge.
 - Documentation additions or updates: read `docs/documentation-rules.md`.
 - Repository extraction, documentation ownership changes, or `docs/` reorganization: also read `docs/system/designs/modular-documentation-migration.md`.
 - Requirement changes: read `docs/requirements/requirements-change-process.md`; authoring in `docs/requirements/requirements-authoring-guide.md`; **five layers** in `docs/requirements/_shared/README.md`; product behavior defaults in `docs/requirements/_shared/conventions/product-standards.md`; pending deltas in `docs/requirements/changes/`; validate with `npm run docs:validate`.
@@ -49,6 +50,7 @@ From the repository root, run `npm run setup` once after clone (creates `.env` f
 - Install pinned tooling: `python -m pip install --requirement deploy/ansible/requirements-ci.txt`
 - Validate deployment definitions: `python deploy/scripts/validate-gitlab-ci.py`, `python -m unittest discover --start-directory deploy/scripts/tests --verbose`, and `ansible-lint deploy/ansible/playbooks/*.yml`
 - Package contract: `bash deploy/scripts/test-package.sh`
+- Agent-assisted release: `/release patch|minor|major` prepares release notes and an MR; `/release publish vX.Y.Z` verifies the merge and pushes the protected tag
 - Bootstrap, deploy, verify, configuration-only deploy, and rollback procedures: `docs/system/operations/deployment.md`
 - GitLab creates packages and manual deployment choices; Docker and Compose remain local-only
 

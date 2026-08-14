@@ -1,0 +1,7 @@
+interface:
+  display_name: "Prepare GitLab Release"
+  short_description: "Prepare and publish reviewed GitLab releases"
+  default_prompt: "Use $release to prepare the next patch release through a reviewed merge request."
+
+policy:
+  allow_implicit_invocation: false
