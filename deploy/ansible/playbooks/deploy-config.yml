@@ -11,11 +11,19 @@
         follow: false
       register: config_deploy_application_link
 
+    - name: Inspect active configuration link
+      ansible.builtin.stat:
+        path: "{{ application_current_config_path }}"
+        follow: false
+      register: config_deploy_active_config_link
+
     - name: Require an active application before configuration-only deployment
       ansible.builtin.assert:
         that:
           - config_deploy_application_link.stat.exists
           - config_deploy_application_link.stat.islnk
+          - config_deploy_active_config_link.stat.exists
+          - config_deploy_active_config_link.stat.islnk
         fail_msg: "Deploy an application release before running a configuration-only deployment."
 
     - name: Acquire deployment lock
@@ -54,13 +62,10 @@
       rescue:
         - name: Restore previous configuration link
           ansible.builtin.file:
-            src: "{{ application_config_active_link.stat.lnk_source }}"
+            src: "{{ config_deploy_active_config_link.stat.lnk_source }}"
             dest: "{{ application_current_config_path }}"
             state: link
             force: true
-          when:
-            - application_config_active_link.stat.exists
-            - application_config_active_link.stat.islnk
 
         - name: Restart backend after configuration recovery
           ansible.builtin.systemd_service:

@@ -113,5 +113,11 @@ artifacts/
 .template-test/
 .template-test-output/
 
+# Maintainer CI lab (see ci-lab/README.md)
+ci-lab/.env
+ci-lab/data/
+ci-lab/keys/
+ci-lab/runner-config/
+
 # File storage
 src/Template.Backend/storage/

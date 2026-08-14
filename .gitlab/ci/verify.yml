@@ -106,22 +106,25 @@ e2e:verify:
       alias: mailhog
   variables:
     CI: "true"
+    ASPNETCORE_URLS: "http://localhost:5000"
     ConnectionStrings__DefaultConnection: "Host=postgres;Database=Template;Username=postgres;Password=postgres"
     AuthOptions__Jwt__SigningKey: "GitLab-CI-only-signing-key-with-at-least-32-bytes"
     InitialAdministratorOptions__Email: "admin@example.local"
     InitialAdministratorOptions__Password: "replace-for-gitlab-ci-123A"
     InitialAdministratorOptions__FirstName: "System"
     InitialAdministratorOptions__LastName: "Administrator"
+    E2E_USER_EMAIL: "admin@example.local"
+    E2E_USER_PASSWORD: "replace-for-gitlab-ci-123A"
     EmailOptions__Host: "mailhog"
     EmailOptions__Port: "1025"
     EmailOptions__FromEmail: "no-reply@example.local"
   before_script:
     - apt-get update
     - apt-get install --yes --no-install-recommends ca-certificates curl xz-utils
-    - curl --fail --silent --show-error --location --output /tmp/node.tar.xz "https://nodejs.org/dist/v24.15.0/node-v24.15.0-linux-x64.tar.xz"
+    - curl --fail --silent --show-error --location --output /tmp/node-v24.15.0-linux-x64.tar.xz "https://nodejs.org/dist/v24.15.0/node-v24.15.0-linux-x64.tar.xz"
     - curl --fail --silent --show-error --location --output /tmp/SHASUMS256.txt "https://nodejs.org/dist/v24.15.0/SHASUMS256.txt"
     - cd /tmp && grep " node-v24.15.0-linux-x64.tar.xz$" SHASUMS256.txt | sha256sum --check --strict
-    - tar --extract --xz --file /tmp/node.tar.xz --directory /usr/local --strip-components=1
+    - tar --extract --xz --file /tmp/node-v24.15.0-linux-x64.tar.xz --directory /usr/local --strip-components=1
     - cd "$CI_PROJECT_DIR"
   script:
     - npm --prefix src/Template.Frontend ci --cache "$CI_PROJECT_DIR/.npm" --prefer-offline

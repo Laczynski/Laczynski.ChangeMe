@@ -35,6 +35,10 @@
       - "/run/lock/{{ application_name }}-deployment"
   changed_when: true
 
+- name: Record acquired deployment lock
+  ansible.builtin.set_fact:
+    application_release_lock_acquired: true
+
 - name: Stage selected configuration revision
   ansible.builtin.include_role:
     name: application_config
@@ -160,6 +164,12 @@
     follow: false
   register: application_release_active_link
 
+- name: Inspect active configuration link
+  ansible.builtin.stat:
+    path: "{{ application_current_config_path }}"
+    follow: false
+  register: application_release_active_config_link
+
 - name: Activate and verify application release
   block:
     - name: Activate selected configuration
@@ -234,19 +244,19 @@
 
     - name: Restore previous configuration link
       ansible.builtin.file:
-        src: "{{ application_config_active_link.stat.lnk_source }}"
+        src: "{{ application_release_active_config_link.stat.lnk_source }}"
         dest: "{{ application_current_config_path }}"
         state: link
         force: true
       when:
-        - application_config_active_link.stat.exists
-        - application_config_active_link.stat.islnk
+        - application_release_active_config_link.stat.exists
+        - application_release_active_config_link.stat.islnk
 
     - name: Remove configuration link after failed first deployment
       ansible.builtin.file:
         path: "{{ application_current_config_path }}"
         state: absent
-      when: not application_config_active_link.stat.exists
+      when: not application_release_active_config_link.stat.exists
 
     - name: Restart restored application
       ansible.builtin.systemd_service:

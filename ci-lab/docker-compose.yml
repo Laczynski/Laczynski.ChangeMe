@@ -1,0 +1,41 @@
+name: template-ci-lab
+
+services:
+  gitlab:
+    image: ${GITLAB_IMAGE}
+    hostname: ${GITLAB_HOSTNAME}
+    shm_size: "256m"
+    environment:
+      GITLAB_OMNIBUS_CONFIG: |
+        external_url 'http://${GITLAB_HOSTNAME}:${GITLAB_HTTP_PORT}'
+        gitlab_rails['gitlab_shell_ssh_port'] = ${GITLAB_SSH_PORT}
+        nginx['listen_port'] = 80
+        nginx['listen_https'] = false
+        prometheus_monitoring['enable'] = false
+    ports:
+      - "${GITLAB_HTTP_PORT}:80"
+      - "${GITLAB_HTTPS_PORT}:443"
+      - "${GITLAB_SSH_PORT}:22"
+    volumes:
+      - ./data/gitlab/config:/etc/gitlab
+      - ./data/gitlab/logs:/var/log/gitlab
+      - ./data/gitlab/data:/var/lib/gitlab
+    healthcheck:
+      test: ["CMD-SHELL", "gitlab-ctl status | grep -q 'run: puma:'"]
+      interval: 30s
+      timeout: 10s
+      retries: 20
+      start_period: 180s
+    restart: unless-stopped
+
+  gitlab-runner:
+    image: ${GITLAB_RUNNER_IMAGE}
+    depends_on:
+      gitlab:
+        condition: service_healthy
+    volumes:
+      - ./runner-config:/etc/gitlab-runner
+      - /var/run/docker.sock:/var/run/docker.sock
+    extra_hosts:
+      - "${GITLAB_HOSTNAME}:host-gateway"
+    restart: unless-stopped

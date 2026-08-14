@@ -49,7 +49,11 @@
     },
     "projectNameKebabCase": {
       "identifier": "chain",
-      "steps": ["projectNamePascalToKebab", "projectNameSeparatorsToKebab", "projectNameLowerCase"]
+      "steps": [
+        "projectNamePascalToKebab",
+        "projectNameSeparatorsToKebab",
+        "projectNameLowerCase"
+      ]
     },
     "projectNamePascalToKebab": {
       "identifier": "replace",
@@ -81,6 +85,7 @@
             ".template-test-output/**",
             "artifacts/**",
             "template-pack/**",
+            "ci-lab/**",
             ".github/workflows/publish.yml",
             "**/node_modules/**",
             "**/bin/**",
