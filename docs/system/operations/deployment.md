@@ -34,16 +34,35 @@ nginx serves `/opt/<application>/current/frontend`, exposes the active server-re
 
 Application packages never contain host configuration or secrets. Releases and configuration revisions are retained separately; active and previous revisions are protected from automatic retention cleanup.
 
-## Configure an instance in Git
+## Set up local deployment tooling
 
-Ansible must run from Linux, WSL, or a Linux CI runner. Install the pinned controller dependencies in an isolated environment:
+The Ansible control node is supported on native Linux or Windows through a default WSL distribution. Native Windows Python and Git Bash are not supported. According to the [ansible-core support matrix](https://docs.ansible.com/projects/ansible-core/devel/reference_appendices/release_and_maintenance.html), the pinned version requires control-node Python 3.12-3.14; local validation additionally uses Node.js, OpenSSH, `tar`, and `sha256sum`.
+
+On Ubuntu or Debian, install the system prerequisites first. Install a Node.js version allowed by `src/Template.Frontend/package.json` separately when it is not already available inside WSL:
 
 ```bash
-python3 -m venv .venv-deploy
+sudo apt update
+sudo apt install python3 python3-venv openssh-client tar coreutils
+```
+
+From the repository root, in PowerShell, Linux, or WSL, run:
+
+```powershell
+npm run setup:deployment
+```
+
+On Windows the npm wrapper translates the repository path and runs the setup inside the default WSL distribution. On Linux it runs directly. Setup checks the platform and prerequisites, creates the ignored `.venv-deploy`, and installs `requirements-ci.txt`; that file includes both runtime Ansible and validation tooling. It is safe to rerun and does not modify the system Python environment.
+
+The npm validation command does not require manual activation. For direct Ansible commands in an interactive Linux/WSL shell, activate and configure the environment:
+
+```bash
 . .venv-deploy/bin/activate
-python -m pip install --requirement deploy/ansible/requirements.txt
 export ANSIBLE_CONFIG="$PWD/deploy/ansible/ansible.cfg"
 ```
+
+## Configure an instance in Git
+
+Run `npm run setup:deployment` before editing or validating the inventory.
 
 To add an instance:
 
@@ -55,13 +74,8 @@ To add an instance:
 
 Only scalar keys listed by `allowed_backend_config_keys` may appear in `backend_config`. Connection strings, JWT signing keys, SMTP credentials, and bootstrap-administrator values are rejected there and belong on the server. Validate the complete inventory before merge:
 
-```bash
-ansible-inventory --inventory deploy/ansible/inventory/hosts.yml --list >/tmp/inventory.json
-python deploy/scripts/generate-deployment-pipeline.py \
-  --inventory deploy/ansible/inventory/hosts.yml \
-  --application-version v0.0.0 \
-  --configuration-commit 0000000000000000000000000000000000000000 \
-  --output /tmp/deployment-pipeline.yml
+```powershell
+npm run validate:deployment
 ```
 
 The generator rejects unsafe paths, enabled `.invalid` examples, duplicate environments, unrecognized config keys, and secrets committed as configuration.
@@ -230,20 +244,30 @@ window.__CHANGE_ME_CONFIG__ = {
 };
 ```
 
+## Local tooling troubleshooting
+
+| Symptom | Cause and recovery |
+| --- | --- |
+| `A working default WSL distribution is required` | Follow the [Microsoft WSL installation instructions](https://learn.microsoft.com/en-us/windows/wsl/install), restart if requested, launch the installed distribution once to finish initialization, and rerun setup. Use `wsl --set-default <Distribution>` when several distributions exist. |
+| `Deployment tooling must run on Linux or WSL` | The shell script was started through Git Bash or native Windows Python. Run the npm command from PowerShell so it can hand off to WSL, or run it directly inside WSL. |
+| `Missing prerequisite: python3` or unsupported Python | Install a Python version from the supported 3.12-3.14 range inside Linux/WSL. The Windows Python installation is unrelated. |
+| Virtual environment creation fails or reports missing `ensurepip` | On Ubuntu/Debian install `python3-venv`. If the repository moved and the existing venv contains old absolute paths, move the exact `.venv-deploy` aside and rerun setup. |
+| `Missing prerequisite: node`, `ssh`, `ssh-keygen`, `tar`, or `sha256sum` | Install the named program inside the same Linux/WSL distribution. `ssh` and `ssh-keygen` come from `openssh-client`; `sha256sum` comes from `coreutils`. |
+| Validation reports a missing `.venv-deploy/bin/...` executable | Setup did not finish or used a different checkout. Run `npm run setup:deployment` from the current repository root. |
+| Inventory, roles, or configuration cannot be found during a manual command | Start at the repository root, activate `.venv-deploy`, and export the repository's `ANSIBLE_CONFIG` as shown above. The npm validation command sets it automatically. |
+| SSH returns `Host key verification failed` | Verify the server fingerprint through an administrative channel and update the applicable `known_hosts` file or GitLab file variable. Do not disable host-key checking and do not use `ssh-keyscan` as the trust decision. |
+| SSH returns `Permission denied (publickey)` | Confirm the target inventory host/user, private-key permissions, and that its public half is present in `deployment_public_keys` and installed on the server. Do not print private keys while diagnosing. |
+| `pip` cannot reach the registry or rejects a certificate | Fix WSL/Linux DNS, proxy, or CA trust. Do not disable TLS verification. Rerun setup after connectivity is restored. |
+
 ## Verification
 
 Before enabling a real environment, run the repository deployment checks:
 
-```bash
-python -m pip install --requirement deploy/ansible/requirements-ci.txt
-python deploy/scripts/validate-gitlab-ci.py
-python -m unittest discover --start-directory deploy/scripts/tests --verbose
-for playbook in deploy/ansible/playbooks/*.yml; do
-  ansible-playbook --inventory deploy/ansible/inventory/hosts.yml --syntax-check "$playbook"
-done
-ansible-lint deploy/ansible/playbooks/*.yml
-bash deploy/scripts/test-package.sh
+```powershell
+npm run validate:deployment
 ```
+
+The command resolves the complete inventory, exercises the child-pipeline generator, validates GitLab YAML, runs deployment unit tests, syntax-checks and lints every playbook, and verifies the deterministic package contract. GitLab separates the package contract into its parallel `package:verify` job but uses the same underlying validation scripts for the Ansible portion.
 
 Repository checks do not validate project-specific GitLab permissions, environment scoping, runner networking, DNS, TLS, firewall rules, database reachability, or backups. Exercise bootstrap, first deployment, forced health failure, retained rollback, and restore on a disposable target before production.
 

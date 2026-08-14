@@ -47,11 +47,10 @@ From the repository root, run `npm run setup` once after clone (creates `.env` f
 
 ### Native VPS delivery (Linux/WSL)
 
-- Install pinned tooling: `python -m pip install --requirement deploy/ansible/requirements-ci.txt`
-- Validate deployment definitions: `python deploy/scripts/validate-gitlab-ci.py`, `python -m unittest discover --start-directory deploy/scripts/tests --verbose`, and `ansible-lint deploy/ansible/playbooks/*.yml`
-- Package contract: `bash deploy/scripts/test-package.sh`
+- Set up the isolated Ansible controller and all local prerequisites: `npm run setup:deployment` (native Linux or the default WSL distribution on Windows)
+- Validate inventory, generator, GitLab YAML, tests, playbooks, lint, and the package contract: `npm run validate:deployment`
 - Agent-assisted release: `/release patch|minor|major` prepares release notes and an MR; `/release publish vX.Y.Z` verifies the merge and pushes the protected tag
-- Bootstrap, deploy, verify, configuration-only deploy, and rollback procedures: `docs/system/operations/deployment.md`
+- Setup troubleshooting, bootstrap, deploy, verify, configuration-only deploy, and rollback procedures: `docs/system/operations/deployment.md`
 - GitLab creates packages and manual deployment choices; Docker and Compose remain local-only
 
 ### Frontend (in `src/Template.Frontend`)

@@ -98,6 +98,13 @@ npm run start:all
 - **`.env`** — review and replace its placeholder-only local credentials; the file is ignored by Git.
 - **Pre-commit hooks** — [Lefthook](https://github.com/evilmartians/lefthook) runs ESLint, Prettier, and `dotnet format` on staged files. Re-run `npm run setup` or `npx lefthook install` after clone if hooks are missing.
 
+Ansible is optional and isolated from the application setup. To validate or run native VPS delivery automation, initialize it separately from Linux or Windows with WSL:
+
+```powershell
+npm run setup:deployment
+npm run validate:deployment
+```
+
 See `docs/system/operations/local-stack.md` for Docker Compose and secrets; migrations are in `docs/modules/backend/operations/persistence.md`.
 
 ### Install as a `dotnet new` template

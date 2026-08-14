@@ -29,21 +29,9 @@ deployment:verify:
   image: python:3.13-slim-bookworm
   extends: .verification-rules
   before_script:
-    - python -m pip install --no-cache-dir --requirement deploy/ansible/requirements-ci.txt
+    - bash deploy/scripts/setup-deployment.sh --ansible-only
   script:
-    - export ANSIBLE_CONFIG="$CI_PROJECT_DIR/deploy/ansible/ansible.cfg"
-    - ansible-inventory --inventory deploy/ansible/inventory/hosts.yml --list > /tmp/inventory.json
-    - >-
-      python deploy/scripts/generate-deployment-pipeline.py
-      --inventory deploy/ansible/inventory/hosts.yml
-      --application-version v0.0.0
-      --configuration-commit 0000000000000000000000000000000000000000
-      --output /tmp/deployment-pipeline.yml
-    - python -m py_compile deploy/scripts/generate-deployment-pipeline.py
-    - python deploy/scripts/validate-gitlab-ci.py
-    - python -m unittest discover --start-directory deploy/scripts/tests --verbose
-    - for playbook in deploy/ansible/playbooks/*.yml; do ansible-playbook --inventory deploy/ansible/inventory/hosts.yml --syntax-check "$playbook"; done
-    - ansible-lint deploy/ansible/playbooks/*.yml
+    - bash deploy/scripts/validate-deployment.sh --skip-package
 
 package:verify:
   stage: validate

@@ -50,7 +50,7 @@ npm run docs:validate
 
 #### Deployment automation
 
-Python 3.13 installs the pinned `ansible-core` and `ansible-lint` versions from `deploy/ansible/requirements-ci.txt`. The job validates the full inventory, generated GitLab child pipeline, GitLab YAML structure, Python generator tests, every playbook, and deterministic archive contract. It does not connect to an external VPS.
+The job runs the same `npm run setup:deployment` and `npm run validate:deployment` entry points used locally. Python 3.13 installs the pinned `ansible-core` and `ansible-lint` versions into `.venv-deploy`; validation covers the full inventory, generated GitLab child pipeline, GitLab YAML structure, Python generator tests, every playbook, and deterministic archive contract. It does not connect to an external VPS.
 
 ### What template repository CI does not cover
 
@@ -85,6 +85,8 @@ npm run test:frontend:ci
 npm run build:frontend
 npm run test:backend
 npm run build:backend
+npm run setup:deployment
+npm run validate:deployment
 ```
 
 Or approximate the full automated check:

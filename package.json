@@ -3,6 +3,8 @@
   "private": true,
   "scripts": {
     "setup": "node scripts/setup.mjs",
+    "setup:deployment": "node scripts/run-deployment-command.mjs setup",
+    "validate:deployment": "node scripts/run-deployment-command.mjs validate",
     "prepare": "node scripts/prepare.mjs",
     "install:frontend": "npm --prefix src/Template.Frontend install && npm --prefix src/Template.Frontend exec playwright install chromium",
     "start:frontend": "npm --prefix src/Template.Frontend run start",

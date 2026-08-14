@@ -16,6 +16,25 @@ def load_yaml(path: str) -> dict:
 
 
 class GitLabCiContractTests(unittest.TestCase):
+    def test_deployment_job_uses_repository_setup_and_validation_scripts(self) -> None:
+        verification = load_yaml(".gitlab/ci/verify.yml")
+        deployment_job = verification["deployment:verify"]
+
+        self.assertEqual(
+            ["bash deploy/scripts/setup-deployment.sh --ansible-only"],
+            deployment_job["before_script"],
+        )
+        self.assertEqual(
+            ["bash deploy/scripts/validate-deployment.sh --skip-package"],
+            deployment_job["script"],
+        )
+
+        github_ci = (REPOSITORY_ROOT / ".github/workflows/ci.yml").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("run: npm run setup:deployment", github_ci)
+        self.assertIn("run: npm run validate:deployment", github_ci)
+
     def test_e2e_is_not_a_ci_or_release_gate(self) -> None:
         verification = load_yaml(".gitlab/ci/verify.yml")
         release = load_yaml(".gitlab/ci/release.yml")
