@@ -1,0 +1,54 @@
+.deploy-application:
+  stage: deploy
+  image: python:3.13-slim-bookworm
+  interruptible: false
+  resource_group: "deployment/$TARGET_INSTANCE"
+  environment:
+    name: "$TARGET_GITLAB_ENVIRONMENT"
+    url: "$TARGET_PUBLIC_URL"
+    action: start
+  when: manual
+  allow_failure: false
+  manual_confirmation: "Deploy this immutable package and configuration revision?"
+  before_script:
+    - apt-get update
+    - apt-get install --yes --no-install-recommends ca-certificates curl openssh-client
+    - python -m pip install --no-cache-dir --requirement deploy/ansible/requirements.txt
+    - test -f "$DEPLOY_SSH_PRIVATE_KEY"
+    - test -f "$DEPLOY_KNOWN_HOSTS"
+    - install -d -m 700 "$CI_PROJECT_DIR/.ssh"
+    - install -m 600 "$DEPLOY_SSH_PRIVATE_KEY" "$CI_PROJECT_DIR/.ssh/deployment-key"
+    - install -m 600 "$DEPLOY_KNOWN_HOSTS" "$CI_PROJECT_DIR/.ssh/known_hosts"
+  script:
+    - export PACKAGE_FILE="${CI_PROJECT_PATH_SLUG}-${APPLICATION_VERSION}-linux-x64.tar.gz"
+    - export PACKAGE_BASE_URL="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${CI_PROJECT_PATH_SLUG}/${APPLICATION_VERSION}"
+    - install -d -m 700 "$CI_PROJECT_DIR/artifacts/deployment"
+    - >-
+      curl --fail-with-body --location
+      --header "JOB-TOKEN: ${CI_JOB_TOKEN}"
+      --output "$CI_PROJECT_DIR/artifacts/deployment/${PACKAGE_FILE}"
+      "${PACKAGE_BASE_URL}/${PACKAGE_FILE}"
+    - >-
+      curl --fail-with-body --location
+      --header "JOB-TOKEN: ${CI_JOB_TOKEN}"
+      --output "$CI_PROJECT_DIR/artifacts/deployment/${PACKAGE_FILE}.sha256"
+      "${PACKAGE_BASE_URL}/${PACKAGE_FILE}.sha256"
+    - cd "$CI_PROJECT_DIR/artifacts/deployment"
+    - sha256sum --check --strict "${PACKAGE_FILE}.sha256"
+    - export PACKAGE_SHA256="$(cut -d ' ' -f 1 "${PACKAGE_FILE}.sha256")"
+    - cd "$CI_PROJECT_DIR"
+    - export ANSIBLE_CONFIG="$CI_PROJECT_DIR/deploy/ansible/ansible.cfg"
+    - export ANSIBLE_SSH_COMMON_ARGS="-o UserKnownHostsFile=$CI_PROJECT_DIR/.ssh/known_hosts -o StrictHostKeyChecking=yes -o IdentitiesOnly=yes"
+    - >-
+      ansible-playbook
+      --inventory deploy/ansible/inventory/hosts.yml
+      --limit "$TARGET_INSTANCE"
+      --user "$TARGET_DEPLOY_USER"
+      --private-key "$CI_PROJECT_DIR/.ssh/deployment-key"
+      deploy/ansible/playbooks/deploy.yml
+      --extra-vars "application_version=${APPLICATION_VERSION}"
+      --extra-vars "application_config_revision=${CONFIGURATION_COMMIT}"
+      --extra-vars "application_package_path=${CI_PROJECT_DIR}/artifacts/deployment/${PACKAGE_FILE}"
+      --extra-vars "application_package_checksum=${PACKAGE_SHA256}"
+      --extra-vars "application_deployment_id=${CI_PIPELINE_ID}"
+      --extra-vars "application_pipeline_url=${CI_PIPELINE_URL}"

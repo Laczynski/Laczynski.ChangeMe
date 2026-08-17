@@ -3,13 +3,13 @@
 > **Audience:** analysts and authors of functional specifications (`FR-*`).
 > **Layers:** `docs/requirements/_shared/README.md` (L1 Domain · L2 Conventions · L3 Quality · L4 Capabilities · L5 Implementation).
 > **Workflow:** `docs/requirements/requirements-change-process.md`.
-> **Skeleton:** `docs/requirements/_functional-specification-template.md`.
+> **Skeleton:** `docs/requirements/_functional-specification-skeleton.md`.
 
 ## New vs updated specification
 
 | Situation          | What to do                                                                                                                                                                                                            |
 | ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **New `FR-*`**     | Copy `_functional-specification-template.md` to `docs/requirements/functional/<domain>/fr-<area>-<nnn>-<slug>.md`. Assign the next free `FR-<AREA>-NNN` in that domain. Fill frontmatter and sections per this guide. |
+| **New `FR-*`**     | Copy `_functional-specification-skeleton.md` to `docs/requirements/functional/<domain>/fr-<area>-<nnn>-<slug>.md`. Assign the next free `FR-<AREA>-NNN` in that domain. Fill frontmatter and sections per this guide. |
 | **Updated `FR-*`** | Edit the existing file only. Describe what changed in the pending change record (**Behavior delta**), not only in the specification body.                                                                             |
 
 After either path, add or update a pending record in `docs/requirements/changes/` and run `npm run docs:validate`.

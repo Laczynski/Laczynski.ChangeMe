@@ -1,0 +1,16 @@
+---
+- name: Roll back application and configuration revisions
+  hosts: application_instances
+  gather_facts: true
+  become: true
+  serial: 1
+  tasks:
+    - name: Validate instance configuration
+      ansible.builtin.include_role:
+        name: application_config
+        tasks_from: validate
+
+    - name: Run application rollback
+      ansible.builtin.include_role:
+        name: application_release
+        tasks_from: rollback

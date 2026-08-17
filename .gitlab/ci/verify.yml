@@ -1,0 +1,80 @@
+.node-cache:
+  cache:
+    key:
+      files:
+        - package-lock.json
+        - src/Template.Frontend/package-lock.json
+    paths:
+      - .npm/
+    policy: pull-push
+
+.verification-rules:
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $SELECTED_APPLICATION_VERSION != ""'
+      when: never
+    - when: on_success
+
+documentation:verify:
+  stage: validate
+  image: node:24.15.0-bookworm
+  extends:
+    - .verification-rules
+    - .node-cache
+  script:
+    - npm ci --cache .npm --prefer-offline
+    - npm run docs:validate
+
+deployment:verify:
+  stage: validate
+  image: python:3.13-slim-bookworm
+  extends: .verification-rules
+  before_script:
+    - bash deploy/scripts/setup-deployment.sh --ansible-only
+  script:
+    - bash deploy/scripts/validate-deployment.sh --skip-package
+
+package:verify:
+  stage: validate
+  image: node:24.15.0-bookworm
+  extends: .verification-rules
+  script:
+    - bash deploy/scripts/test-package.sh
+
+frontend:verify:
+  stage: test
+  image: node:24.15.0-bookworm
+  extends:
+    - .verification-rules
+    - .node-cache
+  script:
+    - npm --prefix src/Template.Frontend ci --cache "$CI_PROJECT_DIR/.npm" --prefer-offline
+    - npm run lint:frontend
+    - npm run format:check:frontend
+    - npm run test:frontend:ci
+    - npm --prefix src/Template.Frontend run build -- --output-path "$CI_PROJECT_DIR/artifacts/frontend"
+  artifacts:
+    expire_in: 1 day
+    paths:
+      - artifacts/frontend/browser/
+
+backend:verify:
+  stage: test
+  image: mcr.microsoft.com/dotnet/sdk:10.0
+  extends: .verification-rules
+  services:
+    - name: docker:28.5.1-dind
+      alias: docker
+  variables:
+    DOCKER_HOST: tcp://docker:2375
+    DOCKER_TLS_CERTDIR: ""
+  cache:
+    key:
+      files:
+        - src/Template.Backend/Directory.Packages.props
+    paths:
+      - .nuget/packages/
+    policy: pull-push
+  script:
+    - dotnet restore src/Template.Backend/Template.Backend.slnx
+    - dotnet format src/Template.Backend/Template.Backend.slnx --severity warn --verify-no-changes --exclude "**/Persistence/Migrations/**"
+    - dotnet test src/Template.Backend/Template.Backend.slnx -c Release --no-restore

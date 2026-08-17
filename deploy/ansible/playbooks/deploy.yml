@@ -1,0 +1,28 @@
+---
+- name: Deploy immutable application package and configuration revision
+  hosts: application_instances
+  gather_facts: true
+  become: true
+  serial: 1
+  tasks:
+    - name: Deploy release with controller-side cleanup
+      block:
+        - name: Run application release
+          ansible.builtin.include_role:
+            name: application_release
+      always:
+        - name: Remove interrupted remote package staging directory
+          ansible.builtin.file:
+            path: "{{ application_release_remote_staging.path }}"
+            state: absent
+          when:
+            - application_release_lock_acquired | default(false) | bool
+            - application_release_remote_staging is defined
+            - application_release_remote_staging is not skipped
+            - application_release_remote_staging.path is defined
+
+        - name: Release deployment lock after interrupted staging
+          ansible.builtin.file:
+            path: "/run/lock/{{ application_name }}-deployment"
+            state: absent
+          when: application_release_lock_acquired | default(false) | bool

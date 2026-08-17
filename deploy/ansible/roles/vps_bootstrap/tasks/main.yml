@@ -1,0 +1,254 @@
+---
+- name: Require explicitly enabled instance
+  ansible.builtin.assert:
+    that:
+      - deployment_enabled | bool
+      - application_name is match('^[a-z0-9][a-z0-9-]*$')
+      - deployment_user is match('^[a-z_][a-z0-9_-]*$')
+      - deployment_public_keys | length > 0
+      - (deployment_public_keys | select('match', '^ssh-') | list | length) == (deployment_public_keys | length)
+      - application_root == '/opt/' ~ application_name
+      - application_releases_root == application_root ~ '/releases'
+      - application_current_path == application_root ~ '/current'
+      - application_previous_path == application_root ~ '/previous'
+      - application_config_root == '/etc/' ~ application_name
+      - application_config_revisions_root == application_config_root ~ '/config-revisions'
+      - application_current_config_path == application_config_root ~ '/current-config'
+      - application_previous_config_path == application_config_root ~ '/previous-config'
+      - application_secrets_path == application_config_root ~ '/secrets.env'
+      - application_data_root == '/var/lib/' ~ application_name
+      - application_storage_root == application_data_root ~ '/storage'
+      - application_log_root == '/var/log/' ~ application_name
+      - application_backup_root == '/var/backups/' ~ application_name
+      - application_user is match('^[a-z_][a-z0-9_-]*$')
+      - application_group is match('^[a-z_][a-z0-9_-]*$')
+      - application_backend_url == 'http://127.0.0.1:5000'
+      - application_backend_executable is match('^[A-Za-z0-9][A-Za-z0-9._-]*$')
+    fail_msg: "Set deployment_enabled: true only after replacing all example values for {{ inventory_hostname }}."
+
+- name: Require supported operating system and architecture
+  ansible.builtin.assert:
+    that:
+      - ansible_facts.os_family == 'Debian'
+      - ansible_facts.distribution in ['Debian', 'Ubuntu']
+      - ansible_facts.architecture == 'x86_64'
+    fail_msg: "The baseline supports Debian 12/Ubuntu 24.04 on x86_64."
+
+- name: Inspect server-owned secret file
+  ansible.builtin.stat:
+    path: "{{ application_secrets_path }}"
+  register: vps_bootstrap_secrets_file
+
+- name: Require separately provisioned secret file
+  ansible.builtin.assert:
+    that:
+      - vps_bootstrap_secrets_file.stat.exists
+      - vps_bootstrap_secrets_file.stat.isreg
+      - vps_bootstrap_secrets_file.stat.pw_name == 'root'
+      - vps_bootstrap_secrets_file.stat.mode == '0600'
+    fail_msg: >-
+      Provision {{ application_secrets_path }} as root:root mode 0600 with the required values,
+      then rerun bootstrap. Ansible intentionally does not create application secrets.
+
+- name: Install native runtime packages
+  ansible.builtin.apt:
+    name:
+      - curl
+      - libnginx-mod-http-js
+      - nginx
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Create deployment group
+  ansible.builtin.group:
+    name: "{{ deployment_user }}"
+    state: present
+
+- name: Create deployment account
+  ansible.builtin.user:
+    name: "{{ deployment_user }}"
+    group: "{{ deployment_user }}"
+    home: "/home/{{ deployment_user }}"
+    create_home: true
+    shell: /bin/bash
+    state: present
+
+- name: Create deployment SSH directory
+  ansible.builtin.file:
+    path: "/home/{{ deployment_user }}/.ssh"
+    state: directory
+    owner: "{{ deployment_user }}"
+    group: "{{ deployment_user }}"
+    mode: "0700"
+
+- name: Install versioned deployment public keys
+  ansible.builtin.copy:
+    content: "{{ deployment_public_keys | join('\n') }}\n"
+    dest: "/home/{{ deployment_user }}/.ssh/authorized_keys"
+    owner: "{{ deployment_user }}"
+    group: "{{ deployment_user }}"
+    mode: "0600"
+
+- name: Allow deployment account to run Ansible with administrative privileges
+  ansible.builtin.template:
+    src: deployment-sudoers.j2
+    dest: "/etc/sudoers.d/{{ application_name }}-deployment"
+    owner: root
+    group: root
+    mode: "0440"
+    validate: /usr/sbin/visudo -cf %s
+
+- name: Create application group
+  ansible.builtin.group:
+    name: "{{ application_group }}"
+    system: true
+    state: present
+
+- name: Create application service account
+  ansible.builtin.user:
+    name: "{{ application_user }}"
+    group: "{{ application_group }}"
+    home: "{{ application_data_root }}"
+    create_home: false
+    shell: /usr/sbin/nologin
+    system: true
+    state: present
+
+- name: Create traversable release and configuration directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+  loop:
+    - "{{ application_root }}"
+    - "{{ application_releases_root }}"
+    - "{{ application_config_root }}"
+    - "{{ application_config_revisions_root }}"
+
+- name: Create private backup directory
+  ansible.builtin.file:
+    path: "{{ application_backup_root }}"
+    state: directory
+    owner: root
+    group: "{{ application_group }}"
+    mode: "0750"
+
+- name: Create service-writable application directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ application_user }}"
+    group: "{{ application_group }}"
+    mode: "0750"
+  loop:
+    - "{{ application_data_root }}"
+    - "{{ application_storage_root }}"
+    - "{{ application_log_root }}"
+
+- name: Install systemd unit
+  ansible.builtin.template:
+    src: application.service.j2
+    dest: "/etc/systemd/system/{{ application_service_name }}.service"
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Reload systemd
+
+- name: Install migration-only systemd unit template
+  ansible.builtin.template:
+    src: application-migrate.service.j2
+    dest: "/etc/systemd/system/{{ application_service_name }}-migrate@.service"
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Reload systemd
+
+- name: Install CSP nonce module
+  ansible.builtin.template:
+    src: csp-nonce.js.j2
+    dest: "/etc/nginx/{{ application_name }}-csp-nonce.js"
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Reload nginx
+
+- name: Install CSP nonce nginx configuration
+  ansible.builtin.template:
+    src: csp-nonce.conf.j2
+    dest: "/etc/nginx/conf.d/00-{{ application_name }}-csp-nonce.conf"
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Reload nginx
+
+- name: Install security headers snippet
+  ansible.builtin.template:
+    src: security-headers.conf.j2
+    dest: "/etc/nginx/snippets/{{ application_name }}-security-headers.conf"
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Reload nginx
+
+- name: Inspect externally provisioned TLS certificate
+  ansible.builtin.stat:
+    path: "{{ nginx_tls_certificate_path }}"
+  register: vps_bootstrap_tls_certificate
+  when: nginx_tls_enabled | bool
+
+- name: Inspect externally provisioned TLS private key
+  ansible.builtin.stat:
+    path: "{{ nginx_tls_certificate_key_path }}"
+  register: vps_bootstrap_tls_certificate_key
+  when: nginx_tls_enabled | bool
+
+- name: Require configured TLS files
+  ansible.builtin.assert:
+    that:
+      - vps_bootstrap_tls_certificate.stat.exists
+      - vps_bootstrap_tls_certificate.stat.isreg
+      - vps_bootstrap_tls_certificate_key.stat.exists
+      - vps_bootstrap_tls_certificate_key.stat.isreg
+    fail_msg: "Provision the configured TLS certificate and key before enabling nginx TLS."
+  when: nginx_tls_enabled | bool
+
+- name: Install nginx site
+  ansible.builtin.template:
+    src: nginx-site.conf.j2
+    dest: "/etc/nginx/sites-available/{{ application_name }}"
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Reload nginx
+
+- name: Enable nginx site
+  ansible.builtin.file:
+    src: "/etc/nginx/sites-available/{{ application_name }}"
+    dest: "/etc/nginx/sites-enabled/{{ application_name }}"
+    state: link
+  notify: Reload nginx
+
+- name: Disable Debian default nginx site
+  ansible.builtin.file:
+    path: /etc/nginx/sites-enabled/default
+    state: absent
+  notify: Reload nginx
+
+- name: Validate nginx configuration
+  ansible.builtin.command: nginx -t
+  changed_when: false
+
+- name: Enable nginx
+  ansible.builtin.systemd_service:
+    name: nginx
+    enabled: true
+    state: started
+
+- name: Enable application service for future deployments
+  ansible.builtin.systemd_service:
+    name: "{{ application_service_name }}"
+    enabled: true
+    daemon_reload: true

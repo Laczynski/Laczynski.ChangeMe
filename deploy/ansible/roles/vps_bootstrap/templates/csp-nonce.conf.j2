@@ -1,0 +1,4 @@
+js_import csp from /etc/nginx/{{ application_name }}-csp-nonce.js;
+
+js_var $csp_nonce_cache;
+js_set $csp_nonce csp.issueNonce;

@@ -18,9 +18,10 @@
 | Operate Hangfire jobs | [Background jobs](modules/backend/operations/background-jobs.md) |
 | Operate attachment storage | [File storage](modules/backend/operations/file-storage.md) |
 | Generate sample data | [Demo data](modules/backend/demo-data.md) |
-| Deploy the system | [Deployment](system/operations/deployment.md) |
+| Release or deploy an application to a VPS | [Deployment](system/operations/deployment.md) |
 | Reproduce CI | [Continuous integration](system/operations/ci.md) |
 | Publish the template | [Publishing](system/operations/publishing.md) |
+| Understand application delivery decisions | [Multi-environment application delivery](system/designs/multi-environment-application-delivery-design.md) |
 | Understand runtime configuration hardening | [Runtime configuration hardening](system/designs/runtime-configuration-hardening-design.md) |
 | Continue repository modularization | [Modular documentation migration](system/designs/modular-documentation-migration.md) |
 

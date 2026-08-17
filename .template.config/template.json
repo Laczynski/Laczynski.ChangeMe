@@ -23,6 +23,12 @@
       "valueSource": "name",
       "valueTransform": "projectNameScreamingSnake",
       "replaces": "CHANGE_ME"
+    },
+    "ProjectNameKebabCase": {
+      "type": "derived",
+      "valueSource": "name",
+      "valueTransform": "projectNameKebabCase",
+      "replaces": "change-me"
     }
   },
   "forms": {
@@ -40,6 +46,27 @@
     },
     "projectNameUpperCase": {
       "identifier": "upperCaseInvariant"
+    },
+    "projectNameKebabCase": {
+      "identifier": "chain",
+      "steps": [
+        "projectNamePascalToKebab",
+        "projectNameSeparatorsToKebab",
+        "projectNameLowerCase"
+      ]
+    },
+    "projectNamePascalToKebab": {
+      "identifier": "replace",
+      "pattern": "([a-z0-9])([A-Z])",
+      "replacement": "$1-$2"
+    },
+    "projectNameSeparatorsToKebab": {
+      "identifier": "replace",
+      "pattern": "[^A-Za-z0-9]+",
+      "replacement": "-"
+    },
+    "projectNameLowerCase": {
+      "identifier": "lowerCaseInvariant"
     }
   },
   "primaryOutputs": [{ "path": "src/Template.Backend/Template.Backend.slnx" }],
@@ -58,6 +85,8 @@
             ".template-test-output/**",
             "artifacts/**",
             "template-pack/**",
+            "ci-lab/**",
+            ".github/workflows/publish.yml",
             "**/node_modules/**",
             "**/bin/**",
             "**/obj/**",

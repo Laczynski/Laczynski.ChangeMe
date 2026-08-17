@@ -1,0 +1,74 @@
+application_name: change-me
+application_service_name: change-me-backend
+application_user: appsvc
+application_group: appsvc
+deployment_user: deploy
+deployment_public_keys: []
+
+application_root: /opt/change-me
+application_releases_root: "{{ application_root }}/releases"
+application_current_path: "{{ application_root }}/current"
+application_previous_path: "{{ application_root }}/previous"
+
+application_config_root: /etc/change-me
+application_config_revisions_root: "{{ application_config_root }}/config-revisions"
+application_current_config_path: "{{ application_config_root }}/current-config"
+application_previous_config_path: "{{ application_config_root }}/previous-config"
+application_secrets_path: "{{ application_config_root }}/secrets.env"
+
+application_data_root: /var/lib/change-me
+application_storage_root: "{{ application_data_root }}/storage"
+application_log_root: /var/log/change-me
+application_backup_root: /var/backups/change-me
+
+application_backend_executable: Template.Backend.Web
+application_backend_url: http://127.0.0.1:5000
+application_runtime_identifier: linux-x64
+application_release_keep_count: 5
+application_config_keep_count: 10
+
+nginx_tls_enabled: false
+nginx_tls_certificate_path: ""
+nginx_tls_certificate_key_path: ""
+frontend_api_origin: >-
+  {{ ((frontend_api_url | urlsplit('scheme')) ~ '://' ~ (frontend_api_url | urlsplit('netloc')))
+     if frontend_api_url is match('^https?://') else '' }}
+
+required_secret_variables:
+  - ConnectionStrings__DefaultConnection
+  - AuthOptions__Jwt__SigningKey
+
+allowed_secret_variables:
+  - ConnectionStrings__DefaultConnection
+  - AuthOptions__Jwt__SigningKey
+  - EmailOptions__Username
+  - EmailOptions__Password
+  - InitialAdministratorOptions__Email
+  - InitialAdministratorOptions__Password
+  - InitialAdministratorOptions__FirstName
+  - InitialAdministratorOptions__LastName
+
+allowed_backend_config_keys:
+  - AuthOptions__FrontendBaseUrl
+  - AuthOptions__Jwt__Audience
+  - AuthOptions__Jwt__ExpirationMinutes
+  - AuthOptions__Jwt__Issuer
+  - AuthOptions__Jwt__SessionLifetimeDays
+  - CorsOptions__AllowedOrigins__0
+  - DatabaseOptions__ApplyMigrationsOnStartup
+  - EmailOptions__EnableSsl
+  - EmailOptions__FromEmail
+  - EmailOptions__FromName
+  - EmailOptions__Host
+  - EmailOptions__Port
+  - FileStorageOptions__RootPath
+
+forbidden_backend_config_keys:
+  - AuthOptions__Jwt__SigningKey
+  - ConnectionStrings__DefaultConnection
+  - EmailOptions__Password
+  - EmailOptions__Username
+  - InitialAdministratorOptions__Email
+  - InitialAdministratorOptions__FirstName
+  - InitialAdministratorOptions__LastName
+  - InitialAdministratorOptions__Password

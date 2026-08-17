@@ -31,6 +31,7 @@ yarn-error.log
 # Miscellaneous
 /.angular/cache
 /.env
+/.venv-deploy/
 .sass-cache/
 /connect.lock
 /coverage
@@ -65,6 +66,8 @@ nupkg/
 [Dd]ebug/
 [Dd]ebugPublic/
 [Rr]elease/
+!.claude/skills/release/
+!.claude/skills/release/**
 [Rr]eleases/
 x64/
 x86/

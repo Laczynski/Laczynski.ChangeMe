@@ -21,6 +21,7 @@
 - Test work or bugfix verification: read `docs/system/development/testing-strategy.md`; read `e2e-testing.md` only for browser journeys.
 - Cross-stack feature: read the target requirements, `docs/system/development/feature-workflow.md`, and the affected module development documents.
 - Docker or local stack: read `docs/system/operations/local-stack.md`; production deployment: `docs/system/operations/deployment.md`; CI: `docs/system/operations/ci.md`.
+- Application release: read `docs/system/operations/deployment.md` and `docs/system/operations/ci.md`; use `/release patch|minor|major` in Cursor or Claude Code to prepare the reviewed release MR, then `/release publish vX.Y.Z` after merge.
 - Documentation additions or updates: read `docs/documentation-rules.md`.
 - Repository extraction, documentation ownership changes, or `docs/` reorganization: also read `docs/system/designs/modular-documentation-migration.md`.
 - Requirement changes: read `docs/requirements/requirements-change-process.md`; authoring in `docs/requirements/requirements-authoring-guide.md`; **five layers** in `docs/requirements/_shared/README.md`; product behavior defaults in `docs/requirements/_shared/conventions/product-standards.md`; pending deltas in `docs/requirements/changes/`; validate with `npm run docs:validate`.
@@ -38,11 +39,19 @@ From the repository root, run `npm run setup` once after clone (creates `.env` f
 - Frontend quality: `npm run lint:frontend`, `npm run format:frontend`, `npm run test:frontend` (interactive watch when TTY), or `npm run test:frontend:ci` (single run, `--watch=false`)
 - Backend tests: `npm run test:backend` (entire solution — unit and integration projects), `npm run test:backend:unit`, or `npm run test:backend:integration`
 - Full automated check (frontend CI tests + full backend solution tests, parallel): `npm run test:all` — backend integration tests use Testcontainers and need a running Docker engine
-- E2E (Playwright): `npm run test:e2e` (needs Chromium from `npm run install:frontend`, PostgreSQL on `localhost`; Playwright starts the stack); `npm run test:e2e:ui` for interactive debugging — also runs in CI on every PR (`docs/system/operations/ci.md`)
+- E2E (Playwright): `npm run test:e2e` (needs Chromium from `npm run install:frontend`, PostgreSQL on `localhost`; Playwright starts the stack); `npm run test:e2e:ui` for interactive debugging — E2E is local/manual and is not a CI or release gate (`docs/system/operations/ci.md`)
 - CI workflow (GitHub Actions): see `docs/system/operations/ci.md`
 - EF Core (from repo root): `npm run ef:migrations:add -- <Name>`, `npm run ef:migrations:remove`, `npm run ef:database:update`
 - Demo data (after migrations; Development only): `npm run data:generate`, or `npm run data:generate -- --reset` — see `docs/modules/backend/demo-data.md`
 - Documentation: `npm run docs:validate` — checks links, system/module contracts and index reachability, then validates `FR-*` / `NFR-*` cross-references and regenerates the requirements index
+
+### Native VPS delivery (Linux/WSL)
+
+- Set up the isolated Ansible controller and all local prerequisites: `npm run setup:deployment` (native Linux or the default WSL distribution on Windows)
+- Validate inventory, generator, GitLab YAML, tests, playbooks, lint, and the package contract: `npm run validate:deployment`
+- Agent-assisted release: `/release patch|minor|major` prepares release notes and an MR; `/release publish vX.Y.Z` verifies the merge and pushes the protected tag
+- Setup troubleshooting, bootstrap, deploy, verify, configuration-only deploy, and rollback procedures: `docs/system/operations/deployment.md`
+- GitLab creates packages and manual deployment choices; Docker and Compose remain local-only
 
 ### Frontend (in `src/Template.Frontend`)
 

@@ -1,8 +1,6 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Template.Backend.Infrastructure.Auth;
 using Template.Backend.Infrastructure.Configurations;
 using Template.Backend.Infrastructure.Email;
@@ -37,14 +35,7 @@ public class BackendWebApplicationFactory : WebApplicationFactory<Program>, IAsy
       BaseAddress = new Uri("https://localhost")
     });
 
-    await using var scope = Services.CreateAsyncScope();
-    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    await DatabaseConfig.InitializeDatabaseAsync(
-      dbContext,
-      scope.ServiceProvider.GetRequiredService<IConfiguration>(),
-      scope.ServiceProvider.GetRequiredService<IPasswordHasher>(),
-      scope.ServiceProvider.GetRequiredService<ILogger<ApplicationDbContext>>(),
-      cancellationToken);
+    await DatabaseConfig.InitializeDatabaseAsync(Services, cancellationToken);
   }
 
   public new async ValueTask DisposeAsync()

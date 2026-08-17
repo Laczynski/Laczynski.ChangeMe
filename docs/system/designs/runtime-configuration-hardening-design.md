@@ -7,7 +7,7 @@
 
 ## Goal
 
-Make configuration errors fail early with actionable messages and keep locally editable configuration in one ignored `.env` file shared by Docker Compose and .NET tooling. Use standard environment variables as the sufficient production configuration mechanism for a Linux VPS, without requiring a secret manager or mounted-secret integration before the deployment has such a need.
+Make configuration errors fail early with actionable messages and keep locally editable configuration in one ignored `.env` file shared by Docker Compose and .NET tooling. Use standard environment variables loaded by systemd as the sufficient production configuration mechanism for a native Linux VPS, without requiring containers, a secret manager, or mounted-secret integration before the deployment has such a need.
 
 ## Target
 
@@ -92,43 +92,35 @@ The `.env` file is a developer convenience, not encrypted storage. Its values ca
 
 Standard environment variables are the initial production delivery mechanism. ASP.NET Core already reads them and maps `__` to the `:` section separator, so the application needs no production `.env` provider or platform-specific configuration integration.
 
-For a VPS running Docker Compose, keep an untracked production environment file on the server and interpolate only the required variables into the backend container:
-
-```yaml
-services:
-  backend:
-    environment:
-      ASPNETCORE_ENVIRONMENT: Production
-      ConnectionStrings__DefaultConnection: ${ConnectionStrings__DefaultConnection:?Default connection string is required}
-      AuthOptions__Jwt__SigningKey: ${AuthOptions__Jwt__SigningKey:?JWT signing key is required}
-      EmailOptions__Password: ${EmailOptions__Password:-}
-```
-
-The server-side file contains the corresponding values:
+Ansible renders versioned non-secret variables into `/etc/<application>/current-config/backend.config.env`. Keep sensitive variables in the untracked server-owned `/etc/<application>/secrets.env`:
 
 ```dotenv
-ConnectionStrings__DefaultConnection=Host=postgres;Database=Template;Username=template;Password=replace-on-vps
+ConnectionStrings__DefaultConnection=Host=database.internal;Database=Template;Username=template;Password=replace-on-vps
 AuthOptions__Jwt__SigningKey=replace-with-a-production-signing-key
 EmailOptions__Password=replace-when-smtp-authentication-is-used
 ```
 
 The file must:
 
-- remain outside source control and container images;
-- be owned by the deployment account and readable only by that account, normally mode `0600`;
-- be transferred or updated without printing its contents in CI/CD logs;
-- not be exposed by logging resolved `docker compose config` output;
-- cause the affected container to be recreated after a value changes.
+- remain outside source control, application packages, and release directories;
+- be owned by `root` and readable only by `root`, normally mode `0600`;
+- be provisioned or updated through a controlled server-administration process without printing its contents in CI/CD logs;
+- never be copied, replaced, or displayed by the application deployment pipeline;
+- cause the backend service to be restarted and health-checked after a value changes.
 
-When the backend runs directly under systemd rather than in Docker, use the same ASP.NET Core variable names through a protected environment file:
+The native systemd service loads the protected file:
 
 ```ini
 [Service]
-EnvironmentFile=/etc/template/backend.env
-ExecStart=/opt/template/dotnet/Template.Backend.Web.dll
+WorkingDirectory=/opt/<application>/current/backend
+ExecStart=/opt/<application>/current/backend/Template.Backend.Web
+Environment=ASPNETCORE_ENVIRONMENT=Production
+EnvironmentFile=/etc/<application>/current-config/backend.config.env
+EnvironmentFile=/etc/<application>/secrets.env
+Restart=always
 ```
 
-The exact mechanism that copies or updates the production environment file is deployment-specific and remains outside this proposal. A secret manager, mounted secret files, automated rotation, and Kubernetes-specific delivery may be introduced later if scale, platform capabilities, or security requirements justify them. Kubernetes can initially use the same environment-variable contract through `ConfigMap` and `Secret` references without changing the backend.
+The deployment pipeline creates and activates the non-secret revision but never reads, copies, or replaces `secrets.env`. The exact administrative mechanism that creates or updates the secret file is deployment-specific. A secret manager, automated rotation, and Kubernetes-specific delivery may be introduced later if scale, platform capabilities, or security requirements justify them. Kubernetes can use the same environment-variable contract through `ConfigMap` and `Secret` references without changing the backend.
 
 ## Implemented migration
 
@@ -138,7 +130,7 @@ The exact mechanism that copies or updates the production environment file is de
 4. Removed JWT signing keys, database passwords, SMTP passwords, and initial-administrator passwords from tracked development settings; retired User Secrets as the standard local workflow.
 5. Added section-specific validators and startup-validation tests, then removed silent fallback behavior for invalid configured values.
 6. Updated [local stack operations](../operations/local-stack.md) with the implemented workflow and precedence.
-7. Documented the protected VPS environment-file workflow in [deployment](../operations/deployment.md), including container/service recreation after changes.
+7. Added versioned non-secret Ansible configuration and a separate protected VPS secret file, with bootstrap, activation, validation, and restart procedures in [deployment](../operations/deployment.md).
 
 ## Alternatives considered
 
@@ -161,9 +153,9 @@ The exact mechanism that copies or updates the production environment file is de
 - Real process or container environment variables take precedence over `.env` values.
 - Docker Compose starts from a documented `.env.example` workflow, passes only explicitly selected values, and fails clearly when a required sensitive value is absent.
 - No real or reusable JWT key, database password, SMTP password, or initial administrator password is committed.
-- Local and VPS environment files are absent from source control, application images, and CI artifacts.
+- Local and VPS environment files are absent from source control, application packages, and CI artifacts.
 - A production-shaped VPS configuration reaches ASP.NET Core through environment variables and passes startup validation.
-- VPS documentation covers file ownership, restrictive permissions, non-logging, and container or service restart after changes.
+- VPS documentation covers file ownership, restrictive permissions, non-logging, and systemd service restart after changes.
 - Local API startup, an EF Core design-time command, and demo-data generation are verified against the same `.env` fixture.
 - `docker compose config --quiet`, backend tests, and `npm run docs:validate` pass.
 

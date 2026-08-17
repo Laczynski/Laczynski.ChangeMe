@@ -1,0 +1,29 @@
+---
+- name: Verify application VPS
+  hosts: application_instances
+  gather_facts: true
+  become: true
+  serial: 1
+  tasks:
+    - name: Validate instance variables
+      ansible.builtin.include_role:
+        name: application_config
+        tasks_from: validate
+
+    - name: Read application service state
+      ansible.builtin.systemd_service:
+        name: "{{ application_service_name }}"
+      register: application_service_state
+      changed_when: false
+
+    - name: Require active application service
+      ansible.builtin.assert:
+        that:
+          - application_service_state.status.ActiveState == 'active'
+        fail_msg: "{{ application_service_name }} is not active"
+
+    - name: Verify loopback health endpoint
+      ansible.builtin.uri:
+        url: "{{ application_backend_url }}{{ health_path }}"
+        status_code: 200
+        return_content: false

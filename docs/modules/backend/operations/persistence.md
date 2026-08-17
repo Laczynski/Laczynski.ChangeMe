@@ -9,7 +9,7 @@
 
 - `ApplicationDbContext` uses PostgreSQL.
 - EF configuration and migrations live under `Template.Backend.Infrastructure/Persistence/`.
-- Development startup applies pending migrations; production should apply them in CI/CD.
+- Development startup applies pending migrations; production deployment uses the backend's migration-only mode.
 - Integration tests create disposable PostgreSQL databases with Testcontainers.
 
 ## Configuration
@@ -32,7 +32,9 @@ Run from the repository root:
 
 In Development, `DatabaseOptions:ApplyMigrationsOnStartup` is enabled. `dotnet run`, `npm run start:backend`, and the Compose backend therefore apply pending migrations.
 
-Keep startup migration disabled in production and apply migrations from the deployment pipeline before multiple API instances start.
+Keep startup migration disabled in production. The native deployment runs the selected release once as `Template.Backend.Web --migrate-only`; it applies pending EF Core migrations plus the idempotent bootstrap seed, then exits without starting HTTP. The application release is activated only after this command succeeds.
+
+The migration-only mode uses the same production environment variables and startup validation as the normal service. Database migrations are not reversed during application rollback, so new schema changes must remain compatible with the previous retained release or have an explicit database-restore plan. Cross-module sequencing and rollback: [deployment](../../../system/operations/deployment.md).
 
 ## PostgreSQL container
 

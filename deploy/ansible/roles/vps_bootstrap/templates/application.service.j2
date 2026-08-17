@@ -1,0 +1,25 @@
+[Unit]
+Description={{ application_name }} ASP.NET Core backend
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User={{ application_user }}
+Group={{ application_group }}
+WorkingDirectory={{ application_current_path }}/backend
+ExecStart={{ application_current_path }}/backend/{{ application_backend_executable }}
+Environment=ASPNETCORE_ENVIRONMENT=Production
+Environment=ASPNETCORE_URLS={{ application_backend_url }}
+EnvironmentFile={{ application_current_config_path }}/backend.config.env
+EnvironmentFile={{ application_secrets_path }}
+Restart=always
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=full
+ReadWritePaths={{ application_storage_root }} {{ application_log_root }}
+
+[Install]
+WantedBy=multi-user.target

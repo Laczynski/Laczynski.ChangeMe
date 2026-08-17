@@ -22,10 +22,11 @@ Use it to bootstrap Angular + ASP.NET projects with layered backend, JWT session
 
 - Root **`package.json`** — one entry point for start/build, lint/format, unit & integration tests, E2E, EF migrations, Docker Compose, demo data, requirements validation
 - **Docker Compose** — full stack (frontend, backend, PostgreSQL, MailHog) plus optional test profile
-- **GitHub Actions CI** — documentation/requirements, frontend, backend, and Playwright E2E in parallel
+- **GitHub Actions CI** — documentation/requirements, frontend, backend, and deployment automation in parallel
 - **Playwright E2E** — project layout, fixtures, smoke pattern (`docs/system/development/e2e-testing.md`)
 - **Testcontainers** — integration tests against real PostgreSQL
 - **Data generator** — CLI pattern for Development seed data (`npm run data:generate`)
+- **Agent-assisted releases** — shared `/release` workflow for Cursor and Claude Code prepares release notes, an MR, and the protected GitLab tag
 - **`dotnet new` token replacement** — `Template` plus derived `changeMe` / `CHANGE_ME` symbols from your project name
 
 ### Documentation workflow
@@ -40,11 +41,11 @@ Three doc layers, each with an entry point:
 
 - **`AGENTS.md`** — fast-start for AI agents and contributors (task → which doc to open, commands, coupling checks)
 - **`npm run docs:validate`** — check all documentation, including requirement specs, cross-references, and generated indexes
-- Templates for new specs and change deltas (`_functional-specification-template.md`, `_changes-template.md`)
+- Templates for new specs and change deltas (`_functional-specification-skeleton.md`, `_change-record-skeleton.md`)
 
 ### Testing approach
 
-- **Frontend** — component/service specs where they add value; primary confidence from Playwright smoke tests
+- **Frontend** — component/service specs where they add value; Playwright smoke tests remain available for selected local browser journeys
 - **Backend unit** — domain and infrastructure helpers
 - **Backend integration** — API behaviour with Testcontainers; endpoint tests mirror Web layer
 - **`docs/system/development/testing-strategy.md`** — layer ownership, when to skip redundant tests, anti-patterns
@@ -96,6 +97,13 @@ npm run start:all
 - **`npm run setup`** — creates `.env` from `.env.example` when missing, installs root and frontend npm packages (including Playwright Chromium), restores the .NET solution, and installs Git pre-commit hooks. It never overwrites an existing `.env`.
 - **`.env`** — review and replace its placeholder-only local credentials; the file is ignored by Git.
 - **Pre-commit hooks** — [Lefthook](https://github.com/evilmartians/lefthook) runs ESLint, Prettier, and `dotnet format` on staged files. Re-run `npm run setup` or `npx lefthook install` after clone if hooks are missing.
+
+Ansible is optional and isolated from the application setup. To validate or run native VPS delivery automation, initialize it separately from Linux or Windows with WSL:
+
+```powershell
+npm run setup:deployment
+npm run validate:deployment
+```
 
 See `docs/system/operations/local-stack.md` for Docker Compose and secrets; migrations are in `docs/modules/backend/operations/persistence.md`.
 
@@ -200,7 +208,7 @@ The `docs/` directory contains guidance that is also shipped into generated solu
 
 - `docs/system/` - cross-module development, designs, and operations
 - `docs/modules/` - frontend/backend implementation and module-owned operations
-- `docs/requirements/` - product specs and change workflow (start at `docs/requirements/requirements-change-process.md`; templates `_functional-specification-template.md`, `_changes-template.md`)
+- `docs/requirements/` - product specs and change workflow (start at `docs/requirements/requirements-change-process.md`; templates `_functional-specification-skeleton.md`, `_change-record-skeleton.md`)
 
 Maintainers of the template package: see [`CONTRIBUTING.md`](CONTRIBUTING.md).
 

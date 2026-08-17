@@ -1,0 +1,24 @@
+---
+- name: Inspect active configuration link
+  ansible.builtin.stat:
+    path: "{{ application_current_config_path }}"
+    follow: false
+  register: application_config_active_link
+
+- name: Preserve previous configuration link
+  ansible.builtin.file:
+    src: "{{ application_config_active_link.stat.lnk_source }}"
+    dest: "{{ application_previous_config_path }}"
+    state: link
+    force: true
+  when:
+    - application_config_active_link.stat.exists
+    - application_config_active_link.stat.islnk
+    - application_config_active_link.stat.lnk_source != application_config_revisions_root ~ '/' ~ application_config_revision
+
+- name: Activate selected configuration revision
+  ansible.builtin.file:
+    src: "{{ application_config_revisions_root }}/{{ application_config_revision }}"
+    dest: "{{ application_current_config_path }}"
+    state: link
+    force: true

@@ -7,7 +7,7 @@
 
 | Role                                   | Read first                                                         | Then                                                                                                                                       |
 | -------------------------------------- | ------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Analyst** (new or updated `FR-*`)    | [requirements-authoring-guide.md](requirements-authoring-guide.md) | Edit specs → [\_changes-template.md](_changes-template.md) → `npm run docs:validate`                                                       |
+| **Analyst** (new or updated `FR-*`)    | [requirements-authoring-guide.md](requirements-authoring-guide.md) | Edit specs → [change-record skeleton](_change-record-skeleton.md) → `npm run docs:validate`                                                |
 | **Developer** (implement pending work) | Pending files in [changes/](changes/)                              | Linked `FR-*` + `_shared/` → [feature workflow](../system/development/feature-workflow.md) + [testing strategy](../system/development/testing-strategy.md) |
 | **Find a specification**               | [README.md](README.md) (auto-generated index)                      | Open the linked `FR-*` file                                                                                                                |
 
@@ -30,7 +30,7 @@ Meta (not a product layer): `requirements-authoring-guide.md`, `requirements-cha
 1. Read `docs/requirements/requirements-authoring-guide.md` when creating or substantially updating `FR-*` files.
 2. Decide whether the change touches **L1–L3** shared docs. If yes, edit the matching file under `_shared/` **once** instead of duplicating across `FR-*`.
 3. Edit only the affected `FR-*` files under `functional/<domain>/`.
-4. Create **one** file in `changes/` from `_changes-template.md`.
+4. Create **one** file in `changes/` from `_change-record-skeleton.md`.
 5. List every touched document; describe the **behavior delta**.
 6. Run `npm run docs:validate` before opening a PR.
 
