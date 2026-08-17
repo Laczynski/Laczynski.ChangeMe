@@ -1,4 +1,7 @@
 #!/usr/bin/env node
+
+/** Regenerates the requirements index from the manifest produced by requirements validation. */
+
 import fs from "node:fs";
 import path from "node:path";
 import { ROOT, formatDomainLabel } from "./requirements-lib.mjs";

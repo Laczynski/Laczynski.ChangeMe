@@ -1,3 +1,5 @@
+"""Exercise deployment inventory validation and generated child-pipeline behavior."""
+
 from __future__ import annotations
 
 import importlib.util

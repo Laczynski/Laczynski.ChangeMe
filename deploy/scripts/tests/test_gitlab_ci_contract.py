@@ -1,3 +1,5 @@
+"""Protect the repository's GitLab workflow, release, and default inventory contracts."""
+
 from __future__ import annotations
 
 import unittest

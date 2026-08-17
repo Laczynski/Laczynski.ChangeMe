@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+"""Validate deployment inventory and generate manual GitLab jobs for enabled instances."""
 
 from __future__ import annotations
 

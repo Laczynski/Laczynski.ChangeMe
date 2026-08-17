@@ -1,3 +1,5 @@
+/** Provides shared frontmatter parsing and document discovery for requirements tooling. */
+
 import fs from "node:fs";
 import path from "node:path";
 

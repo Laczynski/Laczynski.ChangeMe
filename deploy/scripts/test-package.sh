@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# Build test packages twice and verify their deterministic archive, checksum, and content contract.
+
 set -Eeuo pipefail
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

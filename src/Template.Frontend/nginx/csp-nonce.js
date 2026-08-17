@@ -1,3 +1,5 @@
+// Issue and cache one CSP nonce per nginx request for dynamic security headers.
+
 function issueNonce(r) {
   var cached = r.variables.csp_nonce_cache;
   if (cached) {

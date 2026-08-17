@@ -1,4 +1,7 @@
 #!/usr/bin/env node
+
+/** Installs local Lefthook hooks during npm setup while skipping CI and explicit opt-out runs. */
+
 import { spawnSync } from "node:child_process";
 
 if (
