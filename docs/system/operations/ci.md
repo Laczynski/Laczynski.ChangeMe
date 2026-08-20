@@ -68,7 +68,7 @@ For test scope and project layout, see [testing strategy](../development/testing
 
 ### Publish workflow
 
-Separate from CI — runs on **tag push** `v*`. Tests, packs the `Laczynski.ChangeMe` template, publishes NuGet (nuget.org + GitHub Packages), and creates a GitHub Release.
+Separate from CI — runs on **tag push** `v*`. Tests, packs the `ChangeMe` template, publishes NuGet (nuget.org + GitHub Packages), and creates a GitHub Release.
 
 Details: [publishing](publishing.md).
 

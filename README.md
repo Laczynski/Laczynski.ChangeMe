@@ -112,10 +112,10 @@ See `docs/system/operations/local-stack.md` for Docker Compose and secrets; migr
 Install the template from NuGet:
 
 ```powershell
-dotnet new install Laczynski.ChangeMe
+dotnet new install ChangeMe
 ```
 
-NuGet package id is `Laczynski.ChangeMe` (the legacy `ChangeMe` repository name on GitHub is retired). Scaffold token replacement still uses `ChangeMe` — `dotnet new changeme -n YourApp` produces `YourApp.Backend`, not `ChangeMe.Backend`.
+NuGet package id is `ChangeMe`; source repository is `Laczynski/Laczynski.ChangeMe` on GitHub. Scaffold token replacement uses `ChangeMe` — `dotnet new changeme -n YourApp` produces `YourApp.Backend`, not `ChangeMe.Backend`.
 
 Or install from this repository root during local development:
 
@@ -140,11 +140,11 @@ This replaces `ChangeMe` across the solution, project names, folders, Docker con
 ### Publish the NuGet package
 
 ```powershell
-dotnet pack template-pack/Laczynski.ChangeMe.csproj -c Release
+dotnet pack template-pack/ChangeMe.Templates.csproj -c Release
 ```
 
 ```powershell
-dotnet nuget push template-pack/bin/Release/Laczynski.ChangeMe.<version>.nupkg --source https://api.nuget.org/v3/index.json --api-key <your-api-key>
+dotnet nuget push template-pack/bin/Release/ChangeMe.<version>.nupkg --source https://api.nuget.org/v3/index.json --api-key <your-api-key>
 ```
 
 The packaging project targets `net10.0` only as a carrier for NuGet metadata and `dotnet pack`. It does not affect the generated solution structure or the target frameworks used by the projects created from the template.

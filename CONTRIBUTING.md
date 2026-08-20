@@ -1,6 +1,6 @@
-# Contributing to Laczynski.ChangeMe (maintainers)
+# Contributing to ChangeMe (maintainers)
 
-> Scope: authors packaging **[Laczynski.ChangeMe](https://www.nuget.org/packages/Laczynski.ChangeMe)** from **this GitHub repository** (`Laczynski/Laczynski.ChangeMe`). If you only consume **`dotnet new changeme`** or fork a generated app, you do **not** need this file; see **`README.md`**, **`AGENTS.md`**, and **`docs/`** in your generated solution.
+> Scope: authors packaging **[ChangeMe](https://www.nuget.org/packages/ChangeMe)** from **this GitHub repository** (`Laczynski/Laczynski.ChangeMe`). If you only consume **`dotnet new changeme`** or fork a generated app, you do **not** need this file; see **`README.md`**, **`AGENTS.md`**, and **`docs/`** in your generated solution.
 
 ## Documentation split
 
@@ -14,30 +14,31 @@
 ## Install and validate template locally
 
 ```powershell
-dotnet new install .
-dotnet new changeme -n Smoke -o %TEMP%\TemplateSmoke --force
+dotnet pack template-pack/ChangeMe.Templates.csproj -c Release
+dotnet new install .\template-pack\bin\Release\ChangeMe.<version>.nupkg
+dotnet new changeme -n Smoke -o %TEMP%\ChangeMeSmoke --force
 ```
 
 Avoid **`dotnet new -o`** under **`artifacts/`** (or other nested outputs inside this repo) without cleaning stale folders; `artifacts/**` is excluded from packaged content but local installs can still recurse oddly.
 
-## Publish NuGet package
+## Publishing
 
 Tag-based CI publish is documented in **`docs/system/operations/publishing.md`**. Summary:
 
-1. Bump **`Version`** in **`template-pack/Laczynski.ChangeMe.csproj`** and update **`CHANGELOG.md`**.
+1. Bump **`Version`** in **`template-pack/ChangeMe.Templates.csproj`** and update **`CHANGELOG.md`**.
 2. Push a git tag (`v2.1.0`) — [publish.yml](.github/workflows/publish.yml) tests, packs, publishes to nuget.org + GitHub Packages, and creates a GitHub Release.
 
-Local pack only:
+Optional local pack:
 
 ```powershell
-npm run pack:backend
+dotnet pack template-pack/ChangeMe.Templates.csproj -c Release
 ```
 
 Optional local push with API key — see **`docs/system/operations/publishing.md`**.
 
 Package readme: **`template-pack/NuGetPackageREADME.md`**.
 
-## Layout hints for editors
+## Template authoring
 
 - `.template.config/template.json` – symbols, sources.
 - `template-content/generated-readme/README.md` – becomes the generated solution’s root **`README.md`** (root **`README.md`** is excluded from the template payload and stays maintainer-facing on GitHub).

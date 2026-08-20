@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to the **Laczynski.ChangeMe** NuGet template package (`dotnet new changeme`) are documented here.
+All notable changes to the **ChangeMe** NuGet template package (`dotnet new changeme`) are documented here.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
@@ -8,12 +8,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Changed
 
-- **Restore ChangeMe template tokens** — NuGet package `Laczynski.ChangeMe`; `dotnet new changeme`; `sourceName` is `ChangeMe` (folders/namespaces `ChangeMe.*`). Package id uses the `Laczynski.ChangeMe` prefix because the legacy `ChangeMe` GitHub repository name is retired and cannot be reused.
+- **Restore ChangeMe template tokens** — NuGet package `ChangeMe`; `dotnet new changeme`; `sourceName` is `ChangeMe` (folders/namespaces `ChangeMe.*`). Source repository: `Laczynski/Laczynski.ChangeMe` on GitHub.
 - **Database schema** — EF migrations default schema `changeme_backend` (derived from `ChangeMe.Backend.Infrastructure` assembly naming).
 
 ### Migration notes for consumers upgrading from 3.x
 
-1. **Install** — `dotnet new uninstall Laczynski.Template` (if installed), then `dotnet new install Laczynski.ChangeMe`.
+1. **Install** — `dotnet new uninstall Laczynski.Template` (if installed), then `dotnet new install ChangeMe`.
 2. **Scaffold** — `dotnet new changeme -n YourApp -o YourApp` (replaces `dotnet new laczynski-fullstack`).
 3. **Merge** — if syncing an existing app generated from 3.x, rename `YourApp.*` projects that used the `Template` token back to your app name manually; JWT issuer/audience and schema names follow the new project name.
 

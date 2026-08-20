@@ -6,10 +6,10 @@
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <NoWarn>$(NoWarn);NU5128</NoWarn>
 
-    <PackageId>Laczynski.ChangeMe</PackageId>
+    <PackageId>ChangeMe</PackageId>
     <Version>4.0.0</Version>
-    <PackageReleaseNotes>See CHANGELOG.md — sourceName ChangeMe, dotnet new changeme, PackageId Laczynski.ChangeMe, schema changeme_backend.</PackageReleaseNotes>
-    <Title>Laczynski.ChangeMe</Title>
+    <PackageReleaseNotes>See CHANGELOG.md — sourceName ChangeMe, dotnet new changeme, schema changeme_backend.</PackageReleaseNotes>
+    <Title>ChangeMe</Title>
     <Authors>Damian Łączyński</Authors>
     <Description>Full-stack dotnet new starter template with Angular frontend, layered ASP.NET backend, PostgreSQL, Docker Compose, tests, and project documentation.</Description>
     <PackageTags>dotnet-new;template;starter;angular;aspnetcore;fullstack;changeme</PackageTags>
