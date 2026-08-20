@@ -2,19 +2,19 @@
   "version": "0.2.0",
   "compounds": [
     {
-      "name": "Template Full Stack",
-      "configurations": ["Template Backend", "Template Frontend"]
+      "name": "ChangeMe Full Stack",
+      "configurations": ["ChangeMe Backend", "ChangeMe Frontend"]
     }
   ],
   "configurations": [
     {
-      "name": "Template Backend",
+      "name": "ChangeMe Backend",
       "type": "coreclr",
       "request": "launch",
       "preLaunchTask": "template-backend: build solution",
-      "program": "${workspaceFolder}/src/Template.Backend/src/Template.Backend.Web/bin/Debug/net10.0/Template.Backend.Web.dll",
+      "program": "${workspaceFolder}/src/ChangeMe.Backend/src/ChangeMe.Backend.Web/bin/Debug/net10.0/ChangeMe.Backend.Web.dll",
       "args": [],
-      "cwd": "${workspaceFolder}/src/Template.Backend/src/Template.Backend.Web",
+      "cwd": "${workspaceFolder}/src/ChangeMe.Backend/src/ChangeMe.Backend.Web",
       "console": "integratedTerminal",
       "stopAtEntry": false,
       "env": {
@@ -23,11 +23,11 @@
       }
     },
     {
-      "name": "Template Frontend",
+      "name": "ChangeMe Frontend",
       "type": "node-terminal",
       "request": "launch",
       "command": "npm run start -- --host 0.0.0.0 --port 4200",
-      "cwd": "${workspaceFolder}/src/Template.Frontend"
+      "cwd": "${workspaceFolder}/src/ChangeMe.Frontend"
     }
   ]
 }

@@ -3,7 +3,7 @@
     key:
       files:
         - package-lock.json
-        - src/Template.Frontend/package-lock.json
+        - src/ChangeMe.Frontend/package-lock.json
     paths:
       - .npm/
     policy: pull-push
@@ -47,11 +47,11 @@ frontend:verify:
     - .verification-rules
     - .node-cache
   script:
-    - npm --prefix src/Template.Frontend ci --cache "$CI_PROJECT_DIR/.npm" --prefer-offline
+    - npm --prefix src/ChangeMe.Frontend ci --cache "$CI_PROJECT_DIR/.npm" --prefer-offline
     - npm run lint:frontend
     - npm run format:check:frontend
     - npm run test:frontend:ci
-    - npm --prefix src/Template.Frontend run build -- --output-path "$CI_PROJECT_DIR/artifacts/frontend"
+    - npm --prefix src/ChangeMe.Frontend run build -- --output-path "$CI_PROJECT_DIR/artifacts/frontend"
   artifacts:
     expire_in: 1 day
     paths:
@@ -70,11 +70,11 @@ backend:verify:
   cache:
     key:
       files:
-        - src/Template.Backend/Directory.Packages.props
+        - src/ChangeMe.Backend/Directory.Packages.props
     paths:
       - .nuget/packages/
     policy: pull-push
   script:
-    - dotnet restore src/Template.Backend/Template.Backend.slnx
-    - dotnet format src/Template.Backend/Template.Backend.slnx --severity warn --verify-no-changes --exclude "**/Persistence/Migrations/**"
-    - dotnet test src/Template.Backend/Template.Backend.slnx -c Release --no-restore
+    - dotnet restore src/ChangeMe.Backend/ChangeMe.Backend.slnx
+    - dotnet format src/ChangeMe.Backend/ChangeMe.Backend.slnx --severity warn --verify-no-changes --exclude "**/Persistence/Migrations/**"
+    - dotnet test src/ChangeMe.Backend/ChangeMe.Backend.slnx -c Release --no-restore

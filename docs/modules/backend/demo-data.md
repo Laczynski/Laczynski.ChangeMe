@@ -7,7 +7,7 @@
 
 ## Overview
 
-`Template.Backend.DataGenerator` is a console project under `src/Template.Backend/tools/Template.Backend.DataGenerator/`. It is **not** part of the production API host and is **not** used by automated tests.
+`ChangeMe.Backend.DataGenerator` is a console project under `src/ChangeMe.Backend/tools/ChangeMe.Backend.DataGenerator/`. It is **not** part of the production API host and is **not** used by automated tests.
 
 | Mechanism               | Purpose                                                                  |
 | ----------------------- | ------------------------------------------------------------------------ |
@@ -44,15 +44,15 @@ All inserts go through domain factories (`User.Create`, `Issue.Create`, etc.) an
 
 ## Configuration
 
-Dataset shape remains tracked in the Web project `appsettings.Development.json` under `DataGenerator` (also documented in the tool [README](../../../src/Template.Backend/tools/Template.Backend.DataGenerator/README.md)). Locally editable connection and administrator values come from the root `.env`.
+Dataset shape remains tracked in the Web project `appsettings.Development.json` under `DataGenerator` (also documented in the tool [README](../../../src/ChangeMe.Backend/tools/ChangeMe.Backend.DataGenerator/README.md)). Locally editable connection and administrator values come from the root `.env`.
 
-The generator copies `appsettings.json` and `appsettings.Development.json` from `Template.Backend.Web` at build output time.
+The generator copies `appsettings.json` and `appsettings.Development.json` from `ChangeMe.Backend.Web` at build output time.
 
 ## Architecture
 
 ```text
 npm run data:generate
-  → Template.Backend.DataGenerator (console)
+  → ChangeMe.Backend.DataGenerator (console)
   → DatabaseConfig.InitializeDatabaseAsync (migrate + ApplicationDataSeeder)
   → DemoDataExistsChecker (skip or DemoDataCleaner on --reset)
   → UsersGenerator → IssuesGenerator → NotificationsGenerator

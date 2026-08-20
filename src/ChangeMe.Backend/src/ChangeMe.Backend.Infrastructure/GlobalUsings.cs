@@ -1,0 +1,12 @@
+global using System;
+global using System.Linq;
+global using System.Threading.Tasks;
+global using Ardalis.Result;
+global using ChangeMe.Backend.Domain.Aggregates.Users.Interfaces;
+global using ChangeMe.Backend.Domain.Common;
+global using ChangeMe.Backend.Infrastructure.Common;
+global using Microsoft.EntityFrameworkCore;
+global using Microsoft.EntityFrameworkCore.Metadata.Builders;
+global using Microsoft.Extensions.Configuration;
+global using Microsoft.Extensions.DependencyInjection;
+global using Microsoft.Extensions.Logging;

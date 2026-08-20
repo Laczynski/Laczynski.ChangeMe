@@ -1,22 +1,35 @@
 # Changelog
 
-All notable changes to the **Template** NuGet template package (`dotnet new laczynski-fullstack`) are documented here.
+All notable changes to the **ChangeMe** NuGet template package (`dotnet new changeme`) are documented here.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [4.0.0] - 2026-08-20
+
+### Changed
+
+- **Restore ChangeMe template tokens** — NuGet package `ChangeMe`; `dotnet new changeme`; `sourceName` is `ChangeMe` again (folders/namespaces `ChangeMe.*`).
+- **Database schema** — EF migrations default schema `changeme_backend` (derived from `ChangeMe.Backend.Infrastructure` assembly naming).
+
+### Migration notes for consumers upgrading from 3.x
+
+1. **Install** — `dotnet new uninstall Laczynski.Template` (if installed), then `dotnet new install ChangeMe`.
+2. **Scaffold** — `dotnet new changeme -n YourApp -o YourApp` (replaces `dotnet new laczynski-fullstack`).
+3. **Merge** — if syncing an existing app generated from 3.x, rename `YourApp.*` projects that used the `Template` token back to your app name manually; JWT issuer/audience and schema names follow the new project name.
 
 ## [3.0.0] - 2026-08-10
 
 ### Changed
 
-- **Rebrand to Laczynski ecosystem** — NuGet package `Laczynski.Template`; `dotnet new laczynski-fullstack`; template `sourceName` is `Template` (folders/namespaces `Template.*`).
+- **Rebrand to Laczynski ecosystem** — NuGet package `Laczynski.Template`; `dotnet new laczynski-fullstack`; template `sourceName` was `Template` (folders/namespaces `Template.*`).
 - **DataGrid** — migrated from QueryGrid / `@query-grid/*` to `Laczynski.DataGrid.*` and `@laczynski/datagrid` / `@laczynski/datagrid-primeng` (`0.1.0-preview.19`); PrimeNG grid selectors `dg-prime-data-grid`, `dgColumn`, `dgEmpty`.
-- **Repository** — `https://github.com/Laczynski/Template`; JWT sample issuer/audience use `Template`.
-- **Database schema** — EF migrations default schema `template_backend` (aligned with `Template.Backend.Infrastructure` assembly naming).
+- **Repository** — `https://github.com/Laczynski/Template`; JWT sample issuer/audience used `Template`.
+- **Database schema** — EF migrations default schema `changeme_backend` (aligned with `ChangeMe.Backend.Infrastructure` assembly naming).
 
 ### Migration notes for consumers upgrading from 2.x
 
-1. **Install** — `dotnet new uninstall ChangeMe` (if installed), then `dotnet new install Laczynski.Template`.
-2. **Scaffold** — `dotnet new laczynski-fullstack -n YourApp -o YourApp` (replaces `dotnet new changeme`).
+1. **Install** — `dotnet new uninstall ChangeMe` (if installed), then `dotnet new install ChangeMe`.
+2. **Scaffold** — `dotnet new changeme -n YourApp -o YourApp` (replaces `dotnet new changeme`).
 3. **DataGrid** — update NuGet to `Laczynski.DataGrid.*` and npm to `@laczynski/datagrid` / `@laczynski/datagrid-primeng`; rename `qg-*` selectors to `dg-*`.
 4. **Merge** — if syncing an existing generated app, rename `ChangeMe.*` projects/namespaces to your app name and update package references manually.
 
@@ -49,7 +62,7 @@ If you generated a project from **2.1.x** and merge template updates (not an aut
 3. **Lists** — adopt DataGrid patterns when extending issues, users, or roles list screens.
 4. **CI / format** — run `npm run format:check:all` and `npm run lint:frontend` before pushing if you sync CI workflows from the template.
 
-Fresh installs: `dotnet new install Laczynski.Template --force`, then `dotnet new laczynski-fullstack -n YourApp -o YourApp`.
+Fresh installs: `dotnet new install ChangeMe --force`, then `dotnet new changeme -n YourApp -o YourApp`.
 
 ## [2.1.1] - 2026-07-19
 
@@ -86,7 +99,7 @@ If you generated a project from **2.0.0** and want to align with **2.1.0** patte
 3. **Rate limiting** — review `RateLimitingOptions` for production (`Enabled` is `true` in `appsettings.json`; tune limits as needed). Forward `X-Forwarded-For` at the reverse proxy so limits apply to clients.
 4. **Split-host Docker** — set `CHANGE_ME_API_URL` to the full API base URL so CSP `connect-src` allows browser calls to the API origin.
 
-Fresh installs: `dotnet new install Laczynski.Template --force`, then `dotnet new laczynski-fullstack -n YourApp -o YourApp`.
+Fresh installs: `dotnet new install ChangeMe --force`, then `dotnet new changeme -n YourApp -o YourApp`.
 
 ## [2.0.0] - 2026-06-21
 
@@ -96,7 +109,7 @@ Fresh installs: `dotnet new install Laczynski.Template --force`, then `dotnet ne
 - **Same-origin API proxy (Docker / production)** — nginx proxies `/api/` and `/hubs/`; `runtime-config.js` written at container start from `CHANGE_ME_API_URL` (default `/api/v1`); `docker-entrypoint.sh` for the frontend image.
 - **Root `package.json`** — unified scripts for install, start, build, lint/format, test, EF Core, Docker Compose, E2E, data generation, and requirements validation.
 - **GitHub Actions CI** — parallel jobs for requirements, frontend, backend, and Playwright E2E.
-- **Playwright E2E** — smoke suite under `src/Template.Frontend/e2e/`; `npm run test:e2e` / `test:e2e:ui`; `npm run install:frontend` installs Chromium.
+- **Playwright E2E** — smoke suite under `src/ChangeMe.Frontend/e2e/`; `npm run test:e2e` / `test:e2e:ui`; `npm run install:frontend` installs Chromium.
 - **Roles and permissions (RBAC)** — permission catalog, role CRUD, role–user assignments, effective-permissions preview, and permission-gated issue operations.
 - **Users administration** — user list, create/edit, details, deactivate/activate, and admin session management.
 - **Session auth** — refresh tokens, my-account profile, session list, per-session revoke, and logout-all (replacing single long-lived JWT from 1.0.0).
@@ -115,7 +128,7 @@ Fresh installs: `dotnet new install Laczynski.Template --force`, then `dotnet ne
 - **Authentication** — admin-provisioned users instead of public self-registration; login returns refreshable sessions instead of a single access token.
 - **Notifications UI** — notifications center replaced with header bell and dropdown panel (SignalR push for new notifications retained).
 - **Mediator** — MediatR replaced with the Mediator source generator across UseCases and tests.
-- **Solution format** — backend solution file is `Template.Backend.slnx` (was `.sln`).
+- **Solution format** — backend solution file is `ChangeMe.Backend.slnx` (was `.sln`).
 - **Database migrations** — consolidated `InitialCreate` for the current PostgreSQL schema (roles, sessions, attachments, and related tables).
 - **Configuration sections** — options classes bound with consistent `nameof` section names.
 - **Docker Compose** — frontend service sets `CHANGE_ME_API_URL`; nginx serves SPA and proxies API/SignalR on one origin.
@@ -136,20 +149,22 @@ If you generated a project from **1.0.0** and want to align with **2.0.0** patte
 4. **Scripts** — use root `package.json` for common tasks; run `npm run install:frontend` once before E2E.
 5. **Permissions** — gate new endpoints and UI with the permission catalog pattern if you add features.
 
-Fresh installs: `dotnet new install Laczynski.Template --force`, then `dotnet new laczynski-fullstack -n YourApp -o YourApp`.
+Fresh installs: `dotnet new install ChangeMe --force`, then `dotnet new changeme -n YourApp -o YourApp`.
 
 ## [1.0.0] - 2026-05-02
 
 ### Added
 
-- Initial NuGet template package **`Template`** (`dotnet new laczynski-fullstack`).
+- Initial NuGet template package **`ChangeMe`** (`dotnet new changeme`).
 - Full-stack starter: Angular frontend, layered ASP.NET backend (Web → UseCases → Domain → Infrastructure).
 - Email/password login and public self-registration.
 - Issue listing, details, comments, history, acceptance criteria, watch, and in-app notifications with SignalR.
 - PostgreSQL, Docker Compose, MailHog, and Hangfire.
 - Backend unit and integration tests (Testcontainers).
-- Template token replacement for `Template` across solution, Docker, and docs.
+- Template token replacement for `ChangeMe` across solution, Docker, and docs.
 
+[4.0.0]: https://github.com/Laczynski/Template/compare/v3.0.0...v4.0.0
+[3.0.0]: https://github.com/Laczynski/Template/compare/v2.2.0...v3.0.0
 [2.2.0]: https://github.com/Laczynski/Template/compare/v2.1.1...v2.2.0
 [2.1.1]: https://github.com/Laczynski/Template/compare/v2.1.0...v2.1.1
 [2.1.0]: https://github.com/Laczynski/Template/compare/v2.0.0...v2.1.0

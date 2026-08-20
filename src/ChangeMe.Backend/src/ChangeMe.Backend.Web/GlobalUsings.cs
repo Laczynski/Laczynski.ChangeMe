@@ -1,0 +1,12 @@
+global using Ardalis.Result;
+global using ChangeMe.Backend.Domain.Aggregates.Notifications.Interfaces;
+global using ChangeMe.Backend.Domain.Aggregates.Users;
+global using ChangeMe.Backend.Domain.Aggregates.Users.Interfaces;
+global using ChangeMe.Backend.Domain.Authorization;
+global using ChangeMe.Backend.Domain.Common;
+global using ChangeMe.Backend.Web.Common;
+global using FastEndpoints;
+global using FastEndpoints.Swagger;
+global using FluentValidation;
+global using Mediator;
+global using Serilog;

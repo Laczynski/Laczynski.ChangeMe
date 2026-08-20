@@ -1,0 +1,27 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Folder Name="/Solution Items/">
+    <File Path=".dockerignore" />
+    <File Path=".editorconfig" />
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Packages.props" />
+    <File Path="Dockerfile" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/ChangeMe.Backend.Domain/ChangeMe.Backend.Domain.csproj" />
+    <Project Path="src/ChangeMe.Backend.Infrastructure/ChangeMe.Backend.Infrastructure.csproj" />
+    <Project Path="src/ChangeMe.Backend.UseCases/ChangeMe.Backend.UseCases.csproj" />
+    <Project Path="src/ChangeMe.Backend.Web/ChangeMe.Backend.Web.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/ChangeMe.Backend.IntegrationTests/ChangeMe.Backend.IntegrationTests.csproj" />
+    <Project Path="tests/ChangeMe.Backend.UnitTests/ChangeMe.Backend.UnitTests.csproj" />
+  </Folder>
+  <Folder Name="/tools/">
+    <Project Path="tools/ChangeMe.Backend.DataGenerator/ChangeMe.Backend.DataGenerator.csproj" />
+  </Folder>
+</Solution>

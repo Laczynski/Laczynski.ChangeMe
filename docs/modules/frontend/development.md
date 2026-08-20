@@ -11,7 +11,7 @@
 
 Angular 22 standalone application with strict TypeScript settings, ESLint, and Prettier. UI components come from **PrimeNG** with the **Aura**-based `AppPreset` from `@primeuix/themes`. Layout and spacing use **Tailwind CSS v4** with the official `tailwindcss-primeui` plugin. State currently uses a mix of Angular signals and RxJS Observables. HTTP calls go through a shared `ApiService`. Feature code is grouped under `src/app/features`.
 
-For dev server, lint, format, and test commands from `src/Template.Frontend` or from the repository root (`npm run start:frontend`, `npm run lint:frontend`, and related scripts), see `AGENTS.md`.
+For dev server, lint, format, and test commands from `src/ChangeMe.Frontend` or from the repository root (`npm run start:frontend`, `npm run lint:frontend`, and related scripts), see `AGENTS.md`.
 
 ## Project structure
 

@@ -6,4 +6,4 @@
 .git
 .vs
 logs
-src/Template.Backend/storage
+src/ChangeMe.Backend/storage

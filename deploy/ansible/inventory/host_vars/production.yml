@@ -13,7 +13,7 @@ health_path: /health
 backend_config:
   AuthOptions__FrontendBaseUrl: https://production.example.invalid
   AuthOptions__Jwt__Issuer: Template
-  AuthOptions__Jwt__Audience: Template.Client
+  AuthOptions__Jwt__Audience: ChangeMe.Client
   AuthOptions__Jwt__ExpirationMinutes: "30"
   AuthOptions__Jwt__SessionLifetimeDays: "14"
   DatabaseOptions__ApplyMigrationsOnStartup: "false"
