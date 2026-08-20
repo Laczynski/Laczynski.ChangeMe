@@ -30,7 +30,7 @@ jobs:
       - name: Validate version
         run: |
           VERSION="${GITHUB_REF_NAME#v}"
-          PKG_VERSION=$(grep -m1 '<Version>' template-pack/Laczynski.Template.csproj | sed 's/.*<Version>\(.*\)<\/Version>.*/\1/')
+          PKG_VERSION=$(grep -m1 '<Version>' template-pack/Laczynski.ChangeMe.csproj | sed 's/.*<Version>\(.*\)<\/Version>.*/\1/')
           if [ "$PKG_VERSION" != "$VERSION" ]; then
             echo "::error::template-pack Version ($PKG_VERSION) does not match tag ($VERSION)"
             exit 1
@@ -48,19 +48,19 @@ jobs:
           cache: npm
           cache-dependency-path: |
             package-lock.json
-            src/Template.Frontend/package-lock.json
+            src/ChangeMe.Frontend/package-lock.json
 
       - name: Test
         run: |
           npm ci
           npm run docs:validate
-          npm --prefix src/Template.Frontend ci
+          npm --prefix src/ChangeMe.Frontend ci
           npm run test:frontend:ci
           npm run build:frontend
-          dotnet test src/Template.Backend/Template.Backend.slnx -c Release
+          dotnet test src/ChangeMe.Backend/ChangeMe.Backend.slnx -c Release
 
       - name: Pack
-        run: dotnet pack template-pack/Laczynski.Template.csproj -c Release
+        run: dotnet pack template-pack/Laczynski.ChangeMe.csproj -c Release
 
       - name: NuGet login (OIDC → nuget.org)
         uses: NuGet/login@v1

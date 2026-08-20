@@ -7,7 +7,7 @@ description: Prepare and publish a reviewed stable GitLab application release. U
 
 Prepare application releases in two reviewed phases: a release merge request, then a stable tag after that merge. The tag is the canonical application version; do not add or update package, frontend, or assembly version fields unless repository documentation explicitly assigns them that role.
 
-This workflow is for the generated application's GitLab package. If `template-pack/Laczynski.Template.csproj` exists, first confirm that the user wants an application release rather than the separately owned template NuGet release in `docs/system/operations/publishing.md`.
+This workflow is for the generated application's GitLab package. If `template-pack/Laczynski.ChangeMe.csproj` exists, first confirm that the user wants an application release rather than the separately owned template NuGet release in `docs/system/operations/publishing.md`.
 
 ## Interpret the request
 

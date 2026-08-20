@@ -93,7 +93,7 @@ Database migrations are deliberately not reversed. Schema changes must remain co
 | GitLab orchestration | [`.gitlab-ci.yml`](../../../.gitlab-ci.yml) and [`.gitlab/ci/`](../../../.gitlab/ci/) |
 | Inventory and pinned Ansible | [`deploy/ansible/`](../../../deploy/ansible/) |
 | Package and pipeline generation | [`deploy/scripts/`](../../../deploy/scripts/) |
-| Migration-only backend mode | [`Program.cs`](../../../src/Template.Backend/src/Template.Backend.Web/Program.cs) |
+| Migration-only backend mode | [`Program.cs`](../../../src/ChangeMe.Backend/src/ChangeMe.Backend.Web/Program.cs) |
 | Operator procedure | [Deployment](../operations/deployment.md) |
 
 The generated-project payload includes GitLab and Ansible delivery assets. It excludes the maintainer-only GitHub template-publishing workflow; template package publishing remains a separate repository concern.

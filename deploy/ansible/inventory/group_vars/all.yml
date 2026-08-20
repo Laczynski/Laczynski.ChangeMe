@@ -21,7 +21,7 @@ application_storage_root: "{{ application_data_root }}/storage"
 application_log_root: /var/log/change-me
 application_backup_root: /var/backups/change-me
 
-application_backend_executable: Template.Backend.Web
+application_backend_executable: ChangeMe.Backend.Web
 application_backend_url: http://127.0.0.1:5000
 application_runtime_identifier: linux-x64
 application_release_keep_count: 5

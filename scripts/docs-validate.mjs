@@ -29,9 +29,9 @@ const linkedFiles = [
   path.join(
     root,
     "src",
-    "Template.Backend",
+    "ChangeMe.Backend",
     "tools",
-    "Template.Backend.DataGenerator",
+    "ChangeMe.Backend.DataGenerator",
     "README.md",
   ),
   ...docsFiles,

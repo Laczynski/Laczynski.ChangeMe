@@ -11,7 +11,7 @@
 
 ASP.NET Core on .NET 10 with FastEndpoints, Mediator source generator request handling, EF Core for persistence, FluentValidation validators declared near endpoints, and xUnit v3 tests. The backend is split into `Web`, `UseCases`, `Domain`, and `Infrastructure`.
 
-For build, run, and test commands from `src/Template.Backend` or from the repository root (`npm run build:backend`, `npm run test:backend`, and scoped scripts), see `AGENTS.md`.
+For build, run, and test commands from `src/ChangeMe.Backend` or from the repository root (`npm run build:backend`, `npm run test:backend`, and scoped scripts), see `AGENTS.md`.
 
 ## Layer ownership
 
@@ -74,7 +74,7 @@ Web/Endpoints/<Feature>/              UseCases/<Feature>/
     └── Utils/                            └── Utils/
 ```
 
-Use a sub-slice when the route nests under a parent resource — for example `/issues/{issueId}/attachments/{attachmentId}` maps to `Issues/Attachments/`. Root CRUD for the aggregate stays at the feature root. Namespace follows the folder path (for example `Template.Backend.Web.Endpoints.Issues.Attachments`, `Template.Backend.UseCases.Issues.Attachments.Dtos`).
+Use a sub-slice when the route nests under a parent resource — for example `/issues/{issueId}/attachments/{attachmentId}` maps to `Issues/Attachments/`. Root CRUD for the aggregate stays at the feature root. Namespace follows the folder path (for example `ChangeMe.Backend.Web.Endpoints.Issues.Attachments`, `ChangeMe.Backend.UseCases.Issues.Attachments.Dtos`).
 
 Keep `Dtos/`, `Utils/`, and `Services/` at the feature root only when they are shared by the root resource and sub-slices. When a type or helper belongs to a single child resource, colocate it under that sub-slice folder.
 
@@ -156,7 +156,7 @@ Reference implementations: `AuthOptions` / `AuthOptionsValidator`, `EmailOptions
 
 ## Tests
 
-Layer ownership, anti-patterns, and when to skip: [testing strategy](../../system/development/testing-strategy.md). Integration tests: `src/Template.Backend/tests/Template.Backend.IntegrationTests/Endpoints/<Feature>/` (sub-slices for nested routes).
+Layer ownership, anti-patterns, and when to skip: [testing strategy](../../system/development/testing-strategy.md). Integration tests: `src/ChangeMe.Backend/tests/ChangeMe.Backend.IntegrationTests/Endpoints/<Feature>/` (sub-slices for nested routes).
 
 ## Guardrails for AI agents
 

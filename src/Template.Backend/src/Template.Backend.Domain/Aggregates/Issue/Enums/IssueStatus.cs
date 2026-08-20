@@ -1,9 +1,0 @@
-namespace Template.Backend.Domain.Aggregates.Issue.Enums;
-
-public enum IssueStatus
-{
-  NEW = 0,
-  IN_PROGRESS = 1,
-  RESOLVED = 2,
-  CLOSED = 3,
-}

@@ -7,7 +7,7 @@
       "command": "npm",
       "args": ["run", "start", "--", "--host", "0.0.0.0", "--port", "4200"],
       "options": {
-        "cwd": "${workspaceFolder}/src/Template.Frontend"
+        "cwd": "${workspaceFolder}/src/ChangeMe.Frontend"
       },
       "isBackground": true,
       "presentation": {
@@ -33,7 +33,7 @@
       "command": "npm",
       "args": ["run", "build"],
       "options": {
-        "cwd": "${workspaceFolder}/src/Template.Frontend"
+        "cwd": "${workspaceFolder}/src/ChangeMe.Frontend"
       },
       "group": "build",
       "presentation": {
@@ -47,7 +47,7 @@
       "command": "npm",
       "args": ["run", "lint"],
       "options": {
-        "cwd": "${workspaceFolder}/src/Template.Frontend"
+        "cwd": "${workspaceFolder}/src/ChangeMe.Frontend"
       },
       "presentation": {
         "reveal": "silent",
@@ -60,7 +60,7 @@
       "command": "npm",
       "args": ["run", "format"],
       "options": {
-        "cwd": "${workspaceFolder}/src/Template.Frontend"
+        "cwd": "${workspaceFolder}/src/ChangeMe.Frontend"
       },
       "presentation": {
         "reveal": "silent",
@@ -73,7 +73,7 @@
       "command": "npm",
       "args": ["run", "format:check"],
       "options": {
-        "cwd": "${workspaceFolder}/src/Template.Frontend"
+        "cwd": "${workspaceFolder}/src/ChangeMe.Frontend"
       },
       "presentation": {
         "reveal": "silent",
@@ -86,12 +86,12 @@
       "type": "process",
       "args": [
         "build",
-        "${workspaceFolder}/src/Template.Backend/src/Template.Backend.Web/Template.Backend.Web.csproj",
+        "${workspaceFolder}/src/ChangeMe.Backend/src/ChangeMe.Backend.Web/ChangeMe.Backend.Web.csproj",
         "/property:GenerateFullPaths=true",
         "/consoleloggerparameters:NoSummary;ForceNoAlign"
       ],
       "options": {
-        "cwd": "${workspaceFolder}/src/Template.Backend/src/Template.Backend.Web"
+        "cwd": "${workspaceFolder}/src/ChangeMe.Backend/src/ChangeMe.Backend.Web"
       },
       "group": "build",
       "presentation": {
@@ -106,12 +106,12 @@
       "type": "process",
       "args": [
         "build",
-        "${workspaceFolder}/src/Template.Backend/Template.Backend.slnx",
+        "${workspaceFolder}/src/ChangeMe.Backend/ChangeMe.Backend.slnx",
         "/property:GenerateFullPaths=true",
         "/consoleloggerparameters:NoSummary;ForceNoAlign"
       ],
       "options": {
-        "cwd": "${workspaceFolder}/src/Template.Backend"
+        "cwd": "${workspaceFolder}/src/ChangeMe.Backend"
       },
       "group": "build",
       "presentation": {
@@ -126,10 +126,10 @@
       "command": "dotnet",
       "args": [
         "format",
-        "${workspaceFolder}/src/Template.Backend/Template.Backend.slnx"
+        "${workspaceFolder}/src/ChangeMe.Backend/ChangeMe.Backend.slnx"
       ],
       "options": {
-        "cwd": "${workspaceFolder}/src/Template.Backend"
+        "cwd": "${workspaceFolder}/src/ChangeMe.Backend"
       },
       "presentation": {
         "reveal": "silent",
@@ -142,11 +142,11 @@
       "command": "dotnet",
       "args": [
         "format",
-        "${workspaceFolder}/src/Template.Backend/Template.Backend.slnx",
+        "${workspaceFolder}/src/ChangeMe.Backend/ChangeMe.Backend.slnx",
         "--verify-no-changes"
       ],
       "options": {
-        "cwd": "${workspaceFolder}/src/Template.Backend"
+        "cwd": "${workspaceFolder}/src/ChangeMe.Backend"
       },
       "presentation": {
         "reveal": "silent",

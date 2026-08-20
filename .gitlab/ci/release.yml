@@ -11,14 +11,14 @@ release:backend:
   cache:
     key:
       files:
-        - src/Template.Backend/Directory.Packages.props
+        - src/ChangeMe.Backend/Directory.Packages.props
     paths:
       - .nuget/packages/
     policy: pull
   script:
     - >-
       dotnet publish
-      src/Template.Backend/src/Template.Backend.Web/Template.Backend.Web.csproj
+      src/ChangeMe.Backend/src/ChangeMe.Backend.Web/ChangeMe.Backend.Web.csproj
       -c Release
       -r linux-x64
       --self-contained true
@@ -44,7 +44,7 @@ release:package:
     - apt-get install --yes --no-install-recommends git
   script:
     - export SOURCE_DATE_EPOCH="$(git show -s --format=%ct "$CI_COMMIT_SHA")"
-    - export MIGRATION_ID="$(find src/Template.Backend/src/Template.Backend.Infrastructure/Persistence/Migrations -type f -name '*.cs' -print0 | sort -z | xargs -0 sha256sum | sha256sum | cut -d ' ' -f 1)"
+    - export MIGRATION_ID="$(find src/ChangeMe.Backend/src/ChangeMe.Backend.Infrastructure/Persistence/Migrations -type f -name '*.cs' -print0 | sort -z | xargs -0 sha256sum | sha256sum | cut -d ' ' -f 1)"
     - >-
       bash deploy/scripts/package.sh
       "$CI_PROJECT_PATH_SLUG"

@@ -1,4 +1,4 @@
-# Template
+# ChangeMe
 
 Template is a **full-stack starter template** for `dotnet new` — not a product you deploy as-is. It ships a small sample app (issue tracking) so you can see patterns in context, but the value is the **architecture, tooling, documentation workflow, and test setup** you reuse in your own domain.
 
@@ -27,17 +27,17 @@ Use it to bootstrap Angular + ASP.NET projects with layered backend, JWT session
 - **Testcontainers** — integration tests against real PostgreSQL
 - **Data generator** — CLI pattern for Development seed data (`npm run data:generate`)
 - **Agent-assisted releases** — shared `/release` workflow for Cursor and Claude Code prepares release notes, an MR, and the protected GitLab tag
-- **`dotnet new` token replacement** — `Template` plus derived `changeMe` / `CHANGE_ME` symbols from your project name
+- **`dotnet new` token replacement** — `ChangeMe` plus derived `changeMe` / `CHANGE_ME` symbols from your project name
 
 ### Documentation workflow
 
 Three doc layers, each with an entry point:
 
-| Location | Purpose |
-| --- | --- |
-| **`docs/requirements/`** | What to build — domain, conventions, quality, and `FR-*` specifications |
-| **`docs/system/`** | Cross-module development, designs, local stack, deployment, and CI |
-| **`docs/modules/`** | Frontend/backend implementation and operations; movable with future repositories |
+| Location                 | Purpose                                                                          |
+| ------------------------ | -------------------------------------------------------------------------------- |
+| **`docs/requirements/`** | What to build — domain, conventions, quality, and `FR-*` specifications          |
+| **`docs/system/`**       | Cross-module development, designs, local stack, deployment, and CI               |
+| **`docs/modules/`**      | Frontend/backend implementation and operations; movable with future repositories |
 
 - **`AGENTS.md`** — fast-start for AI agents and contributors (task → which doc to open, commands, coupling checks)
 - **`npm run docs:validate`** — check all documentation, including requirement specs, cross-references, and generated indexes
@@ -73,12 +73,12 @@ This repository is meant to provide:
 
 ## Repository Structure
 
-- `src/Template.Frontend` - Angular application
-- `src/Template.Backend` - .NET solution with source projects and tests
+- `src/ChangeMe.Frontend` - Angular application
+- `src/ChangeMe.Backend` - .NET solution with source projects and tests
 - `docs/` - implementation and testing guidance
 - `docker-compose.yml` - local full-stack environment (frontend, backend, PostgreSQL, MailHog)
 - `AGENTS.md` - working guide for AI agents and contributors
-- `.template.config/` - `dotnet new` template manifest (`laczynski-fullstack`, `sourceName` token `Template`)
+- `.template.config/` - `dotnet new` template manifest (`changeme`, `sourceName` token `ChangeMe`)
 - `template-pack/` - NuGet packaging project for the template
 - `template-content/` - overlays and **generated-project** `README.md` (consumer readme for `dotnet new` output)
 
@@ -112,8 +112,10 @@ See `docs/system/operations/local-stack.md` for Docker Compose and secrets; migr
 Install the template from NuGet:
 
 ```powershell
-dotnet new install Laczynski.Template
+dotnet new install Laczynski.ChangeMe
 ```
+
+NuGet package id is `Laczynski.ChangeMe` (the legacy `ChangeMe` repository name on GitHub is retired). Scaffold token replacement still uses `ChangeMe` — `dotnet new changeme -n YourApp` produces `YourApp.Backend`, not `ChangeMe.Backend`.
 
 Or install from this repository root during local development:
 
@@ -124,25 +126,25 @@ dotnet new install .
 Create a new solution from the installed template:
 
 ```powershell
-dotnet new laczynski-fullstack -n IssuesDemo -o IssuesDemo
+dotnet new changeme -n IssuesDemo -o IssuesDemo
 ```
 
 PostgreSQL persistence, Hangfire storage, Docker Compose, and integration tests.
 
 The installed short name appears in the `Short Name` column of `dotnet new list`.
 
-This replaces `Template` across the solution, project names, folders, Docker configuration, docs, and frontend package metadata. Use a .NET-friendly project name such as `IssuesDemo` so generated solution and namespace names stay valid. Avoid embedding the substring `Template` in secrets you expect to stay literal after generation (the template renames that token everywhere).
+This replaces `ChangeMe` across the solution, project names, folders, Docker configuration, docs, and frontend package metadata. Use a .NET-friendly project name such as `IssuesDemo` so generated solution and namespace names stay valid. Avoid embedding the substring `ChangeMe` in secrets you expect to stay literal after generation (the template renames that token everywhere).
 
 **Generated projects** receive a different root `README.md` (product-focused, no template packaging steps); that file is maintained under `template-content/generated-readme/README.md`.
 
 ### Publish the NuGet package
 
 ```powershell
-dotnet pack template-pack/Laczynski.Template.csproj -c Release
+dotnet pack template-pack/Laczynski.ChangeMe.csproj -c Release
 ```
 
 ```powershell
-dotnet nuget push template-pack/bin/Release/Template.<version>.nupkg --source https://api.nuget.org/v3/index.json --api-key <your-api-key>
+dotnet nuget push template-pack/bin/Release/Laczynski.ChangeMe.<version>.nupkg --source https://api.nuget.org/v3/index.json --api-key <your-api-key>
 ```
 
 The packaging project targets `net10.0` only as a carrier for NuGet metadata and `dotnet pack`. It does not affect the generated solution structure or the target frameworks used by the projects created from the template.
@@ -157,7 +159,7 @@ npm run install:frontend
 npm run start:frontend
 ```
 
-Or from `src/Template.Frontend` (npm packages only; E2E needs Chromium from `npm run install:frontend` at the root):
+Or from `src/ChangeMe.Frontend` (npm packages only; E2E needs Chromium from `npm run install:frontend` at the root):
 
 ```powershell
 npm install
@@ -177,18 +179,18 @@ npm run test:e2e
 
 Includes `InitialCreate` — in Development, migrations apply on API startup (`DatabaseOptions:ApplyMigrationsOnStartup` is `true` in `appsettings.Development.json`; see `docs/modules/backend/operations/persistence.md`).
 
-From `src/Template.Backend`:
+From `src/ChangeMe.Backend`:
 
 ```powershell
-dotnet build Template.Backend.slnx
-dotnet run --project src/Template.Backend.Web
+dotnet build ChangeMe.Backend.slnx
+dotnet run --project src/ChangeMe.Backend.Web
 ```
 
 Useful commands:
 
 ```powershell
-dotnet test tests/Template.Backend.UnitTests
-dotnet test tests/Template.Backend.IntegrationTests
+dotnet test tests/ChangeMe.Backend.UnitTests
+dotnet test tests/ChangeMe.Backend.IntegrationTests
 ```
 
 ### Full stack with Docker
@@ -229,10 +231,10 @@ If you are making code changes, `AGENTS.md` should be treated as the first orien
 
 - Frontend routes are defined in `src/app/app.routes.ts`.
 - Frontend feature code lives under `src/app/features/<feature>/`.
-- Backend endpoints live in `src/Template.Backend.Web`.
-- Use case contracts and handlers live in `src/Template.Backend.UseCases`.
-- Domain rules live in `src/Template.Backend.Domain`.
-- Persistence and integrations live in `src/Template.Backend.Infrastructure`.
+- Backend endpoints live in `src/ChangeMe.Backend.Web`.
+- Use case contracts and handlers live in `src/ChangeMe.Backend.UseCases`.
+- Domain rules live in `src/ChangeMe.Backend.Domain`.
+- Persistence and integrations live in `src/ChangeMe.Backend.Infrastructure`.
 
 ## Testing
 

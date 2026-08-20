@@ -26,8 +26,8 @@ mkdir -p \
   "${test_root}/package-one" \
   "${test_root}/package-two"
 
-printf 'test backend\n' > "${test_root}/input/backend/Template.Backend.Web"
-chmod 755 "${test_root}/input/backend/Template.Backend.Web"
+printf 'test backend\n' > "${test_root}/input/backend/ChangeMe.Backend.Web"
+chmod 755 "${test_root}/input/backend/ChangeMe.Backend.Web"
 printf 'must be removed\n' > "${test_root}/input/backend/appsettings.Development.json"
 printf '<html></html>\n' > "${test_root}/input/frontend/index.html"
 

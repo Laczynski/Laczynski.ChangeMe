@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ChangeMe.Backend.Domain\ChangeMe.Backend.Domain.csproj" />
+    <ProjectReference Include="..\ChangeMe.Backend.Infrastructure\ChangeMe.Backend.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Ardalis.Result" />
+    <PackageReference Include="Mediator.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Options" />
+    <PackageReference Include="FastEndpoints" />
+    <PackageReference Include="Hangfire.Core" />
+    <PackageReference Include="Newtonsoft.Json" />
+    <PackageReference Include="Laczynski.DataGrid.Abstractions" />
+    <PackageReference Include="Laczynski.DataGrid.EntityFrameworkCore" />
+  </ItemGroup>
+
+</Project>

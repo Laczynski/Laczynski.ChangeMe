@@ -2,7 +2,7 @@ services:
   frontend:
     build:
       context: .
-      dockerfile: src/Template.Frontend/Dockerfile
+      dockerfile: src/ChangeMe.Frontend/Dockerfile
     ports:
       - "4200:80"
     depends_on:
@@ -16,7 +16,7 @@ services:
   backend:
     build:
       context: .
-      dockerfile: src/Template.Backend/Dockerfile
+      dockerfile: src/ChangeMe.Backend/Dockerfile
     ports:
       - "5000:8080"
     depends_on:
@@ -68,7 +68,7 @@ services:
     profiles:
       - test
     image: mcr.microsoft.com/dotnet/sdk:10.0
-    working_dir: /repo/src/Template.Backend
+    working_dir: /repo/src/ChangeMe.Backend
     extra_hosts:
       - "host.docker.internal:host-gateway"
     volumes:
@@ -77,7 +77,7 @@ services:
     environment:
       DOCKER_HOST: unix:///var/run/docker.sock
       TESTCONTAINERS_HOST_OVERRIDE: host.docker.internal
-    command: dotnet test Template.Backend.slnx -c Release
+    command: dotnet test ChangeMe.Backend.slnx -c Release
 
 networks:
   app-network:

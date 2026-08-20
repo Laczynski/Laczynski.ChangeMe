@@ -4,17 +4,17 @@ pre-commit:
   parallel: true
   commands:
     eslint:
-      root: src/Template.Frontend/
+      root: src/ChangeMe.Frontend/
       glob: '**/*.{ts,html}'
       run: npx eslint --fix {staged_files}
       stage_fixed: true
     prettier-frontend:
-      root: src/Template.Frontend/
+      root: src/ChangeMe.Frontend/
       glob: '**/*.{ts,html,css,json}'
       run: npx prettier --write {staged_files}
       stage_fixed: true
     dotnet-format:
-      glob: 'src/Template.Backend/**/*.cs'
-      exclude: 'src/Template.Backend/**/Persistence/Migrations/**'
-      run: dotnet format src/Template.Backend/Template.Backend.slnx --include {staged_files} --exclude '**/Persistence/Migrations/**'
+      glob: 'src/ChangeMe.Backend/**/*.cs'
+      exclude: 'src/ChangeMe.Backend/**/Persistence/Migrations/**'
+      run: dotnet format src/ChangeMe.Backend/ChangeMe.Backend.slnx --include {staged_files} --exclude '**/Persistence/Migrations/**'
       stage_fixed: true

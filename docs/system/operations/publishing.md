@@ -3,27 +3,27 @@
 > Type: operations
 > Scope: system
 > Status: implemented
-> Canonical for: releasing the `Template` `dotnet new` NuGet package
+> Canonical for: releasing the `Laczynski.ChangeMe` `dotnet new` NuGet package
 
 This process releases the reusable template package. It does not version or deploy an application created from the template; generated-application releases are operated through [deployment](deployment.md). The rationale for keeping those release lifecycles separate is recorded in [multi-environment application delivery](../designs/multi-environment-application-delivery-design.md).
 
 ## Registry
 
-| Package    | Primary registry                   | Secondary      |
-| ---------- | ---------------------------------- | -------------- |
-| `Template` | [nuget.org](https://www.nuget.org) | GitHub Packages |
+| Package    | Primary registry                   | Secondary       |
+| ---------- | ---------------------------------- | --------------- |
+| `Laczynski.ChangeMe` | [nuget.org](https://www.nuget.org) | GitHub Packages |
 
 In the template source repository, publish on tag push `v*` via `.github/workflows/publish.yml` (trusted publishing / OIDC). That maintainer-only workflow and `template-pack/` are excluded from generated applications.
 
 ## Where the version lives
 
-| Location | Field |
-| -------- | ----- |
-| `template-pack/Laczynski.Template.csproj` | `<Version>` |
+| Location                                  | Field       |
+| ----------------------------------------- | ----------- |
+| `template-pack/Laczynski.ChangeMe.csproj` | `<Version>` |
 
 ## Release checklist
 
-1. Bump `<Version>` in `template-pack/Laczynski.Template.csproj`.
+1. Bump `<Version>` in `template-pack/Laczynski.ChangeMe.csproj`.
 2. Update `CHANGELOG.md` (`## [x.y.z]` section).
 3. Verify locally:
 
@@ -57,13 +57,13 @@ Settings → Secrets and variables → Actions:
 1. [nuget.org](https://www.nuget.org) → profile → **Trusted Publishing** → **Add**.
 2. Policy fields:
 
-   | Field            | Value              |
-   | ---------------- | ------------------ |
+   | Field            | Value                  |
+   | ---------------- | ---------------------- |
    | Package Owner    | your nuget.org account |
-   | Repository Owner | `Laczynski`  |
-   | Repository       | `Template`         |
-   | Workflow File    | `publish.yml`      |
-   | Environment      | *(leave empty)*    |
+   | Repository Owner | `Laczynski`            |
+   | Repository       | `Template`             |
+   | Workflow File    | `publish.yml`          |
+   | Environment      | _(leave empty)_        |
 
 ### GitHub repository settings
 
@@ -72,7 +72,7 @@ Actions enabled; workflow permissions allow `packages: write` and OIDC (`id-toke
 ## Publish workflow (tag `v*`)
 
 1. Test (requirements, frontend, backend)
-2. `dotnet pack template-pack/Laczynski.Template.csproj`
+2. `dotnet pack template-pack/Laczynski.ChangeMe.csproj`
 3. Publish NuGet to **nuget.org** and **GitHub Packages**
 4. GitHub Release from `CHANGELOG.md`
 
@@ -81,14 +81,14 @@ Actions enabled; workflow permissions allow `packages: write` and OIDC (`id-toke
 ### nuget.org
 
 ```powershell
-dotnet new install Laczynski.Template
+dotnet new install Laczynski.ChangeMe
 ```
 
 ### GitHub Packages
 
 ```powershell
 dotnet nuget add source --username YOUR_GITHUB_USERNAME --password YOUR_PAT --store-password-in-clear-text --name github "https://nuget.pkg.github.com/Laczynski/index.json"
-dotnet new install Laczynski.Template --nuget-source github
+dotnet new install Laczynski.ChangeMe --nuget-source github
 ```
 
 ## Optional: local push (API key)
@@ -96,6 +96,6 @@ dotnet new install Laczynski.Template --nuget-source github
 Trusted publishing works in CI only:
 
 ```powershell
-dotnet pack template-pack/Laczynski.Template.csproj -c Release
-dotnet nuget push template-pack/bin/Release/Template.*.nupkg --api-key <nuget.org-api-key> --source https://api.nuget.org/v3/index.json
+dotnet pack template-pack/Laczynski.ChangeMe.csproj -c Release
+dotnet nuget push template-pack/bin/Release/Laczynski.ChangeMe.*.nupkg --api-key <nuget.org-api-key> --source https://api.nuget.org/v3/index.json
 ```

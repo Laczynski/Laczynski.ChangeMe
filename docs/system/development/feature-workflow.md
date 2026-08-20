@@ -9,15 +9,15 @@
 
 ## Add a backend endpoint
 
-1. Create or update the endpoint in `src/Template.Backend.Web/Endpoints/<Feature>/` (use `<Feature>/<ChildResource>/` for nested routes — see **Feature and sub-slice layout** in [backend development](../../modules/backend/development.md)).
+1. Create or update the endpoint in `src/ChangeMe.Backend.Web/Endpoints/<Feature>/` (use `<Feature>/<ChildResource>/` for nested routes — see **Feature and sub-slice layout** in [backend development](../../modules/backend/development.md)).
 2. Pick the endpoint base type (see **Endpoint conventions** in [backend development](../../modules/backend/development.md)):
    - `BaseEndpoint<TRequest, TResponse>` when FastEndpoints should bind body, query, or route into `TRequest`
    - `BaseEndpointWithoutRequest<TRequest, TResponse>` when there is no HTTP payload (use a parameterless `record` for `TRequest`)
    - a custom `Endpoint` / `EndpointWithoutRequest` only for multipart upload, binary download, or other non-standard responses
 3. Add or update the validator in the same file when the request DTO needs validation.
-4. Add the request contract and handler in the matching `src/Template.Backend.UseCases/<Feature>/` folder (sub-slice when nested).
+4. Add the request contract and handler in the matching `src/ChangeMe.Backend.UseCases/<Feature>/` folder (sub-slice when nested).
 5. Reuse domain behavior or add it in `Domain` if new invariants are introduced.
-6. Add integration tests under `tests/Template.Backend.IntegrationTests/Endpoints/<Feature>/`.
+6. Add integration tests under `tests/ChangeMe.Backend.IntegrationTests/Endpoints/<Feature>/`.
 
 ## Add a persisted field
 

@@ -22,8 +22,8 @@ Four jobs run **in parallel** (no job depends on another):
 | Job                       | What it runs                                                       | Working directory       |
 | ------------------------- | ------------------------------------------------------------------ | ----------------------- |
 | **Documentation**         | `npm ci` → docs validation → requirements validation               | Repository root         |
-| **Frontend**              | lint/format → unit tests → production build                         | `src/Template.Frontend` |
-| **Backend**               | restore → format → unit and integration tests → build               | Repository root         |
+| **Frontend**              | lint/format → unit tests → production build                        | `src/ChangeMe.Frontend` |
+| **Backend**               | restore → format → unit and integration tests → build              | Repository root         |
 | **Deployment automation** | inventory/generator tests → Ansible syntax/lint → package contract | Repository root         |
 
 #### Documentation
@@ -38,14 +38,14 @@ npm run docs:validate
 
 #### Frontend
 
-- Node.js **24.15** (Angular 22 CLI minimum; see `engines` in `src/Template.Frontend/package.json`)
+- Node.js **24.15** (Angular 22 CLI minimum; see `engines` in `src/ChangeMe.Frontend/package.json`)
 - ESLint and Prettier checks, then tests run once (no watch), then production **build**
 - Local equivalents: `npm run lint:frontend`, `npm run format:check:frontend`
 
 #### Backend
 
 - .NET **10**
-- `dotnet format --verify-no-changes` (migrations excluded), then `dotnet test` and `dotnet build` on `Template.Backend.slnx` in **Release**
+- `dotnet format --verify-no-changes` (migrations excluded), then `dotnet test` and `dotnet build` on `ChangeMe.Backend.slnx` in **Release**
 - **Integration tests** use Testcontainers (Docker). GitHub-hosted `ubuntu-latest` runners provide Docker; local runs need a running Docker engine too.
 
 #### Deployment automation
@@ -54,21 +54,21 @@ The job runs the same `npm run setup:deployment` and `npm run validate:deploymen
 
 ### What template repository CI does not cover
 
-| Check                                                | Local command / workflow                                                                                                                     |
-| ---------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| Full stack in Docker                                 | `npm run docker:up`                                                                                                                          |
-| Backend tests only in Compose                        | `npm run docker:test:backend`                                                                                                                |
-| Browser E2E journeys                                 | Local/manual `npm run test:e2e`; post-deployment automation is deferred until environments and access are defined                          |
-| Real GitLab pipeline lint and protected environments | Validate in the target GitLab project before the first production deployment                                                          |
-| VPS bootstrap/deploy/recovery                        | Exercise on a disposable supported Linux VPS; see [deployment](deployment.md)                                                                |
-| **Template publishing**                              | Source repository only: push a `v*` tag → see [publishing](publishing.md)                                                                    |
-| **Dependency updates**                               | Dependabot opens weekly PRs — [dependabot.yml](../../../.github/dependabot.yml)                                                              |
+| Check                                                | Local command / workflow                                                                                          |
+| ---------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| Full stack in Docker                                 | `npm run docker:up`                                                                                               |
+| Backend tests only in Compose                        | `npm run docker:test:backend`                                                                                     |
+| Browser E2E journeys                                 | Local/manual `npm run test:e2e`; post-deployment automation is deferred until environments and access are defined |
+| Real GitLab pipeline lint and protected environments | Validate in the target GitLab project before the first production deployment                                      |
+| VPS bootstrap/deploy/recovery                        | Exercise on a disposable supported Linux VPS; see [deployment](deployment.md)                                     |
+| **Template publishing**                              | Source repository only: push a `v*` tag → see [publishing](publishing.md)                                         |
+| **Dependency updates**                               | Dependabot opens weekly PRs — [dependabot.yml](../../../.github/dependabot.yml)                                   |
 
 For test scope and project layout, see [testing strategy](../development/testing-strategy.md).
 
 ### Publish workflow
 
-Separate from CI — runs on **tag push** `v*`. Tests, packs the `Template` template, publishes NuGet (nuget.org + GitHub Packages), and creates a GitHub Release.
+Separate from CI — runs on **tag push** `v*`. Tests, packs the `Laczynski.ChangeMe` template, publishes NuGet (nuget.org + GitHub Packages), and creates a GitHub Release.
 
 Details: [publishing](publishing.md).
 
@@ -106,12 +106,12 @@ The main pipeline is static. Only the child pipeline containing environment-spec
 
 ### Pipeline modes
 
-| Trigger | Verification | Package | Deployment plan |
-| --- | --- | --- | --- |
-| Merge request | Runs all verification jobs | Not created | Not created |
-| Default branch without `application-version` | Runs all verification jobs | Not created | Not created |
-| Protected stable `vX.Y.Z` tag | Runs all verification jobs | Builds and publishes the tagged package plus a GitLab Release | Generates manual jobs for the package and configuration from the tagged commit |
-| Default branch with `application-version=vX.Y.Z` | Skipped intentionally | Reuses that existing registry package | Generates manual jobs for the selected package and configuration from the current pipeline commit |
+| Trigger                                          | Verification               | Package                                                       | Deployment plan                                                                                   |
+| ------------------------------------------------ | -------------------------- | ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| Merge request                                    | Runs all verification jobs | Not created                                                   | Not created                                                                                       |
+| Default branch without `application-version`     | Runs all verification jobs | Not created                                                   | Not created                                                                                       |
+| Protected stable `vX.Y.Z` tag                    | Runs all verification jobs | Builds and publishes the tagged package plus a GitLab Release | Generates manual jobs for the package and configuration from the tagged commit                    |
+| Default branch with `application-version=vX.Y.Z` | Skipped intentionally      | Reuses that existing registry package                         | Generates manual jobs for the selected package and configuration from the current pipeline commit |
 
 The last mode supports a configuration-only deployment without rebuilding the application. In every deployment mode, the exact pipeline commit is the non-secret configuration revision. No environment deploys automatically.
 
@@ -119,21 +119,21 @@ The last mode supports a configuration-only deployment without rebuilding the ap
 
 Jobs inside a stage can run in parallel unless a `needs` dependency states otherwise. A later stage starts only after the required work from earlier stages succeeds.
 
-| Stage | Job | Responsibility and output |
-| --- | --- | --- |
-| `validate` | `documentation:verify` | Installs the root npm dependencies and runs `docs:validate`, including documentation links, ownership/index contracts, and requirement references. |
-| `validate` | `deployment:verify` | Resolves the Ansible inventory, exercises the deployment-pipeline generator, compiles its Python source, validates the GitLab CI definitions, runs generator unit tests, checks every playbook's syntax, and runs `ansible-lint`. |
-| `validate` | `package:verify` | Runs the shell contract test that proves the application package can be built deterministically and has the expected archive, manifest, and checksum structure. |
-| `test` | `frontend:verify` | Installs frontend dependencies, checks linting and formatting, runs unit tests, performs the production build, and publishes `artifacts/frontend/browser/` for release packaging. |
-| `test` | `backend:verify` | Restores the .NET solution, verifies formatting, and runs all backend unit and integration tests. Testcontainers use the job's Docker-in-Docker service. |
-| `build` | `release:backend` | For a stable tag, publishes the backend as a self-contained `linux-x64` application and exposes it as a short-lived job artifact. |
-| `build` | `release:package` | For a stable tag, combines the verified frontend and published backend into one deterministic archive, creates its manifest and SHA-256 file, and extracts that version's notes from `CHANGELOG.md`. |
-| `release` | `release:publish` | Uploads the archive, manifest, and SHA-256 file to GitLab's Generic Package Registry. Re-publishing identical bytes succeeds; different bytes under the same version fail as an immutable-package conflict. |
-| `release` | `release:create` | After package publication, creates the GitLab Release from the versioned changelog section and links its archive, manifest, and SHA-256 asset. Missing release notes fail the tag pipeline. |
-| `plan` | `deploy:generate` | Chooses the stable tag or `application-version`, pairs it with `CI_COMMIT_SHA`, validates the Ansible inventory, and saves the generated child pipeline as an artifact. For a new tag it waits for `release:publish`. |
-| `deploy` | `deploy:environments` | Starts the dynamic child pipeline from the artifact produced by `deploy:generate`. This is a bridge job, not a server deployment. |
-| Child `deploy` | `deploy:<instance>` | One manual job per enabled inventory host. It downloads the immutable package and checksum, verifies SHA-256, configures strict SSH host checking, and runs the Ansible deployment playbook for only that instance. |
-| Child `deploy` | `deploy:no-environments` | Replaces the per-instance jobs when no inventory host is enabled and reports that there is nothing to deploy. It does not contact a server. |
+| Stage          | Job                      | Responsibility and output                                                                                                                                                                                                         |
+| -------------- | ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `validate`     | `documentation:verify`   | Installs the root npm dependencies and runs `docs:validate`, including documentation links, ownership/index contracts, and requirement references.                                                                                |
+| `validate`     | `deployment:verify`      | Resolves the Ansible inventory, exercises the deployment-pipeline generator, compiles its Python source, validates the GitLab CI definitions, runs generator unit tests, checks every playbook's syntax, and runs `ansible-lint`. |
+| `validate`     | `package:verify`         | Runs the shell contract test that proves the application package can be built deterministically and has the expected archive, manifest, and checksum structure.                                                                   |
+| `test`         | `frontend:verify`        | Installs frontend dependencies, checks linting and formatting, runs unit tests, performs the production build, and publishes `artifacts/frontend/browser/` for release packaging.                                                 |
+| `test`         | `backend:verify`         | Restores the .NET solution, verifies formatting, and runs all backend unit and integration tests. Testcontainers use the job's Docker-in-Docker service.                                                                          |
+| `build`        | `release:backend`        | For a stable tag, publishes the backend as a self-contained `linux-x64` application and exposes it as a short-lived job artifact.                                                                                                 |
+| `build`        | `release:package`        | For a stable tag, combines the verified frontend and published backend into one deterministic archive, creates its manifest and SHA-256 file, and extracts that version's notes from `CHANGELOG.md`.                              |
+| `release`      | `release:publish`        | Uploads the archive, manifest, and SHA-256 file to GitLab's Generic Package Registry. Re-publishing identical bytes succeeds; different bytes under the same version fail as an immutable-package conflict.                       |
+| `release`      | `release:create`         | After package publication, creates the GitLab Release from the versioned changelog section and links its archive, manifest, and SHA-256 asset. Missing release notes fail the tag pipeline.                                       |
+| `plan`         | `deploy:generate`        | Chooses the stable tag or `application-version`, pairs it with `CI_COMMIT_SHA`, validates the Ansible inventory, and saves the generated child pipeline as an artifact. For a new tag it waits for `release:publish`.             |
+| `deploy`       | `deploy:environments`    | Starts the dynamic child pipeline from the artifact produced by `deploy:generate`. This is a bridge job, not a server deployment.                                                                                                 |
+| Child `deploy` | `deploy:<instance>`      | One manual job per enabled inventory host. It downloads the immutable package and checksum, verifies SHA-256, configures strict SSH host checking, and runs the Ansible deployment playbook for only that instance.               |
+| Child `deploy` | `deploy:no-environments` | Replaces the per-instance jobs when no inventory host is enabled and reports that there is nothing to deploy. It does not contact a server.                                                                                       |
 
 ### Deployment pipeline generator
 

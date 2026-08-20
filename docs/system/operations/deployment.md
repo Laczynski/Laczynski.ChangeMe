@@ -38,7 +38,7 @@ Application packages never contain host configuration or secrets. Releases and c
 
 The Ansible control node is supported on native Linux or Windows through a default WSL distribution. Native Windows Python and Git Bash are not supported. According to the [ansible-core support matrix](https://docs.ansible.com/projects/ansible-core/devel/reference_appendices/release_and_maintenance.html), the pinned version requires control-node Python 3.12-3.14; local validation additionally uses Node.js, OpenSSH, `tar`, and `sha256sum`.
 
-On Ubuntu or Debian, install the system prerequisites first. Install a Node.js version allowed by `src/Template.Frontend/package.json` separately when it is not already available inside WSL:
+On Ubuntu or Debian, install the system prerequisites first. Install a Node.js version allowed by `src/ChangeMe.Frontend/package.json` separately when it is not already available inside WSL:
 
 ```bash
 sudo apt update

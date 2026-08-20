@@ -1,6 +1,6 @@
-# Template
+# ChangeMe
 
-Full-stack starter generated from the **Template** template: Angular frontend, layered ASP.NET backend, PostgreSQL, Docker Compose, and automated tests.
+Full-stack starter generated from the **ChangeMe** template: Angular frontend, layered ASP.NET backend, PostgreSQL, Docker Compose, and automated tests.
 
 The included **issue-tracking sample** shows how features are structured — login, RBAC, CRUD, attachments, notifications. Replace or remove it; keep the **architecture, tooling, guidelines, and doc workflow**.
 
@@ -30,11 +30,11 @@ The included **issue-tracking sample** shows how features are structured — log
 
 ### Documentation workflow
 
-| Location | Purpose |
-| --- | --- |
-| **`docs/requirements/`** | What to build — domain, conventions, quality, and `FR-*` specifications |
-| **`docs/system/`** | Cross-module development, designs, local stack, deployment, and CI |
-| **`docs/modules/`** | Frontend/backend implementation and operations; movable with future repositories |
+| Location                 | Purpose                                                                          |
+| ------------------------ | -------------------------------------------------------------------------------- |
+| **`docs/requirements/`** | What to build — domain, conventions, quality, and `FR-*` specifications          |
+| **`docs/system/`**       | Cross-module development, designs, local stack, deployment, and CI               |
+| **`docs/modules/`**      | Frontend/backend implementation and operations; movable with future repositories |
 
 - **`AGENTS.md`** — fast-start for AI agents and contributors
 - **`npm run docs:validate`** — check all documentation, including requirement specs, cross-references, and generated indexes
@@ -69,8 +69,8 @@ This codebase gives you:
 
 ## Repository Structure
 
-- `src/Template.Frontend` - Angular application
-- `src/Template.Backend` - .NET solution with source projects and tests
+- `src/ChangeMe.Frontend` - Angular application
+- `src/ChangeMe.Backend` - .NET solution with source projects and tests
 - `docs/` - implementation and testing guidance
 - `docker-compose.yml` - local full-stack environment (frontend, backend, PostgreSQL, MailHog)
 - `.gitlab-ci.yml`, `.gitlab/ci/`, `deploy/` - tagged package release and native VPS deployment automation
@@ -105,7 +105,7 @@ npm run install:frontend
 npm run start:frontend
 ```
 
-Or from `src/Template.Frontend` (npm packages only):
+Or from `src/ChangeMe.Frontend` (npm packages only):
 
 ```powershell
 npm install
@@ -127,11 +127,11 @@ See `docs/system/development/e2e-testing.md` for Playwright setup (Chromium from
 
 Includes `InitialCreate` — in Development, migrations apply on API startup (`DatabaseOptions:ApplyMigrationsOnStartup` is `true` in `appsettings.Development.json`; see `docs/modules/backend/operations/persistence.md`).
 
-From `src/Template.Backend`:
+From `src/ChangeMe.Backend`:
 
 ```powershell
-dotnet build Template.Backend.slnx
-dotnet run --project src/Template.Backend.Web
+dotnet build ChangeMe.Backend.slnx
+dotnet run --project src/ChangeMe.Backend.Web
 ```
 
 ### Sample data (optional)
@@ -147,8 +147,8 @@ Creates demo users (`user1@demo.local`, password in `DataGenerator:DefaultPasswo
 Useful commands:
 
 ```powershell
-dotnet test tests/Template.Backend.UnitTests
-dotnet test tests/Template.Backend.IntegrationTests
+dotnet test tests/ChangeMe.Backend.UnitTests
+dotnet test tests/ChangeMe.Backend.IntegrationTests
 ```
 
 ### Full Stack with Docker
@@ -179,10 +179,10 @@ See [`docs/README.md`](docs/README.md) for the full index.
 
 - Frontend routes: `src/app/app.routes.ts`.
 - Frontend features: `src/app/features/<feature>/`.
-- Backend endpoints: `src/Template.Backend.Web`.
-- Use cases: `src/Template.Backend.UseCases`.
-- Domain: `src/Template.Backend.Domain`.
-- Persistence and integrations: `src/Template.Backend.Infrastructure`.
+- Backend endpoints: `src/ChangeMe.Backend.Web`.
+- Use cases: `src/ChangeMe.Backend.UseCases`.
+- Domain: `src/ChangeMe.Backend.Domain`.
+- Persistence and integrations: `src/ChangeMe.Backend.Infrastructure`.
 
 ## Testing
 

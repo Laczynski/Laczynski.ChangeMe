@@ -56,7 +56,7 @@ function checkPrerequisite(command, args, label) {
   console.log(`✓ ${label}${version ? ` (${version})` : ""}`);
 }
 
-console.log("Laczynski Template setup\n");
+console.log("ChangeMe setup\n");
 
 checkPrerequisite("node", ["--version"], "Node.js");
 checkPrerequisite("dotnet", ["--version"], ".NET SDK");
@@ -91,7 +91,7 @@ if (existsSync(envPath)) {
 console.log("\nInstalling dependencies...");
 run("npm", ["install"]);
 run("npm", ["run", "install:frontend"]);
-run("dotnet", ["restore", "src/Template.Backend/Template.Backend.slnx"]);
+run("dotnet", ["restore", "src/ChangeMe.Backend/ChangeMe.Backend.slnx"]);
 
 console.log("\nSetup complete.");
 console.log("Next steps:");

@@ -5,7 +5,7 @@
 > Status: implemented
 > Canonical for: Angular session state, credential renewal, and refresh failure handling
 > Product behaviour: [FR-AUTH-002](../../../requirements/functional/identity/fr-auth-002-staying-signed-in.md)
-> Code: `src/Template.Frontend/src/app/features/auth/`
+> Code: `src/ChangeMe.Frontend/src/app/features/auth/`
 
 ## Summary
 

@@ -113,7 +113,7 @@ The native systemd service loads the protected file:
 ```ini
 [Service]
 WorkingDirectory=/opt/<application>/current/backend
-ExecStart=/opt/<application>/current/backend/Template.Backend.Web
+ExecStart=/opt/<application>/current/backend/ChangeMe.Backend.Web
 Environment=ASPNETCORE_ENVIRONMENT=Production
 EnvironmentFile=/etc/<application>/current-config/backend.config.env
 EnvironmentFile=/etc/<application>/secrets.env
