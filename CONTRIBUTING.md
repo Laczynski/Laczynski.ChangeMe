@@ -1,6 +1,6 @@
 # Contributing to Laczynski.ChangeMe (maintainers)
 
-> Scope: authors packaging **[Laczynski.ChangeMe](https://www.nuget.org/packages/Laczynski.ChangeMe)** from **this GitHub repository** (`Laczynski/Template`). If you only consume **`dotnet new changeme`** or fork a generated app, you do **not** need this file; see **`README.md`**, **`AGENTS.md`**, and **`docs/`** in your generated solution.
+> Scope: authors packaging **[Laczynski.ChangeMe](https://www.nuget.org/packages/Laczynski.ChangeMe)** from **this GitHub repository** (`Laczynski/Laczynski-ChangeMe`). If you only consume **`dotnet new changeme`** or fork a generated app, you do **not** need this file; see **`README.md`**, **`AGENTS.md`**, and **`docs/`** in your generated solution.
 
 ## Documentation split
 
