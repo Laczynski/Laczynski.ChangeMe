@@ -117,6 +117,8 @@ dotnet new install Laczynski.ChangeMe
 
 NuGet package id is `Laczynski.ChangeMe` (the legacy `ChangeMe` repository name on GitHub is retired). Scaffold token replacement still uses `ChangeMe` — `dotnet new changeme -n YourApp` produces `YourApp.Backend`, not `ChangeMe.Backend`.
 
+Or install from this repository root during local development:
+
 ```powershell
 dotnet new install .
 ```
