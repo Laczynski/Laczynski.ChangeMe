@@ -51,4 +51,4 @@ dotnet new uninstall Laczynski.ChangeMe
 
 ## Source repository
 
-https://github.com/Laczynski/Laczynski-ChangeMe
+https://github.com/Laczynski/Laczynski.ChangeMe

@@ -61,7 +61,7 @@ Settings → Secrets and variables → Actions:
    | ---------------- | ---------------------- |
    | Package Owner    | your nuget.org account |
    | Repository Owner | `Laczynski`            |
-   | Repository       | `Template`             |
+   | Repository       | `Laczynski.ChangeMe`   |
    | Workflow File    | `publish.yml`          |
    | Environment      | _(leave empty)_        |
 

@@ -16,9 +16,9 @@
     <PackageType>Template</PackageType>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>NuGetPackageREADME.md</PackageReadmeFile>
-    <RepositoryUrl>https://github.com/Laczynski/Laczynski-ChangeMe</RepositoryUrl>
+    <RepositoryUrl>https://github.com/Laczynski/Laczynski.ChangeMe</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <PackageProjectUrl>https://github.com/Laczynski/Laczynski-ChangeMe</PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/Laczynski/Laczynski.ChangeMe</PackageProjectUrl>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <Copyright>Copyright (c) 2026 Damian Łączyński</Copyright>
