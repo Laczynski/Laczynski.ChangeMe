@@ -1,6 +1,6 @@
-# Contributing to ChangeMe (maintainers)
+# Contributing to Laczynski.ChangeMe (maintainers)
 
-> Scope: authors packaging **[ChangeMe](https://www.nuget.org/packages/ChangeMe)** from **this GitHub repository**. If you only consume **`dotnet new changeme`** or fork a generated app, you do **not** need this file; see **`README.md`**, **`AGENTS.md`**, and **`docs/`** in your generated solution.
+> Scope: authors packaging **[Laczynski.ChangeMe](https://www.nuget.org/packages/Laczynski.ChangeMe)** from **this GitHub repository** (`Laczynski/Template`). If you only consume **`dotnet new changeme`** or fork a generated app, you do **not** need this file; see **`README.md`**, **`AGENTS.md`**, and **`docs/`** in your generated solution.
 
 ## Documentation split
 
@@ -24,7 +24,7 @@ Avoid **`dotnet new -o`** under **`artifacts/`** (or other nested outputs inside
 
 Tag-based CI publish is documented in **`docs/system/operations/publishing.md`**. Summary:
 
-1. Bump **`Version`** in **`template-pack/ChangeMe.Templates.csproj`** and update **`CHANGELOG.md`**.
+1. Bump **`Version`** in **`template-pack/Laczynski.ChangeMe.csproj`** and update **`CHANGELOG.md`**.
 2. Push a git tag (`v2.1.0`) — [publish.yml](.github/workflows/publish.yml) tests, packs, publishes to nuget.org + GitHub Packages, and creates a GitHub Release.
 
 Local pack only:

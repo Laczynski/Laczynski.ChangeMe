@@ -30,7 +30,7 @@ jobs:
       - name: Validate version
         run: |
           VERSION="${GITHUB_REF_NAME#v}"
-          PKG_VERSION=$(grep -m1 '<Version>' template-pack/ChangeMe.Templates.csproj | sed 's/.*<Version>\(.*\)<\/Version>.*/\1/')
+          PKG_VERSION=$(grep -m1 '<Version>' template-pack/Laczynski.ChangeMe.csproj | sed 's/.*<Version>\(.*\)<\/Version>.*/\1/')
           if [ "$PKG_VERSION" != "$VERSION" ]; then
             echo "::error::template-pack Version ($PKG_VERSION) does not match tag ($VERSION)"
             exit 1
@@ -60,7 +60,7 @@ jobs:
           dotnet test src/ChangeMe.Backend/ChangeMe.Backend.slnx -c Release
 
       - name: Pack
-        run: dotnet pack template-pack/ChangeMe.Templates.csproj -c Release
+        run: dotnet pack template-pack/Laczynski.ChangeMe.csproj -c Release
 
       - name: NuGet login (OIDC → nuget.org)
         uses: NuGet/login@v1
