@@ -15,14 +15,14 @@
 
 ## Information types
 
-| Type | Canonical question | Typical content |
-| --- | --- | --- |
-| `requirements` | What must the product do? | Domain, conventions, quality, `FR-*` |
-| `architecture` | How does the implemented solution work? | Boundaries, flows, states, decisions, failure handling |
-| `design` | How do we propose to change it? | Options, decision, migration, acceptance criteria |
-| `development` | How do we change code safely? | Ownership, conventions, recipes, testing |
-| `operations` | How do we run and maintain it? | Configuration, deployment, CI, runbooks, troubleshooting |
-| `reference` | Where do I quickly find a stable mapping? | Repository map, catalogs, documentation rules |
+| Type           | Canonical question                        | Typical content                                          |
+| -------------- | ----------------------------------------- | -------------------------------------------------------- |
+| `requirements` | What must the product do?                 | Domain, conventions, quality, `FR-*`                     |
+| `architecture` | How does the implemented solution work?   | Boundaries, flows, states, decisions, failure handling   |
+| `design`       | How do we propose to change it?           | Options, decision, migration, acceptance criteria        |
+| `development`  | How do we change code safely?             | Ownership, conventions, recipes, testing                 |
+| `operations`   | How do we run and maintain it?            | Configuration, deployment, CI, runbooks, troubleshooting |
+| `reference`    | Where do I quickly find a stable mapping? | Repository map, catalogs, documentation rules            |
 
 Architecture describes current behaviour. A design describes a proposed change. After implementation, update the relevant architecture document and remove obsolete design detail; retain a short ADR only when the decision rationale still matters.
 
@@ -30,22 +30,22 @@ Architecture describes current behaviour. A design describes a proposed change. 
 
 These are minimum content boundaries, not templates. Omit optional sections instead of creating boilerplate.
 
-| Type | Must make clear | Must not own |
-| --- | --- | --- |
-| `architecture` | Summary, Mermaid diagram, invariants or decisions, failure handling when relevant, code map, verification | Proposed work or copied product requirements |
-| `design` | Goal, decision/target/plan, alternatives when material, migration steps, completion criteria | Current-state claims before implementation |
-| `development` | Code ownership, enforceable do/do-not rules, nearest reference implementation, relevant checks | Product behaviour or deployment configuration |
-| `operations` | Configuration source, procedure or runtime model, verification, failure/recovery guidance | Detailed coding conventions |
-| `reference` | Stable mapping, lookup data, and its authoritative source | Long narrative or project planning |
-| `README.md` | Task-to-document routing | Content copied from target documents |
+| Type           | Must make clear                                                                                           | Must not own                                  |
+| -------------- | --------------------------------------------------------------------------------------------------------- | --------------------------------------------- |
+| `architecture` | Summary, Mermaid diagram, invariants or decisions, failure handling when relevant, code map, verification | Proposed work or copied product requirements  |
+| `design`       | Goal, decision/target/plan, alternatives when material, migration steps, completion criteria              | Current-state claims before implementation    |
+| `development`  | Code ownership, enforceable do/do-not rules, nearest reference implementation, relevant checks            | Product behaviour or deployment configuration |
+| `operations`   | Configuration source, procedure or runtime model, verification, failure/recovery guidance                 | Detailed coding conventions                   |
+| `reference`    | Stable mapping, lookup data, and its authoritative source                                                 | Long narrative or project planning            |
+| `README.md`    | Task-to-document routing                                                                                  | Content copied from target documents          |
 
 Status is part of the contract:
 
-| Type | Allowed status |
-| --- | --- |
-| `architecture` | `implemented`, `superseded` |
-| `design` | `proposed`, `implemented`, `superseded` |
-| `development`, `operations`, `reference` | `implemented`, `superseded` |
+| Type                                     | Allowed status                          |
+| ---------------------------------------- | --------------------------------------- |
+| `architecture`                           | `implemented`, `superseded`             |
+| `design`                                 | `proposed`, `implemented`, `superseded` |
+| `development`, `operations`, `reference` | `implemented`, `superseded`             |
 
 `Scope` must match ownership: `docs/system/` uses `system`; `docs/modules/<module>/` uses `<module>`. The validator enforces the scope/status matrix, requires `Summary`, Mermaid, and `Verification` for architecture, and requires `Goal` plus a decision/target/plan/phases section for designs. The remaining content boundaries require review because enforcing exact headings would encourage empty sections.
 
@@ -88,13 +88,13 @@ After implementing a design, update the current-state architecture or operations
 
 ## Ownership
 
-| Location | Owner and lifecycle |
-| --- | --- |
-| `docs/requirements/` | Product requirements; remains in the main repository |
-| `docs/system/` | Cross-module architecture, development, designs, and operations; remains in the main repository |
-| `docs/modules/frontend/` | Frontend-only knowledge; moves with the frontend repository |
-| `docs/modules/backend/` | Backend-only knowledge; moves with the backend repository |
-| `docs/modules/<service>/` | Service-only knowledge; moves with that service repository |
+| Location                  | Owner and lifecycle                                                                             |
+| ------------------------- | ----------------------------------------------------------------------------------------------- |
+| `docs/requirements/`      | Product requirements; remains in the main repository                                            |
+| `docs/system/`            | Cross-module architecture, development, designs, and operations; remains in the main repository |
+| `docs/modules/frontend/`  | Frontend-only knowledge; moves with the frontend repository                                     |
+| `docs/modules/backend/`   | Backend-only knowledge; moves with the backend repository                                       |
+| `docs/modules/<service>/` | Service-only knowledge; moves with that service repository                                      |
 
 Put a document in `docs/system/` when changing it requires understanding more than one module or the main repository owns the workflow. Do not copy module documentation into the system folder; link to it.
 
@@ -109,20 +109,20 @@ Put a document in `docs/system/` when changing it requires understanding more th
 
 Use these names consistently:
 
-| Name | Meaning |
-| --- | --- |
-| `README.md` | Short folder index only; create one only when navigation benefits |
-| `architecture.md` / `*-architecture.md` | Static structure and boundaries |
-| `*-flow.md` | Request or message sequence |
-| `*-lifecycle.md` | States and transitions |
-| `*-design.md` | Proposed solution |
-| `development.md` | Module implementation rules |
-| `testing.md` / `testing-strategy.md` | Module tests / cross-module test ownership |
-| `operations.md` | Module-wide runtime concerns |
-| `*-runbook.md` | Repeatable operational procedure |
-| `*-troubleshooting.md` | Diagnosis of a bounded concern |
-| `*-reference.md` | Stable lookup material |
-| `adr-NNNN-*.md` | Durable architecture decision |
+| Name                                    | Meaning                                                           |
+| --------------------------------------- | ----------------------------------------------------------------- |
+| `README.md`                             | Short folder index only; create one only when navigation benefits |
+| `architecture.md` / `*-architecture.md` | Static structure and boundaries                                   |
+| `*-flow.md`                             | Request or message sequence                                       |
+| `*-lifecycle.md`                        | States and transitions                                            |
+| `*-design.md`                           | Proposed solution                                                 |
+| `development.md`                        | Module implementation rules                                       |
+| `testing.md` / `testing-strategy.md`    | Module tests / cross-module test ownership                        |
+| `operations.md`                         | Module-wide runtime concerns                                      |
+| `*-runbook.md`                          | Repeatable operational procedure                                  |
+| `*-troubleshooting.md`                  | Diagnosis of a bounded concern                                    |
+| `*-reference.md`                        | Stable lookup material                                            |
+| `adr-NNNN-*.md`                         | Durable architecture decision                                     |
 
 ## Document shape
 
@@ -132,7 +132,7 @@ Start non-requirement documents with only the metadata that helps readers route 
 # Precise title
 
 > Type: architecture | design | development | operations | reference
-> Scope: system | frontend | backend | <service>
+> Scope: path owner (`system` in `docs/system/`, module folder name in `docs/modules/<module>/`)
 > Status: proposed | implemented | superseded
 > Canonical for: one sentence
 ```
@@ -153,24 +153,24 @@ Do not add boilerplate sections with no useful content. Keep `README.md` files a
 
 Use Mermaid so diagrams remain reviewable in source control:
 
-| Relationship | Diagram |
-| --- | --- |
-| Components and dependencies | `flowchart` |
-| Calls over time | `sequenceDiagram` |
-| State transitions | `stateDiagram-v2` |
-| Data relationships | `erDiagram` |
+| Relationship                | Diagram           |
+| --------------------------- | ----------------- |
+| Components and dependencies | `flowchart`       |
+| Calls over time             | `sequenceDiagram` |
+| State transitions           | `stateDiagram-v2` |
+| Data relationships          | `erDiagram`       |
 
 Use names that match code or public contracts. A diagram and its prose must not narrate the same details; prose records implications, exceptions, and rationale.
 
 ## Canonical-source boundaries
 
-| Fact | Canonical source | Documentation role |
-| --- | --- | --- |
-| Product rule or default | `docs/requirements/` | Link and explain implementation impact |
-| Machine-readable value | Config, workflow, Compose, or source code | Explain purpose and operational consequence |
-| Module implementation pattern | `docs/modules/<module>/` | State the rule and nearest reference implementation |
-| Cross-module interaction | `docs/system/` | Show boundaries, contracts, and failure handling |
-| Shared command catalog and fast-start routing | `AGENTS.md` | Link to deeper documents; focused operations docs may repeat only commands required by their procedure |
+| Fact                                          | Canonical source                          | Documentation role                                                                                     |
+| --------------------------------------------- | ----------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| Product rule or default                       | `docs/requirements/`                      | Link and explain implementation impact                                                                 |
+| Machine-readable value                        | Config, workflow, Compose, or source code | Explain purpose and operational consequence                                                            |
+| Module implementation pattern                 | `docs/modules/<module>/`                  | State the rule and nearest reference implementation                                                    |
+| Cross-module interaction                      | `docs/system/`                            | Show boundaries, contracts, and failure handling                                                       |
+| Shared command catalog and fast-start routing | `AGENTS.md`                               | Link to deeper documents; focused operations docs may repeat only commands required by their procedure |
 
 ## Update checklist
 

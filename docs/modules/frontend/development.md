@@ -18,10 +18,10 @@ For dev server, lint, format, and test commands from `src/ChangeMe.Frontend` or 
 - Routes are declared centrally in `src/app/app.routes.ts`.
 - Use path aliases from `tsconfig.json` instead of long relative imports when an alias exists.
 - Put feature-specific models in `features/<feature>/models`.
-- Put validation limits, select options, labels, and other UI-oriented constants in a single `features/<feature>/utils/<feature>.utils.ts` file (for example `issue.utils.ts`, `auth.utils.ts`). Keep DTOs, enums, and request/response shapes in `models/`.
+- Put validation limits, select options, labels, and other UI-oriented constants in a single `features/<feature>/utils/<feature>.utils.ts` file. Keep DTOs, enums, and request/response shapes in `models/`.
 - Put shared transport or utility contracts in `shared/`.
-- Put cross-cutting app services in `core/` or `features/auth/` depending on ownership.
-- Use `app-back-button` with a fixed **label** and **route** for in-app back navigation (for example **`Back to issues list`** → **`/issues`**, **`Back to issue details`** → **`/issues/:id`**). Do not use browser history stacks or `sessionStorage` navigation stacks.
+- Put app-wide services in `core/`; put feature-owned services, guards, and interceptors under the matching `features/<feature>/` folder.
+- Use `app-back-button` with a fixed **label** and **route** from the target `FR-*` (for example **`Back to list`** → the list route). Do not use browser history stacks or `sessionStorage` navigation stacks.
 
 ## Component rules
 
@@ -122,8 +122,8 @@ Do not commit license keys to the repository. For local development, use a perso
 - Use `p-message` for inline field validation and screen-level load errors; use toasts for successful mutations and action failures that are not tied to a single form field.
 - Use `p-tag` for compact status labels such as issue status or priority.
 - Use `p-table` for tabular data, `p-paginator` for server-driven paging, and `p-progressSpinner` or table `[loading]` for in-flight data.
-- **List screens** (full-page tables and grids — for example Issues, Users, Roles) use **DataGrid** via `@laczynski/datagrid-primeng` (`<dg-prime-data-grid>`, `DgColumnDirective`, `GridResourceFactory`). Column-header filters, multi-sort, search, and pagination are driven by a `GridResource` created in the component; the feature service passes `GridQuery` to the API as a `grid` query parameter and returns `GridResult<T>` from `@laczynski/datagrid`. See `features/issues/components/issues-list/` as the reference implementation.
-- **Embedded lists** (issue tabs, sessions, notifications, role assigned users) call the same API shape with `GridQuery`/`GridResult`; use `shared/data/utils/grid.utils.ts` for `createGridQuery`, `hasMoreGridItems`, and `createIssueTabGridQuery`.
+- **List screens** (full-page tables and grids) use **DataGrid** via `@laczynski/datagrid-primeng` (`<dg-prime-data-grid>`, `DgColumnDirective`, `GridResourceFactory`). Column-header filters, multi-sort, search, and pagination are driven by a `GridResource` created in the component; the feature service passes `GridQuery` to the API as a `grid` query parameter and returns `GridResult<T>` from `@laczynski/datagrid`. Copy the nearest existing `*-list` component under `features/` before introducing a new list pattern.
+- **Embedded lists** (detail tabs, drawers, secondary panels) call the same API shape with `GridQuery`/`GridResult`; use `shared/data/utils/grid.utils.ts` for `createGridQuery`, `hasMoreGridItems`, and tab-specific grid helpers.
 - Keep business logic in feature services and component TypeScript. PrimeNG should handle presentation only.
 
 ### Theming and layout
@@ -144,19 +144,19 @@ Do not commit license keys to the repository. For local development, use a perso
 - Dark mode follows PrimeNG styled mode: set `darkModeSelector: '.app-dark'` in `providePrimeNG()`, toggle that class on `<html>` in `LayoutService`, and mirror it for Tailwind with `@custom-variant dark` in `tailwind.css`. Page background and text color live in `tailwind.css` on `html` / `html.app-dark` (PrimeNG tokens); do not duplicate them on the app shell.
 - The small inline script in `index.html` only restores `app-dark` from `localStorage` before Angular boots to avoid a light flash on reload. It is optional if you accept that flash.
 - Toggle light/dark through `LayoutService`; the shell header theme button calls `layoutService.toggleTheme()`.
-- **Reduced motion** (`NFR-A11Y-001`): `LayoutService` listens for `prefers-reduced-motion: reduce`, toggles `app-reduced-motion` on `<html>`, and global styles in `tailwind.css` shorten non-essential transitions and hide PrimeNG ripples. Do not suppress compliance toasts or required policy dialogs.
+- **Reduced motion**: `LayoutService` listens for `prefers-reduced-motion: reduce`, toggles `app-reduced-motion` on `<html>`, and global styles in `tailwind.css` shorten non-essential transitions and hide PrimeNG ripples. Do not suppress compliance toasts or required policy dialogs.
 
 ### When adding a new screen
 
-- Look at `features/auth` for form patterns and `features/issues` for tables, filters, and detail layouts.
-- Issues routes are behind `authGuard`. Do not gate issues UI with `isAuthenticated`; keep auth checks in guards, `app.component` navigation, and `NotificationsRealtimeConnectionService` (push notifications only).
+- Before introducing a new pattern, open the nearest existing feature slice with the same UI shape (form, list, detail tabs, admin panel) and match its layout and service boundaries.
+- Keep route protection in guards and shell navigation — do not duplicate auth checks inside unrelated feature templates.
 - Match existing Tailwind layout patterns (`flex flex-col gap-1.5 mb-4` for labeled fields, `flex flex-wrap items-center gap-3 mt-4` for action rows, `grid gap-4 sm:grid-cols-2 xl:grid-cols-3` for filter grids) before introducing new one-off utilities.
 
 ## Existing repo patterns worth preserving
 
-- Auth session state lives in `features/auth/services/auth.service.ts`.
+- Session and sign-in state live in the auth feature service; route guards live in the auth feature guards folder.
 - API response unwrapping and error conversion live in `shared/api/services/api.service.ts`.
-- Route guarding stays in `features/auth/guards`.
+- Real-time notification transport lives in the notifications feature; do not wire push handling into unrelated screens.
 
 ## When changing frontend contracts
 
@@ -170,4 +170,4 @@ Do not commit license keys to the repository. For local development, use a perso
 - Do not introduce a second HTTP abstraction beside `ApiService`.
 - Do not create a new top-level frontend folder unless the existing `core` / `features` / `shared` split cannot fit the change.
 - Do not hardcode backend URLs outside `environment.*` and the shared API layer.
-- Before adding a new pattern, look for the nearest example in `features/issues` or `features/auth`.
+- Before adding a new pattern, copy the nearest existing feature slice with the same UI or transport concern.
