@@ -81,6 +81,7 @@
             "template-content/**",
             "maintainer/**",
             ".github/**",
+            ".claude/skills/template-publish/**",
             ".git/**",
             ".angular/**",
             ".tmp-template-inspect/**",

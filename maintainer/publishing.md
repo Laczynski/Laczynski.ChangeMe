@@ -10,7 +10,7 @@ This process releases the reusable template package. It does not version or depl
 | ---------- | ---------------------------------- | --------------- |
 | `ChangeMe` | [nuget.org](https://www.nuget.org) | GitHub Packages |
 
-Publish on tag push `v*` via [`.github/workflows/publish.yml`](../.github/workflows/publish.yml) (trusted publishing / OIDC). This workflow, `maintainer/`, `template-pack/`, and `.github/` are excluded from generated applications.
+Publish on tag push `v*` via [`.github/workflows/publish.yml`](../.github/workflows/publish.yml) (trusted publishing / OIDC). Agent-assisted flow: **`.claude/skills/template-publish/`** (`/template-publish`). This workflow, `maintainer/`, `template-pack/`, `.github/`, and `template-publish` are excluded from generated applications.
 
 ## Where the version lives
 

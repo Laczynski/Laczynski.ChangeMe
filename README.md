@@ -89,7 +89,7 @@ Template packaging, GitHub CI, and NuGet publishing are documented under **[`mai
 
 | Concern | Documentation |
 | --- | --- |
-| Publish **`ChangeMe`** on NuGet | [maintainer/publishing.md](maintainer/publishing.md) |
+| Publish **`ChangeMe`** on NuGet | [maintainer/publishing.md](maintainer/publishing.md) · `/template-publish` |
 | GitHub Actions on this repo | [maintainer/ci-github.md](maintainer/ci-github.md) |
 | Author or validate the template | [maintainer/CONTRIBUTING.md](maintainer/CONTRIBUTING.md) |
 | GitLab CI in generated apps | [docs/system/operations/ci.md](docs/system/operations/ci.md) (shipped) |

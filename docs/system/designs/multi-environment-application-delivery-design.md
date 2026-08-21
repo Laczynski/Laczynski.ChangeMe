@@ -96,7 +96,7 @@ Database migrations are deliberately not reversed. Schema changes must remain co
 | Migration-only backend mode | [`Program.cs`](../../../src/ChangeMe.Backend/src/ChangeMe.Backend.Web/Program.cs) |
 | Operator procedure | [Deployment](../operations/deployment.md) |
 
-The generated-project payload includes GitLab and Ansible delivery assets. It excludes **`maintainer/`**, **`.github/`**, **`template-pack/`**, and other template-source paths listed in `.template.config/template.json`; NuGet template publishing is documented only under `maintainer/`.
+The generated-project payload includes GitLab and Ansible delivery assets. It excludes **`maintainer/`**, **`.github/`**, **`.claude/skills/template-publish/`**, **`template-pack/`**, and other template-source paths listed in `.template.config/template.json`; NuGet template publishing is documented only under `maintainer/` and `/template-publish`.
 
 ## Verification
 

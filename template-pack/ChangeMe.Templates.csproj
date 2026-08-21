@@ -33,6 +33,7 @@
                ..\.env.*;
                ..\.git\**;
                ..\.github\**;
+               ..\.claude\skills\template-publish\**;
                ..\.angular\**;
                ..\**\.angular\**;
                ..\.template.config\**;

@@ -29,7 +29,7 @@ After changing exclusions in `.template.config/template.json`, confirm generated
 
 ```powershell
 dotnet new changeme -n Smoke -o $env:TEMP\ChangeMeSmoke --force
-# expect: no maintainer/, no .github/, no template-pack/
+# expect: no maintainer/, no .github/, no .claude/skills/template-publish/, no template-pack/
 ```
 
 ## Publishing
