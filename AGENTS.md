@@ -35,7 +35,7 @@ From the repository root, run `npm run setup` once after clone (creates `.env` f
 - Backend tests: `npm run test:backend` (entire solution — unit and integration projects), `npm run test:backend:unit`, or `npm run test:backend:integration`
 - Full automated check (frontend CI tests + full backend solution tests, parallel): `npm run test:all` — backend integration tests use Testcontainers and need a running Docker engine
 - E2E (Playwright): `npm run test:e2e` (needs Chromium from `npm run install:frontend`, PostgreSQL on `localhost`; Playwright starts the stack); `npm run test:e2e:ui` for interactive debugging — E2E is local/manual and is not a CI or release gate (`docs/system/operations/ci.md`)
-- CI workflow (GitHub Actions): see `docs/system/operations/ci.md`
+- CI workflow (GitLab): see `docs/system/operations/ci.md`
 - EF Core (from repo root): `npm run ef:migrations:add -- <Name>`, `npm run ef:migrations:remove`, `npm run ef:database:update`
 - Demo data (after migrations; Development only): `npm run data:generate`, or `npm run data:generate -- --reset` — see `docs/modules/backend/demo-data.md`
 - Documentation: `npm run docs:validate` — checks links, system/module contracts and index reachability, then validates `FR-*` / `NFR-*` cross-references and regenerates the requirements index
@@ -47,7 +47,7 @@ From the repository root, run `npm run setup` once after clone (creates `.env` f
 - Setup troubleshooting, bootstrap, deploy, verify, configuration-only deploy, and rollback procedures: `docs/system/operations/deployment.md`
 - GitLab creates packages and manual deployment choices; Docker and Compose remain local-only
 
-Generated-application release automation (`/release`) is documented in `docs/system/operations/deployment.md`. Template NuGet publishing is separate: `docs/system/operations/publishing.md`.
+Generated-application release automation (`/release`) is documented in `docs/system/operations/deployment.md`.
 
 ### Frontend (in `src/ChangeMe.Frontend`)
 

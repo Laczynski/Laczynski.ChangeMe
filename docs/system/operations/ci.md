@@ -1,128 +1,21 @@
-# Continuous integration
+# Continuous integration (GitLab)
 
 > Type: operations
 > Scope: system
 > Status: implemented
-> Canonical for: human-readable GitHub and GitLab CI job ownership and local reproduction
+> Canonical for: GitLab CI job ownership and local reproduction in generated applications
 
-## Who uses which pipeline
+This document describes **GitLab CI** for applications scaffolded from the ChangeMe template. It ships in the `dotnet new` payload together with `.gitlab-ci.yml` and `deploy/`.
 
-This repository intentionally contains **two** CI definitions. They serve different lifecycles:
+The ChangeMe **template source repository** on GitHub validates these same GitLab and Ansible assets before publishing the NuGet package; that maintainer workflow is not shipped in generated projects.
 
-| Pipeline | Files | Runs where | Purpose |
-| --- | --- | --- | --- |
-| **Template maintainer CI** | [`.github/workflows/ci.yml`](../../../.github/workflows/ci.yml), [`.github/workflows/publish.yml`](../../../.github/workflows/publish.yml) | **This GitHub repository** | Validate the template source on every PR/push; publish the **`ChangeMe` NuGet** package on a maintainer **`v*`** tag |
-| **Generated application CI** | [`.gitlab-ci.yml`](../../../.gitlab-ci.yml), [`.gitlab/ci/`](../../../.gitlab/ci/) | **The consumer's GitLab project** after `dotnet new` | Verify, package, release, and manually deploy **your product** to VPS environments |
+## Source of truth
 
-GitHub Actions also runs **`npm run validate:deployment`**, which lint-checks the GitLab YAML and Ansible assets **without** executing GitLab jobs on GitHub. Template maintainers work in GitHub CI; product teams work in GitLab CI after scaffolding.
-
-Release ownership matches the pipeline:
-
-| Release artifact | Maintainer action | Documentation |
-| --- | --- | --- |
-| NuGet template **`ChangeMe`** | Push **`v*`** tag on **this repo** | [publishing](publishing.md) |
-| Application **`vX.Y.Z`** on GitLab | MR + protected tag in **generated repo** | [deployment](deployment.md); agent **`/release`** skill |
-
-## Template repository CI
-
-Source of truth: [`.github/workflows/ci.yml`](../../../.github/workflows/ci.yml).
-
-### Triggers
-
-Runs on **push** and **pull_request** to `main` or `master`.
-
-Concurrent runs for the same branch are cancelled (`cancel-in-progress: true`) when a newer commit is pushed.
-
-### Jobs
-
-Four jobs run **in parallel** (no job depends on another):
-
-| Job                       | What it runs                                                       | Working directory       |
-| ------------------------- | ------------------------------------------------------------------ | ----------------------- |
-| **Documentation**         | `npm ci` → docs validation → requirements validation               | Repository root         |
-| **Frontend**              | lint/format → unit tests → production build                        | `src/ChangeMe.Frontend` |
-| **Backend**               | restore → format → unit and integration tests → build              | Repository root         |
-| **Deployment automation** | inventory/generator tests → Ansible syntax/lint → package contract | Repository root         |
-
-#### Documentation
-
-`npm run docs:validate` is the only public documentation check. It validates common links, ownership, type contracts, names, and index reachability, then runs the internal requirements validator for `FR-*` / `NFR-*` frontmatter, cross-references, change records, and generated indexes. It fails when a generated requirements index was stale, after updating that file locally, so CI also verifies that generated output is committed. See `docs/requirements/requirements-change-process.md`.
-
-Run locally after documentation or specification changes:
-
-```powershell
-npm run docs:validate
-```
-
-#### Frontend
-
-- Node.js **24.15** (Angular 22 CLI minimum; see `engines` in `src/ChangeMe.Frontend/package.json`)
-- ESLint and Prettier checks, then tests run once (no watch), then production **build**
-- Local equivalents: `npm run lint:frontend`, `npm run format:check:frontend`
-
-#### Backend
-
-- .NET **10**
-- `dotnet format --verify-no-changes` (migrations excluded), then `dotnet test` and `dotnet build` on `ChangeMe.Backend.slnx` in **Release**
-- **Integration tests** use Testcontainers (Docker). GitHub-hosted `ubuntu-latest` runners provide Docker; local runs need a running Docker engine too.
-
-#### Deployment automation
-
-The job runs the same `npm run setup:deployment` and `npm run validate:deployment` entry points used locally. Python 3.13 installs the pinned `ansible-core` and `ansible-lint` versions into `.venv-deploy`; validation covers the full inventory, generated GitLab child pipeline, GitLab YAML structure, Python generator tests, every playbook, and deterministic archive contract. It does not connect to an external VPS.
-
-### What template repository CI does not cover
-
-| Check                                                | Local command / workflow                                                                                          |
-| ---------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| Full stack in Docker                                 | `npm run docker:up`                                                                                               |
-| Backend tests only in Compose                        | `npm run docker:test:backend`                                                                                     |
-| Browser E2E journeys                                 | Local/manual `npm run test:e2e`; post-deployment automation is deferred until environments and access are defined |
-| Real GitLab pipeline lint and protected environments | Validate in the target GitLab project before the first production deployment                                      |
-| VPS bootstrap/deploy/recovery                        | Exercise on a disposable supported Linux VPS; see [deployment](deployment.md)                                     |
-| **Template publishing**                              | Source repository only: push a `v*` tag → see [publishing](publishing.md)                                         |
-| **Dependency updates**                               | Dependabot opens weekly PRs — [dependabot.yml](../../../.github/dependabot.yml)                                   |
-
-For test scope and project layout, see [testing strategy](../development/testing-strategy.md).
-
-### Publish workflow
-
-Separate from CI — runs on **tag push** `v*`. Tests, packs the `ChangeMe` template, publishes NuGet (nuget.org + GitHub Packages), and creates a GitHub Release.
-
-Details: [publishing](publishing.md).
-
-### Reproduce template repository CI locally
-
-From the repository root after `npm install`:
-
-```powershell
-npm run install:frontend
-npm run docs:validate
-npm run lint:frontend
-npm run format:check:all
-npm run test:frontend:ci
-npm run build:frontend
-npm run test:backend
-npm run build:backend
-npm run setup:deployment
-npm run validate:deployment
-```
-
-Or approximate the full automated check:
-
-```powershell
-npm run test:all
-npm run build:all
-```
-
-(`test:all` does not include documentation validation, requirements validation, or frontend build.)
-
-## Generated application GitLab CI
-
-Source of truth: [`.gitlab-ci.yml`](../../../.gitlab-ci.yml) with local includes under [`.gitlab/ci/`](../../../.gitlab/ci/).
+[`.gitlab-ci.yml`](../../../.gitlab-ci.yml) with local includes under [`.gitlab/ci/`](../../../.gitlab/ci/).
 
 The main pipeline is static. Only the child pipeline containing environment-specific deployment jobs is generated dynamically.
 
-### Pipeline modes
+## Pipeline modes
 
 | Trigger                                          | Verification               | Package                                                       | Deployment plan                                                                                   |
 | ------------------------------------------------ | -------------------------- | ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
@@ -133,7 +26,7 @@ The main pipeline is static. Only the child pipeline containing environment-spec
 
 The last mode supports a configuration-only deployment without rebuilding the application. In every deployment mode, the exact pipeline commit is the non-secret configuration revision. No environment deploys automatically.
 
-### Stages and jobs
+## Stages and jobs
 
 Jobs inside a stage can run in parallel unless a `needs` dependency states otherwise. A later stage starts only after the required work from earlier stages succeeds.
 
@@ -153,7 +46,7 @@ Jobs inside a stage can run in parallel unless a `needs` dependency states other
 | Child `deploy` | `deploy:<instance>`      | One manual job per enabled inventory host. It downloads the immutable package and checksum, verifies SHA-256, configures strict SSH host checking, and runs the Ansible deployment playbook for only that instance.               |
 | Child `deploy` | `deploy:no-environments` | Replaces the per-instance jobs when no inventory host is enabled and reports that there is nothing to deploy. It does not contact a server.                                                                                       |
 
-### Deployment pipeline generator
+## Deployment pipeline generator
 
 [`generate-deployment-pipeline.py`](../../../deploy/scripts/generate-deployment-pipeline.py) is called by `deploy:generate`; it does not generate the verification or release stages. It accepts:
 
@@ -168,6 +61,6 @@ After validation, the generator emits one `deploy:<instance>` job for every host
 
 The generated job template supplies the remaining deployment behavior: environment-scoped SSH file variables, strict `known_hosts` verification, an immutable package download using `CI_JOB_TOKEN`, checksum verification, an instance-specific `resource_group`, and the Ansible playbook invocation. The inventory remains the source of non-secret environment configuration; GitLab variables remain the source of secrets.
 
-The backend verification job uses Docker-in-Docker for Testcontainers and therefore needs an appropriately isolated privileged runner. Deployment jobs need outbound SSH access to their selected hosts. GitLab credentials, environment protection, approvals, runner networking, and the GitLab instance's own CI lint must be validated in the generated project's infrastructure.
+The backend verification job uses Docker-in-Docker for Testcontainers and therefore needs an appropriately isolated privileged runner. Deployment jobs need outbound SSH access to their selected hosts. GitLab credentials, environment protection, approvals, runner networking, and the GitLab instance's own CI lint must be validated in your project infrastructure.
 
 Release and VPS procedures: [deployment](deployment.md).

@@ -79,6 +79,8 @@
           "exclude": [
             ".template.config/**",
             "template-content/**",
+            "maintainer/**",
+            ".github/**",
             ".git/**",
             ".angular/**",
             ".tmp-template-inspect/**",
@@ -86,7 +88,6 @@
             "artifacts/**",
             "template-pack/**",
             "ci-lab/**",
-            ".github/workflows/publish.yml",
             "**/node_modules/**",
             "**/bin/**",
             "**/obj/**",

@@ -1,11 +1,8 @@
 # Template publishing
 
-> Type: operations
-> Scope: system
-> Status: implemented
-> Canonical for: releasing the `ChangeMe` `dotnet new` NuGet package
+> Scope: **template source repository maintainers** only — not shipped in `dotnet new` output.
 
-This process releases the reusable template package. It does not version or deploy an application created from the template; generated-application releases are operated through [deployment](deployment.md). The rationale for keeping those release lifecycles separate is recorded in [multi-environment application delivery](../designs/multi-environment-application-delivery-design.md).
+This process releases the reusable template package. It does not version or deploy an application created from the template; generated-application releases use GitLab CI documented in [deployment](../docs/system/operations/deployment.md). The rationale for keeping those lifecycles separate is in [multi-environment application delivery](../docs/system/designs/multi-environment-application-delivery-design.md).
 
 ## Registry
 
@@ -13,7 +10,7 @@ This process releases the reusable template package. It does not version or depl
 | ---------- | ---------------------------------- | --------------- |
 | `ChangeMe` | [nuget.org](https://www.nuget.org) | GitHub Packages |
 
-In the template source repository, publish on tag push `v*` via `.github/workflows/publish.yml` (trusted publishing / OIDC). That maintainer-only workflow and `template-pack/` are excluded from generated applications.
+Publish on tag push `v*` via [`.github/workflows/publish.yml`](../.github/workflows/publish.yml) (trusted publishing / OIDC). This workflow, `maintainer/`, `template-pack/`, and `.github/` are excluded from generated applications.
 
 ## Where the version lives
 
@@ -40,7 +37,7 @@ In the template source repository, publish on tag push `v*` via `.github/workflo
    git push origin v2.1.0
    ```
 
-   `.github/workflows/publish.yml` runs tests, packs the template, publishes NuGet (nuget.org + GitHub Packages), and creates a GitHub Release from `CHANGELOG.md`.
+   `publish.yml` runs tests, packs the template, publishes NuGet (nuget.org + GitHub Packages), and creates a GitHub Release from `CHANGELOG.md`.
 
 ## One-time setup
 

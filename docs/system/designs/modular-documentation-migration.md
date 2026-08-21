@@ -54,7 +54,7 @@ Each `docs/modules/<module>/` subtree is a future extraction unit. After extract
 | `architecture/auth-session-flow.md` | `modules/frontend/architecture/auth-session-lifecycle.md` |
 | `technical/deployment.md` | `system/operations/deployment.md` |
 | `technical/ci.md` | `system/operations/ci.md` |
-| `technical/publishing.md` | `system/operations/publishing.md` |
+| `technical/publishing.md` | `maintainer/publishing.md` |
 | `technical/data-generator.md` | `modules/backend/demo-data.md` |
 | `technical/database-and-docker.md` | split by owner; see below |
 
