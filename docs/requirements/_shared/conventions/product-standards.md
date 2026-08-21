@@ -224,4 +224,4 @@ Use after implementing or reviewing a feature. Check only the `STD-*` sections l
 
 If a check fails and the `FR-*` does not document an override, fix the implementation or update the `FR-*` / `STD-*` deliberately in a requirements change — do not leave silent drift.
 
-For **which automated test layer** should prove each `STD-*` row, see [testing strategy](../../../system/development/testing-strategy.md#mapping-std--to-test-layers) (L5).
+For **which automated test layer** should prove inherited conventions, see [testing strategy](../../../system/development/testing-strategy.md#choosing-a-layer) (L5). Use this checklist for pass/fail criteria; do not duplicate STD rows elsewhere.

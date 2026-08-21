@@ -33,11 +33,11 @@
 2. Add or extend the service in `features/<feature>/services`.
 3. Create a standalone component under `features/<feature>/components/<name>/`.
 4. Register the route in `src/app/app.routes.ts` if it is navigable directly.
-5. Run lint and add frontend unit tests when client logic changes ([testing strategy](testing-strategy.md)); colocate `*.spec.ts` next to the component or service (see `features/issues/components/`).
+5. Run lint and add frontend unit tests when client logic changes ([testing strategy](testing-strategy.md)); colocate `*.spec.ts` next to the component or service.
 
 ## Add or migrate a list screen (DataGrid)
 
-Use any existing **list screen** as the template (for example **Issues**, **Users**, or **Roles**).
+Use the nearest existing **list screen** under `features/*/components/*-list/` as the template.
 
 ### Backend
 
@@ -51,31 +51,31 @@ Use any existing **list screen** as the template (for example **Issues**, **User
 1. Service method: `getAllX(grid: GridQuery): Observable<GridResult<TDto>>` via `apiService.get(..., { grid })`.
 2. Component: inject `GridResourceFactory`, create `grid` in constructor with `load`, `defaultSort`, `defaultTake`, optional `persistState`.
 3. Template: `<dg-prime-data-grid [grid]="grid">` with `dgColumn` templates per column; `dgEmpty` for empty state.
-4. Add component unit tests with a mocked `GridResourceFactory` (see `issues-list.component.spec.ts`).
+4. Add component unit tests with a mocked `GridResourceFactory`.
 
 ## Change auth-sensitive behavior
 
 1. Check backend endpoint auth defaults in `BaseEndpoint` / `BaseEndpointWithoutRequest`.
-2. Check route guards under `features/auth/guards`.
-3. Check token/session handling in `features/auth/services/auth.service.ts`.
+2. Check route guards in the auth feature slice.
+3. Check token and session handling in the auth feature service.
 4. Add or update integration coverage for authenticated and anonymous flows.
 5. Add or update guard/component unit tests; extend E2E smoke only when the user journey changes ([testing strategy](testing-strategy.md)).
 
-## Add file upload and download (reference: Issues attachments)
+## Add file upload and download
 
-Use the **Issues attachments** slice as the template for new file features. Shared infrastructure lives under `Domain/Common/Attachments/`, `Infrastructure/FileStorage/`, and the **`attachments`** table (TPH).
+Follow the shared attachment infrastructure under `Domain/Common/Attachments/`, `Infrastructure/FileStorage/`, and the **`attachments`** table (TPH). Copy the nearest existing attachment sub-slice in `Web/Endpoints/` and `UseCases/` before inventing a parallel upload flow.
 
 ### Backend
 
-1. Add a value to **`AttachmentType`** (`Domain/Common/Attachments/`), a derived entity (for example `IssueAttachment : Attachment`), and aggregate methods for owner-specific rules.
-2. Configure persistence: shared TPH mapping in **`Infrastructure/Persistence/Config/Attachments/AttachmentConfiguration.cs`** (add `.HasValue<…>(AttachmentType.…)`); owner relationship in **`Config/<Feature>/`** (for example **`Config/Issues/IssueAttachmentConfiguration.cs`**).
+1. Add a value to **`AttachmentType`** (`Domain/Common/Attachments/`), a derived entity (for example `<Feature>Attachment : Attachment`), and aggregate methods for owner-specific rules.
+2. Configure persistence: shared TPH mapping in **`Infrastructure/Persistence/Config/Attachments/AttachmentConfiguration.cs`** (add `.HasValue<…>(AttachmentType.…)`); owner relationship in **`Config/<Feature>/`** for the owning aggregate.
 3. Reuse `Infrastructure/FileStorage/`:
    - `IFileContentValidator` + Mime-Detective content inspection
    - `IFileStorageService` + `LocalFileStorageService` (`container` + `ownerId` paths)
-4. Use **file-first upload with a single DB commit** (see Issues `UploadIssueAttachmentCommand`):
+4. Use **file-first upload with a single DB commit**:
    - validate content, then create attachment metadata and side effects in memory
    - write file to storage using the generated opaque key
-   - `SaveChanges` once (metadata + history/notifications)
+   - `SaveChanges` once (metadata + history/notifications when applicable)
    - on failure before `SaveChanges`, delete the stored file only; if `SaveChanges` fails after a successful storage write, EF rolls back metadata and **`AttachmentStorageCleanupJob`** removes the orphaned file on the next run
 5. Reuse `AttachmentStorageCleanupJob` (Hangfire): orphaned stored files with no matching metadata row for all attachment types.
 6. Add list/upload/download/delete use cases in `UseCases/<Feature>/<ChildResource>/` (or at the feature root when not nested). Colocate sub-slice DTOs and utils under `<ChildResource>/Dtos/` and `<ChildResource>/Utils/` when they are not shared with the parent feature.

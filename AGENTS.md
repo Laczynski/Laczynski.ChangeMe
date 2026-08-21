@@ -4,27 +4,22 @@
 
 ## Repository shape
 
-- `src/ChangeMe.Frontend` - Angular 22 frontend.
+- `src/ChangeMe.Frontend` - Angular frontend.
 - `src/ChangeMe.Backend` - .NET backend solution.
 - `docker-compose.yml` - local full-stack environment with frontend, backend, PostgreSQL, and MailHog.
 - `docs/` - product requirements plus system- and module-owned documentation (`docs/README.md` for the task index).
 - `docs/documentation-rules.md` - ownership, naming, diagram, and no-duplication rules for documentation.
 - `docs/system/` - cross-module development, designs, and operations owned by this repository.
-- `docs/modules/frontend/`, `docs/modules/backend/` - module documentation designed to move with future repositories.
+- `docs/modules/` - module documentation designed to move with future repositories.
 - Root `package.json` - optional npm scripts that run frontend and backend tasks from the repository root (see Commands).
 
 ## Start here by task
 
-- First codebase orientation: read `docs/system/development/repository-map.md`.
-- Frontend change: read `docs/modules/frontend/development.md`; for session renewal also read `docs/modules/frontend/architecture/auth-session-lifecycle.md`.
-- Backend change: read `docs/modules/backend/development.md`; add the focused document under `docs/modules/backend/operations/` only when persistence, jobs, or file storage changes.
-- Test work or bugfix verification: read `docs/system/development/testing-strategy.md`; read `e2e-testing.md` only for browser journeys.
-- Cross-stack feature: read the target requirements, `docs/system/development/feature-workflow.md`, and the affected module development documents.
-- Docker or local stack: read `docs/system/operations/local-stack.md`; production deployment: `docs/system/operations/deployment.md`; CI: `docs/system/operations/ci.md`.
-- Application release: read `docs/system/operations/deployment.md` and `docs/system/operations/ci.md`; use `/release patch|minor|major` in Cursor or Claude Code to prepare the reviewed release MR, then `/release publish vX.Y.Z` after merge.
-- Documentation additions or updates: read `docs/documentation-rules.md`.
-- Repository extraction, documentation ownership changes, or `docs/` reorganization: also read `docs/system/designs/modular-documentation-migration.md`.
-- Requirement changes: read `docs/requirements/requirements-change-process.md`; authoring in `docs/requirements/requirements-authoring-guide.md`; **five layers** in `docs/requirements/_shared/README.md`; product behavior defaults in `docs/requirements/_shared/conventions/product-standards.md`; pending deltas in `docs/requirements/changes/`; validate with `npm run docs:validate`.
+Use [`docs/README.md`](docs/README.md) as the task router. It links to the canonical document for orientation, implementation, testing, operations, and requirements workflow.
+
+Requirement structure and layer precedence: [`docs/requirements/_shared/README.md`](docs/requirements/_shared/README.md) (**L4 overrides L2; L5 never defines product behavior**).
+
+After documentation or specification edits, run `npm run docs:validate`.
 
 ## Commands
 
@@ -49,9 +44,10 @@ From the repository root, run `npm run setup` once after clone (creates `.env` f
 
 - Set up the isolated Ansible controller and all local prerequisites: `npm run setup:deployment` (native Linux or the default WSL distribution on Windows)
 - Validate inventory, generator, GitLab YAML, tests, playbooks, lint, and the package contract: `npm run validate:deployment`
-- Agent-assisted release: `/release patch|minor|major` prepares release notes and an MR; `/release publish vX.Y.Z` verifies the merge and pushes the protected tag
 - Setup troubleshooting, bootstrap, deploy, verify, configuration-only deploy, and rollback procedures: `docs/system/operations/deployment.md`
 - GitLab creates packages and manual deployment choices; Docker and Compose remain local-only
+
+Generated-application release automation (`/release`) is documented in `docs/system/operations/deployment.md`. Template NuGet publishing is separate: `docs/system/operations/publishing.md`.
 
 ### Frontend (in `src/ChangeMe.Frontend`)
 
@@ -85,28 +81,31 @@ Configuration in containers: `appsettings.json` + `appsettings.Development.json`
 
 ## Repo navigation rules
 
+Structural patterns only — feature-specific routes, endpoints, and requirements live in code and `docs/requirements/functional/`.
+
 ### Frontend
 
 - Routes live in `src/app/app.routes.ts`.
 - Feature code lives under `src/app/features/<feature>/`.
 - Shared HTTP wrapper lives in `src/app/shared/api/services/api.service.ts`.
-- Cross-cutting user/session concerns live under `src/app/core/` and `features/auth/`.
-- Transient toast feedback uses `src/app/core/toast/services/toast.service.ts` with global `<p-toast>` in `app.component.ts`.
+- Cross-cutting concerns live under `src/app/core/`; feature-specific guards, interceptors, and services live under the matching feature folder.
 - Shared data models live under `src/app/shared/`.
+
+Module conventions: [`docs/modules/frontend/development.md`](docs/modules/frontend/development.md).
 
 ### Backend
 
-- HTTP endpoints live in `src/ChangeMe.Backend.Web/Endpoints/<Feature>/` (nested routes in sub-slices, for example `Endpoints/Issues/Attachments/`).
-- Query and command contracts live in `src/ChangeMe.Backend.UseCases/<Feature>/` (nested routes in sub-slices, for example `UseCases/Issues/Attachments/`).
+- HTTP endpoints live in `src/ChangeMe.Backend.Web/Endpoints/<Feature>/` (nested routes in sub-slices).
+- Query and command contracts live in `src/ChangeMe.Backend.UseCases/<Feature>/` (matching sub-slice layout).
 - Keep only `*Query.cs` and `*Command.cs` files at the top level of each `UseCases` feature folder (root resource operations).
-- Place shared DTOs in `src/ChangeMe.Backend.UseCases/<Feature>/Dtos/`; sub-slice-only DTOs in `UseCases/<Feature>/<ChildResource>/Dtos/`.
-- Place shared handler helpers in `src/ChangeMe.Backend.UseCases/<Feature>/Utils/`; sub-slice-only helpers in `UseCases/<Feature>/<ChildResource>/Utils/`.
-- Place shared feature services in `src/ChangeMe.Backend.UseCases/<Feature>/Services/`; sub-slice-only services in `UseCases/<Feature>/<ChildResource>/Services/`.
-- Handlers still live with their matching command or query file.
+- Place shared DTOs, utils, and services at the feature root; sub-slice-only types live under the matching child folder.
+- Handlers stay in the same files as their commands and queries.
 - Domain rules and aggregates live in `src/ChangeMe.Backend.Domain`.
 - EF Core, persistence, auth, and adapters live in `src/ChangeMe.Backend.Infrastructure`.
 - Integration tests mirror API behavior under `tests/ChangeMe.Backend.IntegrationTests`.
 - Unit tests cover domain/infrastructure helpers under `tests/ChangeMe.Backend.UnitTests`.
+
+Module conventions: [`docs/modules/backend/development.md`](docs/modules/backend/development.md).
 
 ## Change coupling checklist
 
@@ -123,19 +122,3 @@ Configuration in containers: `appsettings.json` + `appsettings.Development.json`
 - Keep docs current when introducing a new enforced convention.
 - Start every executable or repository-automation script with a one- or two-line purpose comment as the first content after the shebang, or at the top when there is no shebang. Describe its outcome and main responsibility; declarative configuration and data files are exempt.
 - Do not assume files visible in the IDE are committed; verify against the filesystem first.
-
-## Requirements layers (product analysis)
-
-Five layers — see `docs/requirements/_shared/README.md`:
-
-| Layer             | Path                                                         | When to read                                   |
-| ----------------- | ------------------------------------------------------------ | ---------------------------------------------- |
-| L1 Domain         | `docs/requirements/_shared/domain/`                          | Terms, account model, permissions              |
-| L2 Conventions    | `docs/requirements/_shared/conventions/product-standards.md` | Any UI — lists, forms, validation UX, feedback |
-| L3 Quality        | `docs/requirements/_shared/quality/`                         | Performance, a11y, i18n                        |
-| L4 Capabilities   | `docs/requirements/functional/<domain>/fr-*.md`              | The feature you are implementing               |
-| L5 Implementation | `docs/modules/*/development.md`, `docs/system/development/`  | Module patterns and cross-module workflows     |
-
-**Override rule:** L4 overrides L2; L5 never defines product behavior.
-
-**After implementing UI:** run the **Implementation review checklist** at the end of `product-standards.md` for each `STD-*` in the target `FR-*` `inherits_conventions`.
