@@ -170,6 +170,7 @@ Use names that match code or public contracts. A diagram and its prose must not 
 | Machine-readable value                        | Config, workflow, Compose, or source code | Explain purpose and operational consequence                                                            |
 | Module implementation pattern                 | `docs/modules/<module>/`                  | State the rule and nearest reference implementation                                                    |
 | Cross-module interaction                      | `docs/system/`                            | Show boundaries, contracts, and failure handling                                                       |
+| Template source repository operations         | `maintainer/`                             | NuGet publishing and GitHub CI — excluded from `dotnet new` payload                                    |
 | Shared command catalog and fast-start routing | `AGENTS.md`                               | Link to deeper documents; focused operations docs may repeat only commands required by their procedure |
 
 ## Update checklist

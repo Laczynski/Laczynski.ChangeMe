@@ -9,9 +9,11 @@ import path from "node:path";
 
 const root = process.cwd();
 const docsRoot = path.join(root, "docs");
+const maintainerRoot = path.join(root, "maintainer");
 const errors = [];
 
 function walkMarkdown(directory) {
+  if (!existsSync(directory)) return [];
   return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
     const absolute = path.join(directory, entry.name);
     if (entry.isDirectory()) return walkMarkdown(absolute);
@@ -20,6 +22,7 @@ function walkMarkdown(directory) {
 }
 
 const docsFiles = walkMarkdown(docsRoot);
+const maintainerFiles = walkMarkdown(maintainerRoot);
 const linkedFiles = [
   path.join(root, "README.md"),
   path.join(root, "AGENTS.md"),
@@ -34,6 +37,7 @@ const linkedFiles = [
     "ChangeMe.Backend.DataGenerator",
     "README.md",
   ),
+  ...maintainerFiles,
   ...docsFiles,
 ];
 

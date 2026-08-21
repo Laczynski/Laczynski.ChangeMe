@@ -22,7 +22,7 @@ Use it to bootstrap Angular + ASP.NET projects with layered backend, JWT session
 
 - Root **`package.json`** — one entry point for start/build, lint/format, unit & integration tests, E2E, EF migrations, Docker Compose, demo data, requirements validation
 - **Docker Compose** — full stack (frontend, backend, PostgreSQL, MailHog) plus optional test profile
-- **GitHub Actions CI** — documentation/requirements, frontend, backend, and deployment-automation validation on this repository (see [Maintainers](#maintainers))
+- **GitLab CI** — `.gitlab-ci.yml` + Ansible delivery ship in the template payload; see [`docs/system/operations/ci.md`](docs/system/operations/ci.md)
 - **Playwright E2E** — project layout, fixtures, smoke pattern (`docs/system/development/e2e-testing.md`); local/manual only, not a CI gate here
 - **Testcontainers** — integration tests against real PostgreSQL
 - **Data generator** — CLI pattern for Development seed data (`npm run data:generate`)
@@ -80,22 +80,22 @@ This repository is meant to provide:
 - `.template.config/` - `dotnet new` template manifest (`changeme`, `sourceName` token `ChangeMe`)
 - `template-pack/` - NuGet packaging project for the template
 - `template-content/` - overlays and **generated-project** `README.md` (consumer readme for `dotnet new` output)
-- `.github/workflows/` - **this repository's** CI and template NuGet publish
-- `.gitlab-ci.yml` and `.gitlab/ci/` - **generated-application** GitLab pipeline (shipped in the template payload; validated here, executed in the consumer's GitLab project)
+- **`maintainer/`** - template source repository only (excluded from `dotnet new`; see [maintainer/README.md](maintainer/README.md))
+- **`.github/`** - GitHub Actions for this repository only (excluded from `dotnet new`)
 
 ## Maintainers
 
-This GitHub repository packages the **`ChangeMe` NuGet template**. Do not confuse its release and CI with the workflow used **after** `dotnet new` in your own product repository.
+Template packaging, GitHub CI, and NuGet publishing are documented under **[`maintainer/`](maintainer/README.md)**. That folder and **`.github/`** do not ship in the `dotnet new` payload.
 
-| Concern | Where it runs | How to release / verify |
-| --- | --- | --- |
-| **Template package (`ChangeMe` on NuGet)** | **This repo** on GitHub | Bump `template-pack/ChangeMe.Templates.csproj`, update `CHANGELOG.md`, push a **`v*`** tag → [publishing](docs/system/operations/publishing.md) (`publish.yml` on GitHub Actions) |
-| **Sample app in this repo** | Local / GitHub Actions CI | `npm run test:all`, `npm run build:all`; no GitLab Release from this repository |
-| **Your generated application** | **Your** GitLab project | GitLab CI from `.gitlab-ci.yml` + Ansible; agent **`/release`** prepares an MR and protected **`vX.Y.Z`** tag → GitLab Release ([deployment](docs/system/operations/deployment.md)) |
+| Concern | Documentation |
+| --- | --- |
+| Publish **`ChangeMe`** on NuGet | [maintainer/publishing.md](maintainer/publishing.md) · `/template-publish` |
+| GitHub Actions on this repo | [maintainer/ci-github.md](maintainer/ci-github.md) |
+| Author or validate the template | [maintainer/CONTRIBUTING.md](maintainer/CONTRIBUTING.md) |
+| GitLab CI in generated apps | [docs/system/operations/ci.md](docs/system/operations/ci.md) (shipped) |
+| Deploy a generated application | [docs/system/operations/deployment.md](docs/system/operations/deployment.md) (shipped) |
 
-**Two CI systems, one repository:** GitHub Actions validates **maintainers** working on the template source. `.gitlab-ci.yml` is **payload** for generated solutions — GitHub CI runs `npm run validate:deployment` to prove that pipeline and Ansible assets stay valid, but GitLab jobs execute only when the scaffolded project is pushed to GitLab. Details: [continuous integration](docs/system/operations/ci.md).
-
-Authoring and publishing the template: [`CONTRIBUTING.md`](CONTRIBUTING.md). Security reports: [`SECURITY.md`](SECURITY.md).
+Security reports: [`SECURITY.md`](SECURITY.md).
 
 ## Getting Started
 
@@ -227,7 +227,7 @@ The `docs/` directory contains guidance that is also shipped into generated solu
 - `docs/modules/` - frontend/backend implementation and module-owned operations
 - `docs/requirements/` - product specs and change workflow (start at `docs/requirements/requirements-change-process.md`; templates `_functional-specification-skeleton.md`, `_change-record-skeleton.md`)
 
-Maintainers of the template package: see [`CONTRIBUTING.md`](CONTRIBUTING.md). Community expectations: [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md).
+Maintainers of the template package: see [`maintainer/README.md`](maintainer/README.md). Community expectations: [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md).
 
 ## About `AGENTS.md`
 

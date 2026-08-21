@@ -1,0 +1,7 @@
+interface:
+  display_name: "Publish ChangeMe NuGet template"
+  short_description: "Release the dotnet new template package from the source repository"
+  default_prompt: "Use $template-publish to prepare and publish the next ChangeMe NuGet template release."
+
+policy:
+  allow_implicit_invocation: false

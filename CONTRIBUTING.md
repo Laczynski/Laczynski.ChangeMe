@@ -1,51 +1,5 @@
-# Contributing to ChangeMe (maintainers)
+# Contributing
 
-> Scope: authors packaging **[ChangeMe](https://www.nuget.org/packages/ChangeMe)** from **this GitHub repository** (`Laczynski/Laczynski.ChangeMe`). If you only consume **`dotnet new changeme`** or fork a generated app, you do **not** need this file; see **`README.md`**, **`AGENTS.md`**, and **`docs/`** in your generated solution.
+**Template package maintainers** (this GitHub repository): read **[maintainer/CONTRIBUTING.md](maintainer/CONTRIBUTING.md)** and **[maintainer/README.md](maintainer/README.md)**.
 
-## Documentation split
-
-| Audience                  | Files                                                                                                    |
-| ------------------------- | -------------------------------------------------------------------------------------------------------- |
-| Generated solution / fork | `README.md`, `AGENTS.md`, `docs/*`                                                                       |
-| Template repo maintainers | `CONTRIBUTING.md` (this file), `.template.config/template.json`, `template-pack/*`, `template-content/*` |
-
-`CONTRIBUTING.md` is excluded from the NuGet template payload (`dotnet new` output). `SECURITY.md` and `CODE_OF_CONDUCT.md` ship with generated solutions.
-
-## Security
-
-Report vulnerabilities through [`SECURITY.md`](SECURITY.md) — use GitHub private security advisories, not public issues.
-
-## Install and validate template locally
-
-```powershell
-dotnet pack template-pack/ChangeMe.Templates.csproj -c Release
-dotnet new install .\template-pack\bin\Release\ChangeMe.<version>.nupkg
-dotnet new changeme -n Smoke -o %TEMP%\ChangeMeSmoke --force
-```
-
-Avoid **`dotnet new -o`** under **`artifacts/`** (or other nested outputs inside this repo) without cleaning stale folders; `artifacts/**` is excluded from packaged content but local installs can still recurse oddly.
-
-## Publishing
-
-Tag-based CI publish is documented in **`docs/system/operations/publishing.md`**. Summary:
-
-1. Bump **`Version`** in **`template-pack/ChangeMe.Templates.csproj`** and update **`CHANGELOG.md`**.
-2. Push a git tag (`v2.1.0`) — [publish.yml](.github/workflows/publish.yml) tests, packs, publishes to nuget.org + GitHub Packages, and creates a GitHub Release.
-
-Optional local pack:
-
-```powershell
-dotnet pack template-pack/ChangeMe.Templates.csproj -c Release
-```
-
-Optional local push with API key — see **`docs/system/operations/publishing.md`**.
-
-Package readme: **`template-pack/NuGetPackageREADME.md`**.
-
-## Template authoring
-
-- `.template.config/template.json` – symbols, sources.
-- `template-content/generated-readme/README.md` – becomes the generated solution’s root **`README.md`** (root **`README.md`** is excluded from the template payload and stays maintainer-facing on GitHub).
-- **`src/ChangeMe.Backend/.../Persistence/Migrations/*.cs`** – shipped with the template (`InitialCreate` included). After an EF model change, add a migration: `npm run ef:migrations:add -- <Name>` from the repo root.
-
-When adjusting persistence, keep **`README.md` / `AGENTS.md` / `docs/`** oriented toward the **generated product**, not this repo.
+**Generated applications** from `dotnet new changeme`: use your solution **`README.md`**, **`AGENTS.md`**, and **`docs/`** — the `maintainer/` folder is not shipped in the template payload.

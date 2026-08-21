@@ -281,4 +281,3 @@ Repository checks do not validate project-specific GitLab permissions, environme
 | Hangfire | [backend background jobs](../../modules/backend/operations/background-jobs.md) |
 | File storage | [backend file storage](../../modules/backend/operations/file-storage.md) |
 | CI | [continuous integration](ci.md) |
-| Template package publishing | [publishing](publishing.md) |

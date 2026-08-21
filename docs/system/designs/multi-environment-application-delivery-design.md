@@ -96,7 +96,7 @@ Database migrations are deliberately not reversed. Schema changes must remain co
 | Migration-only backend mode | [`Program.cs`](../../../src/ChangeMe.Backend/src/ChangeMe.Backend.Web/Program.cs) |
 | Operator procedure | [Deployment](../operations/deployment.md) |
 
-The generated-project payload includes GitLab and Ansible delivery assets. It excludes the maintainer-only GitHub template-publishing workflow; template package publishing remains a separate repository concern.
+The generated-project payload includes GitLab and Ansible delivery assets. It excludes **`maintainer/`**, **`.github/`**, **`.claude/skills/template-publish/`**, **`template-pack/`**, and other template-source paths listed in `.template.config/template.json`; NuGet template publishing is documented only under `maintainer/` and `/template-publish`.
 
 ## Verification
 
@@ -108,6 +108,6 @@ Before using production, run the documented bootstrap, first deploy, failed-heal
 
 - [Deployment](../operations/deployment.md)
 - [Continuous integration](../operations/ci.md)
-- [Template publishing](../operations/publishing.md)
+- Template NuGet publishing — template source repository only (`maintainer/publishing.md` on GitHub; not shipped in `dotnet new` output)
 - [Runtime configuration hardening](runtime-configuration-hardening-design.md)
 - [Local full-stack environment](../operations/local-stack.md)
