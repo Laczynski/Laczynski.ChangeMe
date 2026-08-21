@@ -5,6 +5,24 @@
 > Status: implemented
 > Canonical for: human-readable GitHub and GitLab CI job ownership and local reproduction
 
+## Who uses which pipeline
+
+This repository intentionally contains **two** CI definitions. They serve different lifecycles:
+
+| Pipeline | Files | Runs where | Purpose |
+| --- | --- | --- | --- |
+| **Template maintainer CI** | [`.github/workflows/ci.yml`](../../../.github/workflows/ci.yml), [`.github/workflows/publish.yml`](../../../.github/workflows/publish.yml) | **This GitHub repository** | Validate the template source on every PR/push; publish the **`ChangeMe` NuGet** package on a maintainer **`v*`** tag |
+| **Generated application CI** | [`.gitlab-ci.yml`](../../../.gitlab-ci.yml), [`.gitlab/ci/`](../../../.gitlab/ci/) | **The consumer's GitLab project** after `dotnet new` | Verify, package, release, and manually deploy **your product** to VPS environments |
+
+GitHub Actions also runs **`npm run validate:deployment`**, which lint-checks the GitLab YAML and Ansible assets **without** executing GitLab jobs on GitHub. Template maintainers work in GitHub CI; product teams work in GitLab CI after scaffolding.
+
+Release ownership matches the pipeline:
+
+| Release artifact | Maintainer action | Documentation |
+| --- | --- | --- |
+| NuGet template **`ChangeMe`** | Push **`v*`** tag on **this repo** | [publishing](publishing.md) |
+| Application **`vX.Y.Z`** on GitLab | MR + protected tag in **generated repo** | [deployment](deployment.md); agent **`/release`** skill |
+
 ## Template repository CI
 
 Source of truth: [`.github/workflows/ci.yml`](../../../.github/workflows/ci.yml).

@@ -9,7 +9,11 @@
 | Generated solution / fork | `README.md`, `AGENTS.md`, `docs/*`                                                                       |
 | Template repo maintainers | `CONTRIBUTING.md` (this file), `.template.config/template.json`, `template-pack/*`, `template-content/*` |
 
-`CONTRIBUTING.md` is excluded from the NuGet template payload (`dotnet new` output).
+`CONTRIBUTING.md` is excluded from the NuGet template payload (`dotnet new` output). `SECURITY.md` and `CODE_OF_CONDUCT.md` ship with generated solutions.
+
+## Security
+
+Report vulnerabilities through [`SECURITY.md`](SECURITY.md) — use GitHub private security advisories, not public issues.
 
 ## Install and validate template locally
 
