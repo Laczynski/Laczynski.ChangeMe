@@ -12,7 +12,7 @@ health_path: /health
 
 backend_config:
   AuthOptions__FrontendBaseUrl: https://development.example.invalid
-  AuthOptions__Jwt__Issuer: Template
+  AuthOptions__Jwt__Issuer: ChangeMe
   AuthOptions__Jwt__Audience: ChangeMe.Client
   AuthOptions__Jwt__ExpirationMinutes: "30"
   AuthOptions__Jwt__SessionLifetimeDays: "14"
@@ -21,5 +21,5 @@ backend_config:
   EmailOptions__Port: "587"
   EmailOptions__EnableSsl: "true"
   EmailOptions__FromEmail: no-reply@example.invalid
-  EmailOptions__FromName: Template
+  EmailOptions__FromName: ChangeMe
   FileStorageOptions__RootPath: /var/lib/change-me/storage

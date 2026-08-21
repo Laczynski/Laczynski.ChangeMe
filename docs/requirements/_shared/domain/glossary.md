@@ -14,15 +14,15 @@ The following terms describe observable account state, not implementation detail
 
 ## Sign-in methods
 
-| Term               | Meaning                                                                                      |
-| ------------------ | -------------------------------------------------------------------------------------------- |
-| **Local password** | A password stored in Template for email/password sign-in. Set at user creation (FR-USR-003). |
+| Term               | Meaning                                                                                             |
+| ------------------ | --------------------------------------------------------------------------------------------------- |
+| **Local password** | A password stored in the application for email/password sign-in. Set at user creation (FR-USR-003). |
 
 ## Email and profile
 
-| Term              | Meaning                                                                                                                              |
-| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| **Profile email** | The **current email** on the Template account; used for sign-in and display. Shown as **Email** on **My account** and admin screens. |
+| Term              | Meaning                                                                                                                          |
+| ----------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| **Profile email** | The **current email** on the user account; used for sign-in and display. Shown as **Email** on **My account** and admin screens. |
 
 ## Cross-references
 

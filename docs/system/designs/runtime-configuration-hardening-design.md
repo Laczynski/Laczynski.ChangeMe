@@ -17,17 +17,17 @@ Register backend option sections through the .NET options builder, bind them fro
 
 The initial validation scope should be:
 
-| Section | Candidate rules |
-| --- | --- |
-| `ConnectionStrings:DefaultConnection` | Required and parseable as a PostgreSQL connection string |
-| `AuthOptions` | Non-empty issuer and audience; sufficiently long signing key; positive token and session lifetimes; valid frontend absolute URL; coherent password length limits |
-| `EmailOptions` | Non-empty host and sender; port in `1-65535`; valid sender email; credentials may remain empty when the SMTP server permits anonymous access |
-| `RateLimitingOptions` | Positive permit limits and window lengths, including when limiting is temporarily disabled |
-| `FileStorageOptions` | Non-empty root path; valid cleanup cron; positive concurrent-execution timeout |
-| `NotificationRetentionOptions` | Positive retention periods with coherent ordering; valid cleanup cron |
-| `HangfireOptions` | Dashboard path starts with `/`; at least one deployed host must enable the server, verified operationally rather than by a single host |
-| `CorsOptions` | Every configured origin is an absolute HTTP or HTTPS origin without a path |
-| `InitialAdministratorOptions` | Either all bootstrap fields are empty, or all are present and valid |
+| Section                               | Candidate rules                                                                                                                                                  |
+| ------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ConnectionStrings:DefaultConnection` | Required and parseable as a PostgreSQL connection string                                                                                                         |
+| `AuthOptions`                         | Non-empty issuer and audience; sufficiently long signing key; positive token and session lifetimes; valid frontend absolute URL; coherent password length limits |
+| `EmailOptions`                        | Non-empty host and sender; port in `1-65535`; valid sender email; credentials may remain empty when the SMTP server permits anonymous access                     |
+| `RateLimitingOptions`                 | Positive permit limits and window lengths, including when limiting is temporarily disabled                                                                       |
+| `FileStorageOptions`                  | Non-empty root path; valid cleanup cron; positive concurrent-execution timeout                                                                                   |
+| `NotificationRetentionOptions`        | Positive retention periods with coherent ordering; valid cleanup cron                                                                                            |
+| `HangfireOptions`                     | Dashboard path starts with `/`; at least one deployed host must enable the server, verified operationally rather than by a single host                           |
+| `CorsOptions`                         | Every configured origin is an absolute HTTP or HTTPS origin without a path                                                                                       |
+| `InitialAdministratorOptions`         | Either all bootstrap fields are empty, or all are present and valid                                                                                              |
 
 Small validators may use inline `Validate(...)` rules. Sections with multiple or conditional rules should use dedicated `IValidateOptions<T>` implementations so error messages name the invalid section and property.
 
@@ -48,7 +48,7 @@ Keep this bootstrap in one infrastructure helper and call it before configuratio
 The root `.env` may define shared PostgreSQL primitives once and derive the host-run connection string through interpolation:
 
 ```dotenv
-POSTGRES_DB=Template
+POSTGRES_DB=ChangeMe
 POSTGRES_USER=postgres
 POSTGRES_PASSWORD=replace-for-local-development
 
@@ -70,21 +70,21 @@ Candidate values for local `.env` ownership:
 
 Mode-specific, non-sensitive topology remains tracked and is not duplicated in `.env`:
 
-| Concern | Local .NET | Docker Compose |
-| --- | --- | --- |
-| PostgreSQL host | `localhost` in the derived local connection string | `postgres` in the Compose backend override |
-| SMTP host | `localhost` in Development settings | `mailhog` in Compose |
-| File storage root | Local Development path | `/app/storage` in Compose |
-| Service names, ports, mounts, and browser API path | Relevant tracked Development settings | `docker-compose.yml` |
+| Concern                                            | Local .NET                                         | Docker Compose                             |
+| -------------------------------------------------- | -------------------------------------------------- | ------------------------------------------ |
+| PostgreSQL host                                    | `localhost` in the derived local connection string | `postgres` in the Compose backend override |
+| SMTP host                                          | `localhost` in Development settings                | `mailhog` in Compose                       |
+| File storage root                                  | Local Development path                             | `/app/storage` in Compose                  |
+| Service names, ports, mounts, and browser API path | Relevant tracked Development settings              | `docker-compose.yml`                       |
 
 The resulting local configuration flow is:
 
-| Runtime or tool | Source | Adapter |
-| --- | --- | --- |
-| Docker Compose | Ignored root `.env`, based on `.env.example` | Compose interpolates explicitly referenced variables |
-| Local `dotnet run` and IDE launch | The same ignored root `.env` | `DotNetEnv` loads values before ASP.NET Core configuration |
-| EF Core commands | The same ignored root `.env` | The design-time factory invokes the shared loader |
-| Demo-data generator | The same ignored root `.env` | The generator host invokes the shared loader |
+| Runtime or tool                   | Source                                       | Adapter                                                    |
+| --------------------------------- | -------------------------------------------- | ---------------------------------------------------------- |
+| Docker Compose                    | Ignored root `.env`, based on `.env.example` | Compose interpolates explicitly referenced variables       |
+| Local `dotnet run` and IDE launch | The same ignored root `.env`                 | `DotNetEnv` loads values before ASP.NET Core configuration |
+| EF Core commands                  | The same ignored root `.env`                 | The design-time factory invokes the shared loader          |
+| Demo-data generator               | The same ignored root `.env`                 | The generator host invokes the shared loader               |
 
 The `.env` file is a developer convenience, not encrypted storage. Its values can still be read from the filesystem, the process or container environment, and Docker inspection output. It must not be copied into backend or frontend images.
 
@@ -95,7 +95,7 @@ Standard environment variables are the initial production delivery mechanism. AS
 Ansible renders versioned non-secret variables into `/etc/<application>/current-config/backend.config.env`. Keep sensitive variables in the untracked server-owned `/etc/<application>/secrets.env`:
 
 ```dotenv
-ConnectionStrings__DefaultConnection=Host=database.internal;Database=Template;Username=template;Password=replace-on-vps
+ConnectionStrings__DefaultConnection=Host=database.internal;Database=ChangeMe;Username=change_me;Password=replace-on-vps
 AuthOptions__Jwt__SigningKey=replace-with-a-production-signing-key
 EmailOptions__Password=replace-when-smtp-authentication-is-used
 ```
@@ -134,16 +134,16 @@ The deployment pipeline creates and activates the non-secret revision but never 
 
 ## Alternatives considered
 
-| Alternative | Trade-off |
-| --- | --- |
-| Keep fixed development credentials in tracked files | Preserves zero-setup startup, but normalizes committed credentials and makes accidental reuse more likely |
-| Give Compose substitutions defaults such as `${POSTGRES_PASSWORD:-postgres}` | Keeps onboarding simple, but missing local configuration no longer fails fast and moving the value to `.env` provides little benefit |
-| Use `env_file` to inject the complete `.env` | Shorter Compose configuration, but exposes unrelated variables to containers and hides the effective configuration contract |
-| Use `.env` for Compose and .NET User Secrets for host runs | Uses built-in .NET behavior, but makes developers maintain the same values in two local stores that can drift |
-| Wrap all .NET commands in an npm or shell launcher | Keeps `.env` handling outside application code, but direct `dotnet run`, IDE launches, and design-time tooling require separate adapters or documented exceptions |
-| Load `.env` as an `IConfiguration` source after creating the builder | Avoids modifying process variables, but provider ordering must be rebuilt carefully so real environment variables and command-line arguments retain precedence |
+| Alternative                                                                        | Trade-off                                                                                                                                                               |
+| ---------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Keep fixed development credentials in tracked files                                | Preserves zero-setup startup, but normalizes committed credentials and makes accidental reuse more likely                                                               |
+| Give Compose substitutions defaults such as `${POSTGRES_PASSWORD:-postgres}`       | Keeps onboarding simple, but missing local configuration no longer fails fast and moving the value to `.env` provides little benefit                                    |
+| Use `env_file` to inject the complete `.env`                                       | Shorter Compose configuration, but exposes unrelated variables to containers and hides the effective configuration contract                                             |
+| Use `.env` for Compose and .NET User Secrets for host runs                         | Uses built-in .NET behavior, but makes developers maintain the same values in two local stores that can drift                                                           |
+| Wrap all .NET commands in an npm or shell launcher                                 | Keeps `.env` handling outside application code, but direct `dotnet run`, IDE launches, and design-time tooling require separate adapters or documented exceptions       |
+| Load `.env` as an `IConfiguration` source after creating the builder               | Avoids modifying process variables, but provider ordering must be rebuilt carefully so real environment variables and command-line arguments retain precedence          |
 | Require mounted secrets or an external secret manager for the first VPS deployment | Reduces some environment-variable exposure and may improve centralized auditing, but adds infrastructure and operational work before the current deployment requires it |
-| Validate options only when first resolved | Requires less startup work, but leaves failures dependent on which endpoint or job happens to resolve an option first |
+| Validate options only when first resolved                                          | Requires less startup work, but leaves failures dependent on which endpoint or job happens to resolve an option first                                                   |
 
 ## Completion criteria
 

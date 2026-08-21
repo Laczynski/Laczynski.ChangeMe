@@ -1,6 +1,6 @@
 # ChangeMe.Backend.DataGenerator
 
-Demo/test data generator for local Template development.
+Demo/test data generator for local ChangeMe development.
 
 ## Purpose
 
